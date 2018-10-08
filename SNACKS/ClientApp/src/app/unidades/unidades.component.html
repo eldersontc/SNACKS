@@ -1,0 +1,62 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">Producción</li>
+    <li class="breadcrumb-item active" aria-current="page">Unidades</li>
+  </ol>
+</nav>
+
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option value="1">Nombre</option>
+      <option value="2">Abreviación</option>
+    </select>
+    <input type="text" class="form-control" [(ngModel)]="busqueda">
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" (click)="buscar()">
+        <fa name="search"></fa>
+      </button>
+    </div>
+  </div>
+  <div class="btn-group col-md-4  mb-2 justify-content-center">
+    <span class="rounded border border-primary ml-2" *ngFor="let filtro of filtros">
+      {{filtro.v}}
+      <button type="button" class="btn btn-sm btn-link" (click)="quitarFiltro(filtro)">
+        <fa name="times-circle"></fa>
+      </button>
+    </span>
+  </div>
+  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group">
+    <button type="button" class="btn btn-primary" [routerLink]='["/unidades-form"]'>
+      <fa name="plus-circle"></fa> Nuevo
+    </button>
+    <button type="button" class="btn btn-primary">
+      <fa name="edit"></fa> Editar
+    </button>
+    <button type="button" class="btn btn-primary">
+      <fa name="trash"></fa> Eliminar
+    </button>
+  </div>
+</div>
+<table class="table table-bordered table-hover table-sm">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">Nombre</th>
+      <th scope="col">Abreviación</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let unidad of unidades">
+      <td>{{unidad.nombre}}</td>
+      <td>{{unidad.abreviacion}}</td>
+    </tr>
+  </tbody>
+</table>
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>

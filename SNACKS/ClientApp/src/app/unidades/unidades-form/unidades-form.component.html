@@ -1,0 +1,49 @@
+<h1>Agregar Unidad</h1>
+<form class="form-horizontal" novalidate
+      (ngSubmit)="save()" [formGroup]="formGroup">
+  <fieldset>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="abreviacionId">Abreviación</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="abreviacionId"
+               type="text"
+               required
+               formControlName="abreviacion"
+               [ngClass]="{'is-invalid': formGroup.get('abreviacion').touched && !formGroup.get('abreviacion').valid }"/>
+        <div class="invalid-feedback" *ngIf="!formGroup.get('abreviacion').valid">
+          El campo abreviación es requerido
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for=" nombreId">Nombre</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="nombreId"
+               type="text"
+               required
+               formControlName="nombre"
+               [ngClass]="{'is-invalid': formGroup.get('nombre').touched && !formGroup.get('nombre').valid }"/>
+        <div class="invalid-feedback" *ngIf="!formGroup.get('nombre').valid">
+          El campo nombre es requerido
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-4 col-md-offset-2">
+        <span>
+          <button class="btn btn-primary"
+                  type="submit"
+                  [disabled]="!formGroup.valid">
+            Guardar
+          </button>
+          <button class="btn"
+                  [routerLink]='["/unidades"]'>
+            Cancelar
+          </button>
+        </span>
+      </div>
+    </div>
+  </fieldset>
+</form>
