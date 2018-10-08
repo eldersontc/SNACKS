@@ -15,7 +15,19 @@ export class UnidadesService {
     return this.http.post<IListaRetorno<IUnidad>>(this.apiURL + '/GetUnidades', params);
   }
 
-  createUnidad(params): Observable<boolean> {
+  getUnidad(params): Observable<IUnidad> {
+    return this.http.get<IUnidad>(this.apiURL + '/' + params);
+  }
+
+  createUnidad(params: IUnidad): Observable<boolean> {
     return this.http.post<boolean>(this.apiURL, params);
-  } 
+  }
+
+  updateUnidad(params: IUnidad): Observable<boolean> {
+    return this.http.put<boolean>(this.apiURL + '/' + params.idUnidad, params);
+  }
+
+  deleteUnidad(params): Observable<boolean> {
+    return this.http.delete<boolean>(this.apiURL + '/' + params);
+  }
 }

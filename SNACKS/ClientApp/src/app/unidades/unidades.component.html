@@ -8,8 +8,8 @@
 <div class="form-inline mb-3">
   <div class="input-group col-md-4  mb-2 justify-content-center">
     <select class="custom-select" [(ngModel)]="criterio">
-      <option value="1">Nombre</option>
-      <option value="2">Abreviación</option>
+      <option [ngValue]="1">Nombre</option>
+      <option [ngValue]="2">Abreviación</option>
     </select>
     <input type="text" class="form-control" [(ngModel)]="busqueda">
     <div class="input-group-append">
@@ -19,10 +19,9 @@
     </div>
   </div>
   <div class="btn-group col-md-4  mb-2 justify-content-center">
-    <span class="rounded border border-primary ml-2" *ngFor="let filtro of filtros">
-      {{filtro.v}}
-      <button type="button" class="btn btn-sm btn-link" (click)="quitarFiltro(filtro)">
-        <fa name="times-circle"></fa>
+    <span class="ml-2" *ngFor="let filtro of filtros">
+      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro '{{filtro.v}}'" triggers="mouseenter:mouseleave">
+        {{filtro.v}} <fa name="times-circle"></fa>
       </button>
     </span>
   </div>
@@ -30,28 +29,39 @@
     <button type="button" class="btn btn-primary" [routerLink]='["/unidades-form"]'>
       <fa name="plus-circle"></fa> Nuevo
     </button>
-    <button type="button" class="btn btn-primary">
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/unidades-form/" + seleccion]'>
       <fa name="edit"></fa> Editar
     </button>
-    <button type="button" class="btn btn-primary">
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
       <fa name="trash"></fa> Eliminar
     </button>
   </div>
 </div>
+
 <table class="table table-bordered table-hover table-sm">
   <thead class="thead-light">
     <tr>
+      <th scope="col"></th>
       <th scope="col">Nombre</th>
       <th scope="col">Abreviación</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let unidad of unidades">
+      <td>
+        <div class="custom-control custom-radio text-center">
+          <input type="radio" id="{{unidad.idUnidad}}" name="customRadio" class="custom-control-input" value="{{unidad.idUnidad}}" [(ngModel)]="seleccion">
+          <label class="custom-control-label" for="{{unidad.idUnidad}}">
+            <span class="text-hide">.</span>
+          </label>
+        </div>
+      </td>
       <td>{{unidad.nombre}}</td>
       <td>{{unidad.abreviacion}}</td>
     </tr>
   </tbody>
 </table>
+
 <ngb-pagination class="d-flex justify-content-center"
                 [collectionSize]="totalRegistros"
                 [(page)]="pagina"
@@ -60,3 +70,16 @@
                 [ellipses]="false"
                 [boundaryLinks]="true"
                 (pageChange)="pageChange()"></ngb-pagination>
+
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
+    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
+    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
+  </div>
+</ng-template>

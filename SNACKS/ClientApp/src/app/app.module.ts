@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
-import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbPaginationModule, NgbModalConfig, NgbModal  } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -39,12 +39,17 @@ import { UnidadesFormComponent } from './unidades/unidades-form/unidades-form.co
       { path: 'fetch-data', component: FetchDataComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'unidades', component: UnidadesComponent },
-      { path: 'unidades-form', component: UnidadesFormComponent }
+      { path: 'unidades-form', component: UnidadesFormComponent },
+      { path: 'unidades-form/:id', component: UnidadesFormComponent }
     ]),
     NgbModule,
     NgbPaginationModule
   ],
-  providers: [UnidadesService],
+  providers: [
+    NgbModalConfig,
+    NgbModal,
+    UnidadesService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

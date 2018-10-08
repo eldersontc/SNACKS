@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IUnidad } from './unidad';
 import { UnidadesService } from './unidades.service';
 import { IListaRetorno, Filtro } from '../generico/generico';
-import { forEach } from '@angular/router/src/utils/collection';
+import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-unidades',
@@ -17,8 +17,12 @@ export class UnidadesComponent implements OnInit {
   filtros: Filtro[] = [];
   criterio: number = 1;
   busqueda: string = '';
+  seleccion: number;
 
-  constructor(private unidadService: UnidadesService) { }
+  constructor(private unidadService: UnidadesService, config: NgbModalConfig, private modalService: NgbModal) {
+    config.backdrop = 'static';
+    config.keyboard = false;
+  }
 
   ngOnInit() {
     this.getUnidades();
@@ -40,7 +44,7 @@ export class UnidadesComponent implements OnInit {
   }
 
   pageChange() {
-    console.log(this.pagina);
+    this.seleccion = undefined;
     this.getUnidades();
   }
 
@@ -56,11 +60,27 @@ export class UnidadesComponent implements OnInit {
   quitarCriterio(k: number) {
     this.filtros.forEach((item, index) => {
       if (item.k === k) this.filtros.splice(index, 1);
-    }); 
+    });
+    this.seleccion = undefined;
   }
 
   quitarFiltro(filtro: Filtro) {
     this.quitarCriterio(filtro.k);
+    this.getUnidades();
+  }
+
+  open(content) {
+    this.modalService.open(content, { centered: true, size: 'sm' })
+      .result.then((result) => { if (result == 'Eliminar') { this.deleteUnidad(); } });
+  }
+
+  deleteUnidad() {
+    this.unidadService.deleteUnidad(this.seleccion).subscribe(data => this.onDeleteSuccess(),
+      error => console.log(error));
+  }
+
+  onDeleteSuccess() {
+    this.seleccion = undefined;
     this.getUnidades();
   }
 }
