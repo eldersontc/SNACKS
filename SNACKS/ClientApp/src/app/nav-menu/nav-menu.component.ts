@@ -31,6 +31,7 @@ export class NavMenuComponent {
     {
       nombre: 'Gerencia', icono: 'chart-bar',
       subOpciones: [
+        { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
         { nombre: 'Ususarios', icono: 'user-circle' },
         { nombre: 'Perfiles', icono: 'users-cog' },
         { nombre: 'Reportes', icono: 'chart-pie' }

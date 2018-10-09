@@ -1,0 +1,95 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">Gerencia</li>
+    <li class="breadcrumb-item active" aria-current="page">Personas</li>
+  </ol>
+</nav>
+
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option [ngValue]="1">Tipo</option>
+      <option [ngValue]="2">Nombres</option>
+      <option [ngValue]="3">Apellidos</option>
+      <option [ngValue]="4">Razón Social</option>
+      <option [ngValue]="5">Nro. Documento</option>
+    </select>
+    <input type="text" class="form-control" [(ngModel)]="busqueda" *ngIf="criterio > 1">
+    <select class="custom-select" [(ngModel)]="busquedaCombo" *ngIf="criterio == 1">
+      <option value="1-Gerente">Gerente</option>
+      <option value="2-Cliente">Cliente</option>
+      <option value="3-Vendedor">Vendedor</option>
+      <option value="4-Empleado">Empleado</option>
+    </select>
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" (click)="buscar()">
+        <fa name="search"></fa>
+      </button>
+    </div>
+  </div>
+  <div class="btn-group col-md-4  mb-2 justify-content-center">
+    <span class="ml-2" *ngFor="let filtro of filtros">
+      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro '{{filtro.v}}'" triggers="mouseenter:mouseleave">
+        {{filtro.v}} <fa name="times-circle"></fa>
+      </button>
+    </span>
+  </div>
+  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group">
+    <button type="button" class="btn btn-primary" [routerLink]='["/personas-form"]'>
+      <fa name="plus-circle"></fa> Nuevo
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/personas-form/" + seleccion]'>
+      <fa name="edit"></fa> Editar
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
+      <fa name="trash"></fa> Eliminar
+    </button>
+  </div>
+</div>
+
+<table class="table table-bordered table-hover table-sm">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col"></th>
+      <th scope="col">Nombres y Apellidos / Razón Social</th>
+      <th scope="col">Nro. Documento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let persona of personas">
+      <td>
+        <div class="custom-control custom-radio text-center">
+          <input type="radio" id="{{persona.idPersona}}" name="customRadio" class="custom-control-input" value="{{persona.idPersona}}" [(ngModel)]="seleccion">
+          <label class="custom-control-label" for="{{persona.idPersona}}">
+            <span class="text-hide">.</span>
+          </label>
+        </div>
+      </td>
+      <td *ngIf="persona.tipoPersona == 1">{{persona.nombres + ', ' + persona.apellidos}}</td>
+      <td *ngIf="persona.tipoPersona == 2">{{persona.razonSocial}}</td>
+      <td>{{persona.numeroDocumento}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>
+
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
+    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
+    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
+  </div>
+</ng-template>
