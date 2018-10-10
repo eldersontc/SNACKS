@@ -13,46 +13,57 @@
         </select>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group" [hidden]="f.tipoPersona.value == 2">
       <label class="col-md-2 control-label" for="nombresId">Nombres</label>
       <div class="col-md-8">
         <input class="form-control"
                id="nombresId"
                type="text"
-               required
                formControlName="nombres"
-               [ngClass]="{'is-invalid': formGroup.get('nombres').touched && !formGroup.get('nombres').valid }" />
-        <div class="invalid-feedback" *ngIf="!formGroup.get('nombres').valid">
+               [ngClass]="{'is-invalid': f.nombres.touched && !f.nombres.valid }"
+               [required]="f.tipoPersona.value != 2" />
+        <div class="invalid-feedback" *ngIf="!f.nombres.valid">
           El campo nombres es requerido
         </div>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group" [hidden]="f.tipoPersona.value == 2">
       <label class="col-md-2 control-label" for="apellidosId">Apellidos</label>
       <div class="col-md-8">
         <input class="form-control"
                id="apellidosId"
                type="text"
-               required
                formControlName="apellidos"
-               [ngClass]="{'is-invalid': formGroup.get('apellidos').touched && !formGroup.get('apellidos').valid }" />
-        <div class="invalid-feedback" *ngIf="!formGroup.get('apellidos').valid">
+               [ngClass]="{'is-invalid': f.apellidos.touched && !f.apellidos.valid }"
+               [required]="f.tipoPersona.value != 2" />
+        <div class="invalid-feedback" *ngIf="!f.apellidos.valid">
           El campo apellidos es requerido
         </div>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group" [hidden]="f.tipoPersona.value != 2">
       <label class="col-md-2 control-label" for="razonSocialId">Razón Social</label>
       <div class="col-md-8">
         <input class="form-control"
                id="razonSocialId"
                type="text"
-               required
                formControlName="razonSocial"
-               [ngClass]="{'is-invalid': formGroup.get('razonSocial').touched && !formGroup.get('razonSocial').valid }" />
-        <div class="invalid-feedback" *ngIf="!formGroup.get('razonSocial').valid">
+               [ngClass]="{'is-invalid': f.razonSocial.touched && !f.razonSocial.valid }"
+               [required]="f.tipoPersona.value == 2" />
+        <div class="invalid-feedback" *ngIf="!f.razonSocial.valid">
           El campo razón social es requerido
         </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="tipoId">Tipo Documento</label>
+      <div class="col-md-8">
+        <select id="tipoId" class="custom-select" formControlName="tipoDocumento">
+          <option [ngValue]="1">DNI</option>
+          <option [ngValue]="2">RUC</option>
+          <option [ngValue]="3">CARNET EXTRANJERÍA</option>
+          <option [ngValue]="4">OTROS</option>
+        </select>
       </div>
     </div>
     <div class="form-group">
@@ -63,8 +74,8 @@
                type="text"
                required
                formControlName="numeroDocumento"
-               [ngClass]="{'is-invalid': formGroup.get('numeroDocumento').touched && !formGroup.get('numeroDocumento').valid }" />
-        <div class="invalid-feedback" *ngIf="!formGroup.get('numeroDocumento').valid">
+               [ngClass]="{'is-invalid': f.numeroDocumento.touched && !f.numeroDocumento.valid }" />
+        <div class="invalid-feedback" *ngIf="!f.numeroDocumento.valid">
           El campo nro. documento es requerido
         </div>
       </div>
@@ -77,8 +88,8 @@
                type="text"
                required
                formControlName="direccion"
-               [ngClass]="{'is-invalid': formGroup.get('direccion').touched && !formGroup.get('direccion').valid }" />
-        <div class="invalid-feedback" *ngIf="!formGroup.get('direccion').valid">
+               [ngClass]="{'is-invalid': f.direccion.touched && !f.direccion.valid }" />
+        <div class="invalid-feedback" *ngIf="!f.direccion.valid">
           El campo dirección es requerido
         </div>
       </div>

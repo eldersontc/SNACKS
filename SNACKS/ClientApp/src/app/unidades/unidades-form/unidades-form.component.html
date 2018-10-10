@@ -10,8 +10,8 @@
                type="text"
                required
                formControlName="abreviacion"
-               [ngClass]="{'is-invalid': formGroup.get('abreviacion').touched && !formGroup.get('abreviacion').valid }"/>
-        <div class="invalid-feedback" *ngIf="!formGroup.get('abreviacion').valid">
+               [ngClass]="{'is-invalid': f.abreviacion.touched && !f.abreviacion.valid }"/>
+        <div class="invalid-feedback" *ngIf="!f.abreviacion.valid">
           El campo abreviación es requerido
         </div>
       </div>
@@ -24,8 +24,8 @@
                type="text"
                required
                formControlName="nombre"
-               [ngClass]="{'is-invalid': formGroup.get('nombre').touched && !formGroup.get('nombre').valid }"/>
-        <div class="invalid-feedback" *ngIf="!formGroup.get('nombre').valid">
+               [ngClass]="{'is-invalid': f.nombre.touched && !f.nombre.valid }"/>
+        <div class="invalid-feedback" *ngIf="!f.nombre.valid">
           El campo nombre es requerido
         </div>
       </div>

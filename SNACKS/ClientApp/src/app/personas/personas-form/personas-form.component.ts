@@ -26,6 +26,7 @@ export class PersonasFormComponent implements OnInit {
       nombres: '',
       apellidos: '',
       razonSocial: '',
+      tipoDocumento: 1,
       numeroDocumento: '',
       direccion: ''
     });
@@ -40,6 +41,8 @@ export class PersonasFormComponent implements OnInit {
     });
   }
 
+  get f() { return this.formGroup.controls; }
+
   cargarFormulario(persona: IPersona) {
     this.formGroup.patchValue({
       idPersona: persona.idPersona,
@@ -47,6 +50,7 @@ export class PersonasFormComponent implements OnInit {
       nombres: persona.nombres,
       apellidos: persona.apellidos,
       razonSocial: persona.razonSocial,
+      tipoDocumento: persona.tipoDocumento,
       numeroDocumento: persona.numeroDocumento,
       direccion: persona.direccion
     });

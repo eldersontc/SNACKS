@@ -36,6 +36,8 @@ export class UnidadesFormComponent implements OnInit {
     });
   }
 
+  get f() { return this.formGroup.controls; }
+
   cargarFormulario(unidad: IUnidad) {
     this.formGroup.patchValue({
       idUnidad: unidad.idUnidad,

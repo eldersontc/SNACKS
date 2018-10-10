@@ -4,7 +4,7 @@ export interface IPersona {
   nombres: string;
   apellidos: string;
   razonSocial: string;
-  tipoDocumento: string;
+  tipoDocumento: number;
   numeroDocumento: string;
   direccion: string;
 }
