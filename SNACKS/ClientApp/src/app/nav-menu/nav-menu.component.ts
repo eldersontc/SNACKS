@@ -22,7 +22,7 @@ export class NavMenuComponent {
       nombre: 'Producción', icono: 'industry',
       subOpciones: [
         { nombre: 'Unidades', icono: 'archive', link: 'unidades' },
-        { nombre: 'Productos', icono: 'archive' },
+        { nombre: 'Productos', icono: 'archive', link: 'productos' },
         { nombre: 'Ingresos', icono: 'file-import' },
         { nombre: 'Salidas', icono: 'file-export' },
         { nombre: 'Gastos', icono: 'file-invoice-dollar' }

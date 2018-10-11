@@ -39,6 +39,9 @@ namespace SNACKS.Controllers
                     case Constantes.Uno:
                         filtros.Add(x => x.Nombre.Contains(filtro.V));
                         break;
+                    case Constantes.Dos:
+                        filtros.Add(x => x.EsInsumo == filtro.B);
+                        break;
                 }
             }
 

@@ -1,0 +1,100 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">Producción</li>
+    <li class="breadcrumb-item active" aria-current="page">Productos</li>
+  </ol>
+</nav>
+
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option [ngValue]="1">Nombre</option>
+      <option [ngValue]="2">Es Insumo</option>
+    </select>
+    <input type="text" class="form-control" *ngIf="criterio == 1" [(ngModel)]="busqueda">
+    <div class="ml-5 mr-5 mt-2" *ngIf="criterio == 2">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="ckEsInsumo" [(ngModel)]="criterioCk">
+        <label class="custom-control-label" for="ckEsInsumo">
+          <span class="text-hide">.</span>
+        </label>
+      </div>
+    </div>
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" (click)="buscar()">
+        <fa name="search"></fa>
+      </button>
+    </div>
+  </div>
+  <div class="btn-group col-md-4  mb-2 justify-content-center">
+    <span class="ml-2" *ngFor="let filtro of filtros">
+      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro '{{filtro.v}}'" triggers="mouseenter:mouseleave">
+        {{filtro.v}} <fa name="times-circle"></fa>
+      </button>
+    </span>
+  </div>
+  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group">
+    <button type="button" class="btn btn-primary" [routerLink]='["/productos-form"]'>
+      <fa name="plus-circle"></fa> Nuevo
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/productos-form/" + seleccion]'>
+      <fa name="edit"></fa> Editar
+    </button>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
+      <fa name="trash"></fa> Eliminar
+    </button>
+  </div>
+</div>
+
+<table class="table table-bordered table-hover table-sm">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col"></th>
+      <th scope="col">Nombre</th>
+      <th scope="col" class="text-center">Es Insumo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of productos; let idx = index">
+      <td>
+        <div class="custom-control custom-radio text-center">
+          <input type="radio" [id]="idx" name="customRadio" class="custom-control-input" [value]="p.idProducto" [(ngModel)]="seleccion">
+          <label class="custom-control-label" [for]="idx">
+            <span class="text-hide">.</span>
+          </label>
+        </div>
+      </td>
+      <td>{{p.nombre}}</td>
+      <td>
+        <div class="custom-control custom-checkbox text-center">
+          <input type="checkbox" class="custom-control-input" [id]="idx" [checked]="p.esInsumo" disabled>
+          <label class="custom-control-label" [for]="idx">
+            <span class="text-hide">.</span>
+          </label>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>
+
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
+    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
+    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
+  </div>
+</ng-template>

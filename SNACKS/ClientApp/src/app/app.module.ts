@@ -18,6 +18,9 @@ import { UnidadesFormComponent } from './unidades/unidades-form/unidades-form.co
 import { PersonasComponent } from './personas/personas.component';
 import { PersonasFormComponent } from './personas/personas-form/personas-form.component';
 import { PersonasService } from './personas/personas.service';
+import { ProductosComponent } from './productos/productos.component';
+import { ProductosFormComponent } from './productos/productos-form/productos-form.component';
+import { ProductosService } from './productos/productos.service';
 
 @NgModule({
   declarations: [
@@ -30,7 +33,9 @@ import { PersonasService } from './personas/personas.service';
     UnidadesComponent,
     UnidadesFormComponent,
     PersonasComponent,
-    PersonasFormComponent
+    PersonasFormComponent,
+    ProductosComponent,
+    ProductosFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -48,7 +53,10 @@ import { PersonasService } from './personas/personas.service';
       { path: 'unidades-form/:id', component: UnidadesFormComponent },
       { path: 'personas', component: PersonasComponent },
       { path: 'personas-form', component: PersonasFormComponent },
-      { path: 'personas-form/:id', component: PersonasFormComponent }
+      { path: 'personas-form/:id', component: PersonasFormComponent },
+      { path: 'productos', component: ProductosComponent },
+      { path: 'productos-form', component: ProductosFormComponent },
+      { path: 'productos-form/:id', component: ProductosFormComponent }
     ]),
     NgbModule,
     NgbPaginationModule
@@ -57,7 +65,8 @@ import { PersonasService } from './personas/personas.service';
     NgbModalConfig,
     NgbModal,
     UnidadesService,
-    PersonasService
+    PersonasService,
+    ProductosService
   ],
   bootstrap: [AppComponent]
 })

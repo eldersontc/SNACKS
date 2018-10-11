@@ -8,6 +8,7 @@ export class Filtro {
     public k: number,
     public v: string,
     public n: number = 1,
-    public d: string = '01/01/2019'
+    public d: string = '01/01/2019',
+    public b: boolean = false
   ) { }
 }

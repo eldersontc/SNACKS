@@ -1,0 +1,37 @@
+<h1>{{(modoEdicion) ? 'Editar' : 'Agregar'}} Producto</h1>
+<form class="form-horizontal" novalidate
+      (ngSubmit)="save()" [formGroup]="formGroup">
+  <fieldset>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="nombreId">Nombre</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="nombreId"
+               type="text"
+               required
+               formControlName="nombre"
+               [ngClass]="{'is-invalid': f.nombre.touched && !f.nombre.valid }" />
+        <div class="invalid-feedback" *ngIf="!f.nombre.valid">
+          El campo nombre es requerido
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="custom-control custom-checkbox mt-3">
+          <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
+          <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary ml-3"
+              type="submit"
+              [disabled]="!formGroup.valid">
+        <fa name="save"></fa> Guardar
+      </button>
+      <button class="btn ml-2"
+              [routerLink]='["/productos"]'>
+        Cancelar
+      </button>
+    </div>
+  </fieldset>
+</form>

@@ -18,6 +18,7 @@ namespace SNACKS.Models
         public string V { get; set; }
         public int N { get; set; }
         public DateTime D { get; set; }
+        public bool B { get; set; }
     }
 
     public class ListaRetorno<T>
