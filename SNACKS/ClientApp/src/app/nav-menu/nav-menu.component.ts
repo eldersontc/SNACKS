@@ -7,7 +7,9 @@ import { Component } from '@angular/core';
 })
 export class NavMenuComponent {
 
-  logueado = 'Elderson Taboada';
+  logueado: string = 'Elderson Taboada';
+  opcion: object;
+  subOpcion: object;
 
   opciones: Object[] = [
     {
@@ -38,5 +40,10 @@ export class NavMenuComponent {
       ]
     }
   ];
+
+  seleccion(opcion, subOpcion) {
+    this.opcion = opcion;
+    this.subOpcion = subOpcion;
+  }
 
 }

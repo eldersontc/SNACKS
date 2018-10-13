@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IPersona } from './persona';
 import { Filtro, IListaRetorno } from '../generico/generico';
 import { PersonasService } from './personas.service';
@@ -11,6 +11,9 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class PersonasComponent implements OnInit {
 
+  @Input() params: Filtro;
+  @Output() model = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   personas: IPersona[];
@@ -18,7 +21,7 @@ export class PersonasComponent implements OnInit {
   criterio: number = 1;
   busqueda: string = '';
   busquedaCombo: string = '1-Gerente';
-  seleccion: number;
+  seleccion: IPersona;
 
   constructor(private personaService: PersonasService, config: NgbModalConfig, private modalService: NgbModal) {
     config.backdrop = 'static';
@@ -26,6 +29,10 @@ export class PersonasComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.params) {
+      this.criterio = 2;
+      this.filtros.push(this.params);
+    }
     this.getPersonas();
   }
 
@@ -83,12 +90,20 @@ export class PersonasComponent implements OnInit {
   }
 
   deletePersona() {
-    this.personaService.deletePersona(this.seleccion).subscribe(data => this.onDeleteSuccess(),
+    this.personaService.deletePersona(this.seleccion.idPersona).subscribe(data => this.onDeleteSuccess(),
       error => console.log(error));
   }
 
   onDeleteSuccess() {
     this.seleccion = undefined;
     this.getPersonas();
+  }
+
+  elegir() {
+    this.model.emit(this.seleccion);
+  }
+
+  cancelar() {
+    this.model.emit();
   }
 }

@@ -31,14 +31,34 @@ namespace SNACKS.Data
             return true;
         }
 
-        public async Task<T> ObtenerAsync(int Id)
+        public async Task<T> ObtenerAsync(int Id, List<string> Includes = null)
         {
-            return await Context.Set<T>().FindAsync(Id);
+            var Key = Context.Model.FindEntityType(typeof(T)).FindPrimaryKey().Properties[0];
+
+            IQueryable<T> Query = Context.Set<T>();
+
+            if (Includes != null)
+            {
+                foreach (var Include in Includes)
+                {
+                    Query = Query.Include(Include);
+                }
+            }
+
+            return await Query.FirstOrDefaultAsync(e => EF.Property<int>(e, Key.Name) == Id);
         }
 
-        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros)
+        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, List<string> Includes = null)
         {
             IQueryable<T> Query = Context.Set<T>();
+
+            if(Includes != null)
+            {
+                foreach (var Include in Includes)
+                {
+                    Query = Query.Include(Include);
+                }
+            }
 
             foreach (var Expresion in Filtros)
             {
@@ -49,10 +69,12 @@ namespace SNACKS.Data
                                     .Take(Paginacion.Registros)
                                     .ToListAsync();
 
+            var TotalRegistros = await Query.CountAsync();
+
             return new ListaRetorno<T>
             {
                 Lista = Lista,
-                TotalRegistros = Query.Count()
+                TotalRegistros = TotalRegistros
             };
         }
 

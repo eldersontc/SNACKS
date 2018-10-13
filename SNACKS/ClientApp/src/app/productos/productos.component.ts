@@ -59,7 +59,7 @@ export class ProductosComponent implements OnInit {
       }
     } else {
       this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, 'Es Insumo : ' + ((this.criterioCk) ? 'Si' : 'No'), 0, '01/01/2019', this.criterioCk));
+      this.filtros.push(new Filtro(this.criterio, 'Es Insumo : ' + ((this.criterioCk) ? 'Si' : 'No'), 0, new Date(), this.criterioCk));
       this.getProductos();
     }
   }

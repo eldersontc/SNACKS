@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\app\generico\generico.ts" />
+    <None Remove="ClientApp\src\app\pedidos\pedido.ts" />
     <None Remove="ClientApp\src\app\personas\persona.ts" />
     <None Remove="ClientApp\src\app\productos\producto.ts" />
     <None Remove="ClientApp\src\app\unidades\unidad.ts" />
@@ -33,6 +34,7 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\app\generico\generico.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\pedidos\pedido.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\personas\persona.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\productos\producto.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\unidades\unidad.ts" />

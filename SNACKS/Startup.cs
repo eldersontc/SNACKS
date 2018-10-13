@@ -33,14 +33,21 @@ namespace SNACKS
             services.AddScoped<IRepositorioBase<Persona>, RepositorioBase<Persona>>();
             services.AddScoped<IRepositorioBase<Unidad>, RepositorioBase<Unidad>>();
             services.AddScoped<IRepositorioBase<Producto>, RepositorioBase<Producto>>();
+            services.AddScoped<IRepositorioBase<Pedido>, RepositorioBase<Pedido>>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().AddJsonOptions(configureJson);
 
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+        }
+
+        public void configureJson(MvcJsonOptions obj)
+        {
+            obj.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

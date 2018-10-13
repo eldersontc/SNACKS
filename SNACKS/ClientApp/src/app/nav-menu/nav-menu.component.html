@@ -12,7 +12,7 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <div *ngFor="let subOpcion of opcion.subOpciones">
-            <a class="dropdown-item" [routerLink]='subOpcion.link'>
+            <a class="dropdown-item" [routerLink]='subOpcion.link' (click)="seleccion(opcion, subOpcion)">
               <fa name="{{subOpcion.icono}}"></fa> {{subOpcion.nombre}}
             </a>
           </div>
@@ -33,3 +33,14 @@
     </ul>
   </div>
 </nav>
+<br />
+<!--<div class='container-fluid'>
+  <br />
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">{{opcion.nombre}}</li>
+      <li class="breadcrumb-item active" aria-current="page">{{subOpcion.nombre}}</li>
+    </ol>
+  </nav>
+</div>-->
+
