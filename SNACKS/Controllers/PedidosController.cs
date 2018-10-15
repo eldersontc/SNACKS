@@ -44,9 +44,7 @@ namespace SNACKS.Controllers
                 }
             }
 
-            var includes = new List<string>() { Constantes.Cliente };
-
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, includes);
+            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Cliente });
 
             return Ok(result);
         }
@@ -59,9 +57,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var includes = new List<string>() { Constantes.Cliente };
-
-            var pedido = await Repositorio.ObtenerAsync(id, includes);
+            var pedido = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Cliente });
 
             if (pedido == null)
             {
@@ -86,11 +82,11 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(pedido);
+                await Repositorio.ActualizarAsync(pedido, new object[] { pedido.Cliente });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -106,11 +102,12 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.RegistrarAsync(pedido);
+                pedido.FechaCreacion = DateTime.Now;
+                await Repositorio.RegistrarAsync(pedido, new object[] { pedido.Cliente });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -132,11 +129,11 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.EliminarAsync(pedido);
+                await Repositorio.EliminarAsync(new Pedido[] { pedido });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);

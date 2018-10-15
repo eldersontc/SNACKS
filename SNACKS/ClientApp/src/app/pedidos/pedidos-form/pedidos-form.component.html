@@ -1,3 +1,78 @@
-<p>
-  pedidos-form works!
-</p>
+<div *ngIf="elegirCliente">
+  <app-personas [params]="filtroCliente" (model)="asignarCliente($event)"></app-personas>
+</div>
+<div [hidden]="elegirCliente">
+  <ngb-tabset>
+    <ngb-tab>
+      <ng-template ngbTabTitle><b>Pedido</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              (ngSubmit)="save()" [formGroup]="formGroup">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="nroId">Nro. Pedido</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="nroId"
+                       type="text"
+                       [readonly]="true"
+                       formControlName="idPedido" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="fechaId">Fecha Creación</label>
+              <div class="col-md-8">
+                <input class="form-control" placeholder="dd/MM/yyyy"
+                       name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+              </div>
+            </div>
+            <div class="form-group" formGroupName="cliente">
+              <label class="col-md-2 control-label" for="clienteId">Cliente</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="clienteId"
+                         type="text"
+                         required
+                         formControlName="razonSocial"
+                         [readonly]="true" />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" (click)="buscarCliente()">
+                      <fa name="search"></fa>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-primary ml-3"
+                      type="submit"
+                      [disabled]="!formGroup.valid">
+                <fa name="save"></fa> Guardar
+              </button>
+              <button class="btn ml-2"
+                      [routerLink]='["/pedidos"]'>
+                Cancelar
+              </button>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><b>Items</b></ng-template>
+      <ng-template ngbTabContent>
+        Food truck fixie locavore, accusamus mcsweeney's marfa nulla single-origin coffee squid.
+        <p>
+          Exercitation +1 labore velit, blog sartorial PBR leggings next level wes anderson artisan four loko farm-to-table
+          craft beer twee. Qui photo booth letterpress, commodo enim craft beer mlkshk aliquip jean shorts ullamco ad vinyl
+          cillum PBR. Homo nostrud organic, assumenda labore aesthetic magna delectus mollit. Keytar helvetica VHS salvia
+          yr, vero magna velit sapiente labore stumptown. Vegan fanny pack odio cillum wes anderson 8-bit, sustainable jean
+          shorts beard ut DIY ethical culpa terry richardson biodiesel. Art party scenester stumptown, tumblr butcher vero
+          sint qui sapiente accusamus tattooed echo park.
+        </p>
+      </ng-template>
+    </ngb-tab>
+  </ngb-tabset>
+</div>

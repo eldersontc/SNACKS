@@ -1,6 +1,5 @@
-<h1>{{(modoEdicion) ? 'Editar' : 'Agregar'}} Persona</h1>
 <form class="form-horizontal" novalidate
-      (ngSubmit)="save()" [formGroup]="formGroup">
+      (ngSubmit)="save()" [formGroup]="form">
   <fieldset>
     <div class="form-group">
       <label class="col-md-2 control-label" for="tipoId">Tipo</label>
@@ -13,46 +12,31 @@
         </select>
       </div>
     </div>
-    <div class="form-group" [hidden]="f.tipoPersona.value == 2">
+    <div class="form-group" [hidden]="form.controls.tipoPersona.value == 2">
       <label class="col-md-2 control-label" for="nombresId">Nombres</label>
       <div class="col-md-8">
         <input class="form-control"
                id="nombresId"
-               type="text"
                formControlName="nombres"
-               [ngClass]="{'is-invalid': f.nombres.touched && !f.nombres.valid }"
-               [required]="f.tipoPersona.value != 2" />
-        <div class="invalid-feedback" *ngIf="!f.nombres.valid">
-          El campo nombres es requerido
-        </div>
+               [required]="form.controls.tipoPersona.value != 2" />
       </div>
     </div>
-    <div class="form-group" [hidden]="f.tipoPersona.value == 2">
+    <div class="form-group" [hidden]="form.controls.tipoPersona.value == 2">
       <label class="col-md-2 control-label" for="apellidosId">Apellidos</label>
       <div class="col-md-8">
         <input class="form-control"
                id="apellidosId"
-               type="text"
                formControlName="apellidos"
-               [ngClass]="{'is-invalid': f.apellidos.touched && !f.apellidos.valid }"
-               [required]="f.tipoPersona.value != 2" />
-        <div class="invalid-feedback" *ngIf="!f.apellidos.valid">
-          El campo apellidos es requerido
-        </div>
+               [required]="form.controls.tipoPersona.value != 2" />
       </div>
     </div>
-    <div class="form-group" [hidden]="f.tipoPersona.value != 2">
+    <div class="form-group" [hidden]="form.controls.tipoPersona.value != 2">
       <label class="col-md-2 control-label" for="razonSocialId">Razón Social</label>
       <div class="col-md-8">
         <input class="form-control"
                id="razonSocialId"
-               type="text"
                formControlName="razonSocial"
-               [ngClass]="{'is-invalid': f.razonSocial.touched && !f.razonSocial.valid }"
-               [required]="f.tipoPersona.value == 2" />
-        <div class="invalid-feedback" *ngIf="!f.razonSocial.valid">
-          El campo razón social es requerido
-        </div>
+               [required]="form.controls.tipoPersona.value == 2" />
       </div>
     </div>
     <div class="form-group">
@@ -71,13 +55,8 @@
       <div class="col-md-8">
         <input class="form-control"
                id="numeroDocumentoId"
-               type="text"
-               required
                formControlName="numeroDocumento"
-               [ngClass]="{'is-invalid': f.numeroDocumento.touched && !f.numeroDocumento.valid }" />
-        <div class="invalid-feedback" *ngIf="!f.numeroDocumento.valid">
-          El campo nro. documento es requerido
-        </div>
+               required />
       </div>
     </div>
     <div class="form-group">
@@ -85,24 +64,19 @@
       <div class="col-md-8">
         <input class="form-control"
                id="direccionId"
-               type="text"
-               required
                formControlName="direccion"
-               [ngClass]="{'is-invalid': f.direccion.touched && !f.direccion.valid }" />
-        <div class="invalid-feedback" *ngIf="!f.direccion.valid">
-          El campo dirección es requerido
-        </div>
+               required />
       </div>
     </div>
     <div class="form-group">
       <button class="btn btn-primary ml-3"
               type="submit"
-              [disabled]="!formGroup.valid">
+              [disabled]="!form.valid">
         <fa name="save"></fa> Guardar
       </button>
-      <button class="btn ml-2"
+      <button class="btn btn-outline-secondary ml-2"
               [routerLink]='["/personas"]'>
-        Cancelar
+        <fa name="times-circle"></fa> Cancelar
       </button>
     </div>
   </fieldset>

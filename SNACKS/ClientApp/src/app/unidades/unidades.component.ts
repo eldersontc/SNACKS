@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { IUnidad } from './unidad';
 import { UnidadesService } from './unidades.service';
 import { IListaRetorno, Filtro } from '../generico/generico';
@@ -11,13 +11,16 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class UnidadesComponent implements OnInit {
 
+  @Input() modo: number;
+  @Output() model = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   unidades: IUnidad[];
   filtros: Filtro[] = [];
   criterio: number = 1;
   busqueda: string = '';
-  seleccion: number;
+  seleccion: IUnidad;
 
   constructor(private unidadService: UnidadesService, config: NgbModalConfig, private modalService: NgbModal) {
     config.backdrop = 'static';
@@ -75,12 +78,20 @@ export class UnidadesComponent implements OnInit {
   }
 
   deleteUnidad() {
-    this.unidadService.deleteUnidad(this.seleccion).subscribe(data => this.onDeleteSuccess(),
+    this.unidadService.deleteUnidad(this.seleccion.idUnidad).subscribe(data => this.onDeleteSuccess(),
       error => console.log(error));
   }
 
   onDeleteSuccess() {
     this.seleccion = undefined;
     this.getUnidades();
+  }
+
+  elegir() {
+    this.model.emit(this.seleccion);
+  }
+
+  cancelar() {
+    this.model.emit();
   }
 }

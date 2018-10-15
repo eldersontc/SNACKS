@@ -18,6 +18,7 @@ namespace SNACKS.Data
         public DbSet<Persona> Persona { get; set; }
         public DbSet<Unidad> Unidad { get; set; }
         public DbSet<Producto> Producto { get; set; }
+        public DbSet<ItemProducto> ItemProducto { get; set; }
         public DbSet<Pedido> Pedido { get; set; }
     }
 }

@@ -17,21 +17,28 @@ namespace SNACKS.Data
             this.Context = Context;
         }
 
-        public async Task<bool> ActualizarAsync(T Entidad)
+        public async Task<bool> ActualizarAsync(T Entidad, object[] Referencias = null)
         {
+            if (Referencias != null)
+            {
+                foreach (object Referencia in Referencias)
+                {
+                    Context.Entry(Referencia).State = EntityState.Unchanged;
+                }
+            }
             Context.Entry(Entidad).State = EntityState.Modified;
             await Context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> EliminarAsync(T Entidad)
+        public async Task<bool> EliminarAsync(T[] Entidad)
         {
-            Context.Set<T>().Remove(Entidad);
+            Context.Set<T>().RemoveRange(Entidad);
             await Context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<T> ObtenerAsync(int Id, List<string> Includes = null)
+        public async Task<T> ObtenerAsync(int Id, string[] Includes = null)
         {
             var Key = Context.Model.FindEntityType(typeof(T)).FindPrimaryKey().Properties[0];
 
@@ -48,7 +55,7 @@ namespace SNACKS.Data
             return await Query.FirstOrDefaultAsync(e => EF.Property<int>(e, Key.Name) == Id);
         }
 
-        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, List<string> Includes = null)
+        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null)
         {
             IQueryable<T> Query = Context.Set<T>();
 
@@ -78,8 +85,15 @@ namespace SNACKS.Data
             };
         }
 
-        public async Task<bool> RegistrarAsync(T Entidad)
+        public async Task<bool> RegistrarAsync(T Entidad, object[] Referencias = null)
         {
+            if(Referencias != null)
+            {
+                foreach (object Referencia in Referencias)
+                {
+                    Context.Entry(Referencia).State = EntityState.Unchanged;
+                }
+            }
             Context.Set<T>().Add(Entidad);
             await Context.SaveChangesAsync();
             return true;

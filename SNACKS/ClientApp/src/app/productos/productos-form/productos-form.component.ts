@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ProductosService } from '../productos.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IProducto } from '../producto';
+import { IProducto, IItemProducto } from '../producto';
+import { IUnidad } from '../../unidades/unidad';
 
 @Component({
   selector: 'app-productos-form',
@@ -17,43 +18,64 @@ export class ProductosFormComponent implements OnInit {
     private activatedRoute: ActivatedRoute) { }
 
   modoEdicion: boolean;
-  formGroup: FormGroup;
+  elegirUnidad: boolean = false;
+  form: FormGroup;
+  formItem: FormGroup;
+
+  pasos: object[] =
+    [
+      { p: 1, titulo: 'Paso 1' },
+      { p: 2, titulo: 'Paso 2' },
+      { p: 3, titulo: 'Paso 3' }
+    ];
+  pasoActivo: number = 1;
+
+  items: IItemProducto[] = [];
 
   ngOnInit() {
-    this.formGroup = this.fb.group({
+    this.form = this.fb.group({
       idProducto: 0,
       nombre: '',
       esInsumo: false
+    });
+    this.formItem = this.fb.group({
+      unidad: this.fb.group({
+        idUnidad: 0,
+        nombre: ''
+      }),
+      factor: ''
     });
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
         return;
       } else {
         this.modoEdicion = true;
-        this.productoService.getProducto(params["id"]).subscribe(producto => this.cargarFormulario(producto),
+        this.productoService.getProducto(params["id"])
+          .subscribe(producto => this.cargarFormulario(producto),
           error => console.error(error));
       }
     });
   }
 
-  get f() { return this.formGroup.controls; }
-
   cargarFormulario(producto: IProducto) {
-    this.formGroup.patchValue({
+    this.form.patchValue({
       idProducto: producto.idProducto,
       nombre: producto.nombre,
       esInsumo: producto.esInsumo
     });
+    this.items = producto.items;
   }
 
   save() {
-    let producto: IProducto = Object.assign({}, this.formGroup.value);
+    let producto: IProducto = Object.assign({}, this.form.value);
 
     if (this.modoEdicion) {
+      producto.items = this.items;
       this.productoService.updateProducto(producto)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
+      producto.items = this.items;
       this.productoService.createProducto(producto)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -62,5 +84,64 @@ export class ProductosFormComponent implements OnInit {
 
   onSaveSuccess() {
     this.router.navigate(["/productos"]);
+  }
+
+  saveItem() {
+    let i: IItemProducto = Object.assign({}, this.formItem.value);
+    
+    if (this.modoEdicion) {
+
+      let producto: IProducto = Object.assign({}, this.form.value);
+      i.producto = producto;
+
+      this.productoService.createItem(i)
+        .subscribe(data => this.onSaveItemSuccess(i),
+        error => console.error(error));
+
+    } else {
+      this.onSaveItemSuccess(i);
+    }
+  }
+
+  onSaveItemSuccess(i) {
+    this.items.push(i);
+    this.formItem.reset();
+  }
+
+  deleteItem(i: IItemProducto) {
+    if (this.modoEdicion) {
+      this.productoService.deleteItem(i.idItemProducto)
+        .subscribe(data => this.onDeleteItemSuccess(i),
+        error => console.log(error));
+    } else {
+      this.onDeleteItemSuccess(i);
+    }
+  }
+
+  onDeleteItemSuccess(i: IItemProducto) {
+    this.items.forEach((item, index) => {
+      if (item.idItemProducto === i.idItemProducto) this.items.splice(index, 1);
+    });
+  }
+
+  siguiente() {
+    this.pasoActivo = this.pasoActivo + 1;
+  }
+
+  anterior() {
+    this.pasoActivo = this.pasoActivo - 1;
+  }
+
+  buscarUnidad() {
+    this.elegirUnidad = true;
+  }
+
+  asignarUnidad(event: IUnidad) {
+    this.elegirUnidad = false;
+    if (event) {
+      this.formItem.patchValue({
+        unidad: event
+      });
+    }
   }
 }

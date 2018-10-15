@@ -17,10 +17,10 @@ export class PersonasFormComponent implements OnInit {
     private activatedRoute: ActivatedRoute) { }
 
   modoEdicion: boolean;
-  formGroup: FormGroup;
+  form: FormGroup;
 
   ngOnInit() {
-    this.formGroup = this.fb.group({
+    this.form = this.fb.group({
       idPersona: 0,
       tipoPersona: 1,
       nombres: '',
@@ -41,10 +41,8 @@ export class PersonasFormComponent implements OnInit {
     });
   }
 
-  get f() { return this.formGroup.controls; }
-
   cargarFormulario(persona: IPersona) {
-    this.formGroup.patchValue({
+    this.form.patchValue({
       idPersona: persona.idPersona,
       tipoPersona: persona.tipoPersona,
       nombres: persona.nombres,
@@ -57,7 +55,7 @@ export class PersonasFormComponent implements OnInit {
   }
 
   save() {
-    let persona: IPersona = Object.assign({}, this.formGroup.value);
+    let persona: IPersona = Object.assign({}, this.form.value);
 
     if (this.modoEdicion) {
       this.personaService.updatePersona(persona)

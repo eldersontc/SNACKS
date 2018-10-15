@@ -34,6 +34,7 @@ namespace SNACKS
             services.AddScoped<IRepositorioBase<Unidad>, RepositorioBase<Unidad>>();
             services.AddScoped<IRepositorioBase<Producto>, RepositorioBase<Producto>>();
             services.AddScoped<IRepositorioBase<Pedido>, RepositorioBase<Pedido>>();
+            services.AddScoped<IRepositorioBase<ItemProducto>, RepositorioBase<ItemProducto>>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddMvc().AddJsonOptions(configureJson);

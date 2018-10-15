@@ -9,10 +9,10 @@ namespace SNACKS.Data
 {
     public interface IRepositorioBase<T> where T : class
     {
-        Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, List<string> Includes = null);
-        Task<T> ObtenerAsync(int Id, List<string> Includes = null);
-        Task<bool> RegistrarAsync(T Entidad);
-        Task<bool> ActualizarAsync(T Entidad);
-        Task<bool> EliminarAsync(T Entidad);
+        Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null);
+        Task<T> ObtenerAsync(int Id, string[] Includes = null);
+        Task<bool> RegistrarAsync(T Entidad, object[] Referencias = null);
+        Task<bool> ActualizarAsync(T Entidad, object[] Referencias = null);
+        Task<bool> EliminarAsync(T[] Entidad);
     }
 }

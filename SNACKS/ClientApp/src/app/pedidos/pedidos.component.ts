@@ -21,7 +21,7 @@ export class PedidosComponent implements OnInit {
   filtros: Filtro[] = [];
   criterio: number = 1;
   busqueda: Date;
-  seleccion: number;
+  seleccion: IPedido;
 
   constructor(private pedidoService: PedidosService, config: NgbModalConfig, private modalService: NgbModal) {
     config.backdrop = 'static';
@@ -91,7 +91,7 @@ export class PedidosComponent implements OnInit {
   }
 
   deletePedido() {
-    this.pedidoService.deletePedido(this.seleccion).subscribe(data => this.onDeleteSuccess(),
+    this.pedidoService.deletePedido(this.seleccion.idPedido).subscribe(data => this.onDeleteSuccess(),
       error => console.log(error));
   }
 

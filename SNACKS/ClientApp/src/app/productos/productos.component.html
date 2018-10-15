@@ -21,7 +21,7 @@
   </div>
   <div class="btn-group col-md-4  mb-2 justify-content-center">
     <span class="ml-2" *ngFor="let filtro of filtros">
-      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro '{{filtro.v}}'" triggers="mouseenter:mouseleave">
+      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro" triggers="mouseenter:mouseleave">
         {{filtro.v}} <fa name="times-circle"></fa>
       </button>
     </span>

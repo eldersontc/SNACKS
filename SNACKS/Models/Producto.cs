@@ -13,5 +13,6 @@ namespace SNACKS.Models
         public string Nombre { get; set; }
         public bool EsInsumo { get; set; }
         public List<ItemPedido> ItemsPedido { get; set; }
+        public List<ItemProducto> Items { get; set; }
     }
 }

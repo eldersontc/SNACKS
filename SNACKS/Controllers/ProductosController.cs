@@ -16,10 +16,13 @@ namespace SNACKS.Controllers
     public class ProductosController : ControllerBase
     {
         public IRepositorioBase<Producto> Repositorio { get; }
+        public IRepositorioBase<ItemProducto> RepositorioItem { get; }
 
-        public ProductosController(IRepositorioBase<Producto> repositorio)
+        public ProductosController(IRepositorioBase<Producto> repositorio, 
+            IRepositorioBase<ItemProducto> repositorioItem)
         {
             Repositorio = repositorio;
+            RepositorioItem = repositorioItem;
         }
 
         [HttpPost("GetProductos")]
@@ -58,7 +61,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var producto = await Repositorio.ObtenerAsync(id);
+            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items + '.' + Constantes.Unidad });
 
             if (producto == null)
             {
@@ -85,9 +88,9 @@ namespace SNACKS.Controllers
             {
                 await Repositorio.ActualizarAsync(producto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -103,11 +106,16 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.RegistrarAsync(producto);
+                List<object> referencias = new List<object>();
+                foreach (var item in producto.Items)
+                {
+                    referencias.Add(item.Unidad);
+                }
+                await Repositorio.RegistrarAsync(producto, referencias.ToArray());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -121,7 +129,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var producto = await Repositorio.ObtenerAsync(id);
+            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
             if (producto == null)
             {
                 return NotFound();
@@ -129,11 +137,58 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.EliminarAsync(producto);
+                await RepositorioItem.EliminarAsync(producto.Items.ToArray());
+                await Repositorio.EliminarAsync(new Producto[] { producto });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok(true);
+        }
+
+        [HttpPost("AddItem")]
+        public async Task<IActionResult> PostItem([FromBody] ItemProducto item)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await RepositorioItem.RegistrarAsync(item, new object[] { item.Producto, item.Unidad });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok(true);
+        }
+
+        [HttpDelete("DeleteItem/{id}")]
+        public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var item = await RepositorioItem.ObtenerAsync(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await RepositorioItem.EliminarAsync(new ItemProducto[] { item });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);

@@ -85,9 +85,9 @@ namespace SNACKS.Controllers
             {
                 await Repositorio.ActualizarAsync(unidad);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -105,9 +105,9 @@ namespace SNACKS.Controllers
             {
                 await Repositorio.RegistrarAsync(unidad);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -129,11 +129,11 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.EliminarAsync(unidad);
+                await Repositorio.EliminarAsync(new Unidad[] { unidad });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);

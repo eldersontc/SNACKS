@@ -17,10 +17,10 @@ export class UnidadesFormComponent implements OnInit {
     private activatedRoute: ActivatedRoute) { }
 
   modoEdicion: boolean;
-  formGroup: FormGroup;
+  form: FormGroup;
 
   ngOnInit() {
-    this.formGroup = this.fb.group({
+    this.form = this.fb.group({
       idUnidad: 0,
       abreviacion: '',
       nombre: ''
@@ -36,10 +36,8 @@ export class UnidadesFormComponent implements OnInit {
     });
   }
 
-  get f() { return this.formGroup.controls; }
-
   cargarFormulario(unidad: IUnidad) {
-    this.formGroup.patchValue({
+    this.form.patchValue({
       idUnidad: unidad.idUnidad,
       nombre: unidad.nombre,
       abreviacion: unidad.abreviacion
@@ -47,7 +45,7 @@ export class UnidadesFormComponent implements OnInit {
   }
 
   save() {
-    let unidad: IUnidad = Object.assign({}, this.formGroup.value);
+    let unidad: IUnidad = Object.assign({}, this.form.value);
 
     if (this.modoEdicion) {
       this.unidadService.updateUnidad(unidad)

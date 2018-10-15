@@ -1,19 +1,13 @@
-<h1>{{(modoEdicion) ? 'Editar' : 'Agregar'}} Unidad</h1>
 <form class="form-horizontal" novalidate
-      (ngSubmit)="save()" [formGroup]="formGroup">
+      (ngSubmit)="save()" [formGroup]="form">
   <fieldset>
     <div class="form-group">
       <label class="col-md-2 control-label" for="abreviacionId">Abreviación</label>
       <div class="col-md-8">
         <input class="form-control"
                id="abreviacionId"
-               type="text"
-               required
                formControlName="abreviacion"
-               [ngClass]="{'is-invalid': f.abreviacion.touched && !f.abreviacion.valid }"/>
-        <div class="invalid-feedback" *ngIf="!f.abreviacion.valid">
-          El campo abreviación es requerido
-        </div>
+               required/>
       </div>
     </div>
     <div class="form-group">
@@ -21,24 +15,19 @@
       <div class="col-md-8">
         <input class="form-control"
                id="nombreId"
-               type="text"
-               required
                formControlName="nombre"
-               [ngClass]="{'is-invalid': f.nombre.touched && !f.nombre.valid }"/>
-        <div class="invalid-feedback" *ngIf="!f.nombre.valid">
-          El campo nombre es requerido
-        </div>
+               required/>
       </div>
     </div>
     <div class="form-group">
       <button class="btn btn-primary ml-3"
               type="submit"
-              [disabled]="!formGroup.valid">
+              [disabled]="!form.valid">
         <fa name="save"></fa> Guardar
       </button>
-      <button class="btn ml-2"
+      <button class="btn btn-outline-secondary ml-2"
               [routerLink]='["/unidades"]'>
-        Cancelar
+        <fa name="times-circle"></fa> Cancelar
       </button>
     </div>
   </fieldset>
