@@ -21,15 +21,7 @@ export class ProductosFormComponent implements OnInit {
   elegirUnidad: boolean = false;
   form: FormGroup;
   formItem: FormGroup;
-
-  pasos: object[] =
-    [
-      { p: 1, titulo: 'Paso 1' },
-      { p: 2, titulo: 'Paso 2' },
-      { p: 3, titulo: 'Paso 3' }
-    ];
-  pasoActivo: number = 1;
-
+  
   items: IItemProducto[] = [];
 
   ngOnInit() {
@@ -123,15 +115,7 @@ export class ProductosFormComponent implements OnInit {
       if (item.idItemProducto === i.idItemProducto) this.items.splice(index, 1);
     });
   }
-
-  siguiente() {
-    this.pasoActivo = this.pasoActivo + 1;
-  }
-
-  anterior() {
-    this.pasoActivo = this.pasoActivo - 1;
-  }
-
+  
   buscarUnidad() {
     this.elegirUnidad = true;
   }

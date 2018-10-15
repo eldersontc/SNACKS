@@ -2,141 +2,135 @@
   <app-unidades [modo]="1" (model)="asignarUnidad($event)"></app-unidades>
 </div>
 <div [hidden]="elegirUnidad">
-  <div>
-    <ul class="nav nav-justified">
-      <li class="nav-item" *ngFor="let p of pasos"
-          [ngClass]="{'active enabled': p.p == pasoActivo, 'disabled': p.p != pasoActivo}">{{p.titulo}}</li>
-    </ul>
-  </div>
-  <br />
-  <form class="form-horizontal" novalidate
-        [formGroup]="form" [hidden]="pasoActivo != 1">
-    <fieldset>
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="nombreId">Nombre</label>
-        <div class="col-md-8">
-          <input class="form-control"
-                 id="nombreId"
-                 formControlName="nombre"
-                 required />
-        </div>
-        <div class="col-md-8">
-          <div class="custom-control custom-checkbox mt-3">
-            <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
-            <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex justify-content-around">
-        <button class="btn btn-outline-secondary"
-                [routerLink]='["/productos"]'>
-          <fa name="times-circle"></fa> Cancelar
-        </button>
-        <button class="btn btn-primary"
-                type="button"
-                (click)="siguiente()"
-                [disabled]="!form.valid">
-          Siguiente <fa name="arrow-circle-right"></fa>
-        </button>
-      </div>
-    </fieldset>
-  </form>
-  <form class="form-horizontal" novalidate
-        [formGroup]="formItem" [hidden]="pasoActivo != 2">
-    <fieldset>
-      <div class="form-group" formGroupName="unidad">
-        <label class="col-md-2 control-label" for="unidadId">Unidad</label>
-        <div class="col-md-8">
-          <div class="input-group">
-            <input class="form-control"
-                   id="unidadId"
-                   type="text"
-                   required
-                   formControlName="nombre"
-                   [readonly]="true" />
-            <div class="input-group-append">
-              <button class="btn btn-primary" type="button" (click)="buscarUnidad()">
-                <fa name="search"></fa>
-              </button>
+  <ngb-tabset>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="form">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="nombreId">Nombre</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="nombreId"
+                       formControlName="nombre"
+                       required />
+              </div>
+              <div class="col-md-8">
+                <div class="custom-control custom-checkbox mt-3">
+                  <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
+                  <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="factorId">Factor</label>
-        <div class="col-md-8">
-          <input class="form-control"
-                 id="factorId"
-                 type="number"
-                 formControlName="factor"
-                 required />
-        </div>
-      </div>
-      <div class="d-flex justify-content-around">
-        <button class="btn btn-primary"
-                type="button"
-                (click)="saveItem()"
-                [disabled]="!formItem.valid">
-          <fa name="plus-circle"></fa> Agregar
-        </button>
-        <button class="btn btn-outline-secondary"
-                type="button"
-                (click)="anterior()">
-          <fa name="arrow-circle-left"></fa> Anterior
-        </button>
-        <button class="btn btn-primary"
-                type="button"
-                (click)="siguiente()"
-                [disabled]="!form.valid">
-          Siguiente <fa name="arrow-circle-right"></fa>
-        </button>
-      </div>
-    </fieldset>
-  </form>
-  <form class="form-horizontal" novalidate [hidden]="pasoActivo != 3">
-    <fieldset>
-      <div class="form-group">
-        <label class="col-md-2 control-label" for="nombreRO">Nombre</label>
-        <div class="col-md-8">
-          <input class="form-control"
-                 id="nombreRO"
-                 [value]="form.controls.nombre.value"
-                 [readonly]="true" />
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-md-8">
-          <div class="custom-control custom-checkbox mt-3">
-            <input type="checkbox" class="custom-control-input" id="esInsumoRO"
-                   [checked]="form.controls.esInsumo.value" disabled>
-            <label class="custom-control-label" for="esInsumoRO">Es Insumo</label>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-md-10">
-          <div class="btn-group mb-2 col-md-12 justify-content-center">
-            <span class="ml-2" *ngFor="let i of items">
-              <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar item" triggers="mouseenter:mouseleave">
-                {{i.unidad.nombre}} <fa name="times-circle"></fa>
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex justify-content-around">
-        <button class="btn btn-outline-secondary"
-                type="button"
-                (click)="anterior()">
-          <fa name="arrow-circle-left"></fa> Anterior
-        </button>
-        <button class="btn btn-primary"
-                type="button"
-                (click)="save()"
-                [disabled]="items.length == 0">
-          Confirmar <fa name="check-circle"></fa>
-        </button>
-      </div>
-    </fieldset>
-  </form>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="formItem">
+          <fieldset>
+            <div class="form-group" formGroupName="unidad">
+              <label class="col-md-2 control-label" for="unidadId">Unidad</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="unidadId"
+                         type="text"
+                         required
+                         formControlName="nombre"
+                         [readonly]="true" />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" (click)="buscarUnidad()">
+                      <fa name="search"></fa>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="factorId">Factor</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="factorId"
+                         type="number"
+                         formControlName="factor"
+                         required />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary"
+                            type="button"
+                            (click)="saveItem()"
+                            [disabled]="!formItem.valid">
+                      <fa name="plus-circle"></fa> Agregar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate>
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="nombreRO">Nombre</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="nombreRO"
+                       [value]="form.controls.nombre.value"
+                       [readonly]="true" />
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-8">
+                <div class="custom-control custom-checkbox mt-3">
+                  <input type="checkbox" class="custom-control-input"
+                         id="esInsumoRO"
+                         [checked]="form.controls.esInsumo.value"
+                         disabled />
+                  <label class="custom-control-label" for="esInsumoRO">Es Insumo</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-10">
+                <div class="btn-group mb-2 col-md-12 justify-content-center">
+                  <span class="ml-2" *ngFor="let i of items">
+                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar item" triggers="mouseenter:mouseleave">
+                      {{i.unidad.nombre}} <fa name="times-circle"></fa>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+  </ngb-tabset>
+  <div class="form-group">
+    <button class="btn btn-primary ml-3"
+              type="button"
+              (click)="save()"
+              [disabled]="!form.valid || items.length == 0">
+        <fa name="save"></fa> Guardar
+      </button>
+      <button class="btn btn-outline-secondary ml-2"
+              type="button"
+              [routerLink]='["/productos"]'>
+        <fa name="times-circle"></fa> Cancelar
+      </button>
+  </div>
 </div>

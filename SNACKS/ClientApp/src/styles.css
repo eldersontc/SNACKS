@@ -6,11 +6,3 @@ input.ng-valid[required], .ng-valid.required {
 input.ng-invalid:not(form) {
   border-left: 5px solid #a94442; /* red */
 }
-
-
-
-.nav-item { padding: 1rem 0rem; border-bottom: 0.5rem solid #ccc; }
-.active { font-weight: bold; color: black; border-bottom-color: #1976D2 !important; }
-.enabled { cursor: pointer; border-bottom-color: rgb(88, 162, 234); }
-.disabled { color: #ccc; }
-.completed { cursor: default; }
