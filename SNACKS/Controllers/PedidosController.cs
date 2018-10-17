@@ -15,10 +15,13 @@ namespace SNACKS.Controllers
     public class PedidosController : ControllerBase
     {
         public IRepositorioBase<Pedido> Repositorio { get; }
+        public IRepositorioBase<ItemPedido> RepositorioItem { get; }
 
-        public PedidosController(IRepositorioBase<Pedido> repositorio)
+        public PedidosController(IRepositorioBase<Pedido> repositorio,
+            IRepositorioBase<ItemPedido> repositorioItem)
         {
             Repositorio = repositorio;
+            RepositorioItem = repositorioItem;
         }
 
         [HttpPost("GetPedidos")]
@@ -57,7 +60,11 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var pedido = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Cliente });
+            var pedido = await Repositorio.ObtenerAsync(id, new string[] {
+                Constantes.Cliente,
+                Constantes.Items + '.' + Constantes.Producto,
+                Constantes.Items + '.' + Constantes.Unidad
+            });
 
             if (pedido == null)
             {
@@ -102,8 +109,18 @@ namespace SNACKS.Controllers
 
             try
             {
+                List<object> referencias = new List<object>();
+                referencias.Add(pedido.Cliente);
+                referencias.AddRange(pedido.Items
+                    .Select(x=> x.Producto)
+                    .GroupBy(g => g.IdProducto)
+                    .Select(g => g.First()).ToList());
+                referencias.AddRange(pedido.Items
+                    .Select(x => x.Unidad)
+                    .GroupBy(g => g.IdUnidad)
+                    .Select(g => g.First()).ToList());
                 pedido.FechaCreacion = DateTime.Now;
-                await Repositorio.RegistrarAsync(pedido, new object[] { pedido.Cliente });
+                await Repositorio.RegistrarAsync(pedido, referencias.ToArray());
             }
             catch (Exception ex)
             {
@@ -121,7 +138,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var pedido = await Repositorio.ObtenerAsync(id);
+            var pedido = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
             if (pedido == null)
             {
                 return NotFound();
@@ -129,7 +146,54 @@ namespace SNACKS.Controllers
 
             try
             {
+                await RepositorioItem.EliminarAsync(pedido.Items.ToArray());
                 await Repositorio.EliminarAsync(new Pedido[] { pedido });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok(true);
+        }
+
+        [HttpPost("AddItem")]
+        public async Task<IActionResult> PostItem([FromBody] ItemPedido item)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await RepositorioItem.RegistrarAsync(item, new object[] { item.Pedido, item.Producto, item.Unidad });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok(true);
+        }
+
+        [HttpDelete("DeleteItem/{id}")]
+        public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var item = await RepositorioItem.ObtenerAsync(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await RepositorioItem.EliminarAsync(new ItemPedido[] { item });
             }
             catch (Exception ex)
             {

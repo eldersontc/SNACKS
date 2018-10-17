@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IListaRetorno } from '../generico/generico';
-import { IPedido } from './pedido';
+import { IPedido, IItemPedido } from './pedido';
 
 @Injectable()
 export class PedidosService {
@@ -29,5 +29,13 @@ export class PedidosService {
 
   deletePedido(params): Observable<boolean> {
     return this.http.delete<boolean>(this.apiURL + '/' + params);
+  }
+
+  createItem(params: IItemPedido): Observable<boolean> {
+    return this.http.post<boolean>(this.apiURL + '/AddItem', params);
+  }
+
+  deleteItem(params): Observable<boolean> {
+    return this.http.delete<boolean>(this.apiURL + '/DeleteItem/' + params);
   }
 }

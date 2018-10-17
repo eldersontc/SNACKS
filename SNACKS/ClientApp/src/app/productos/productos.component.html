@@ -26,15 +26,23 @@
       </button>
     </span>
   </div>
-  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group">
+  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group" *ngIf="!modo">
     <button type="button" class="btn btn-primary" [routerLink]='["/productos-form"]'>
       <fa name="plus-circle"></fa> Nuevo
     </button>
-    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/productos-form/" + seleccion]'>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/productos-form/" + ((seleccion) ? seleccion.idProducto : 0)]'>
       <fa name="edit"></fa> Editar
     </button>
     <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
       <fa name="trash"></fa> Eliminar
+    </button>
+  </div>
+  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group" *ngIf="modo">
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="elegir()">
+      <fa name="undo"></fa> Seleccionar
+    </button>
+    <button type="button" class="btn btn-primary" (click)="cancelar()">
+      <fa name="times-circle"></fa> Regresar
     </button>
   </div>
 </div>
@@ -51,7 +59,7 @@
     <tr *ngFor="let p of productos; let idx = index">
       <td>
         <div class="custom-control custom-radio text-center">
-          <input type="radio" [id]="idx" name="customRadio" class="custom-control-input" [value]="p.idProducto" [(ngModel)]="seleccion">
+          <input type="radio" [id]="idx" name="customRadio" class="custom-control-input" [value]="p" [(ngModel)]="seleccion">
           <label class="custom-control-label" [for]="idx">
             <span class="text-hide">.</span>
           </label>

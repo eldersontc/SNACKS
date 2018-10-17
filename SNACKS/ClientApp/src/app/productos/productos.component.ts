@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IProducto } from './producto';
 import { Filtro, IListaRetorno } from '../generico/generico';
 import { ProductosService } from './productos.service';
@@ -11,6 +11,9 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class ProductosComponent implements OnInit {
 
+  @Input() modo: number;
+  @Output() model = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   productos: IProducto[];
@@ -18,7 +21,7 @@ export class ProductosComponent implements OnInit {
   criterio: number = 1;
   criterioCk: boolean = false;
   busqueda: string = '';
-  seleccion: number;
+  seleccion: IProducto;
 
   constructor(private productoService: ProductosService, config: NgbModalConfig, private modalService: NgbModal) {
     config.backdrop = 'static';
@@ -82,12 +85,24 @@ export class ProductosComponent implements OnInit {
   }
 
   deleteProducto() {
-    this.productoService.deleteProducto(this.seleccion).subscribe(data => this.onDeleteSuccess(),
+    this.productoService.deleteProducto(this.seleccion.idProducto).subscribe(data => this.onDeleteSuccess(),
       error => console.log(error));
   }
 
   onDeleteSuccess() {
     this.seleccion = undefined;
     this.getProductos();
+  }
+
+  elegir() {
+    if (this.modo == 1) {
+      this.productoService.getProducto(this.seleccion.idProducto)
+        .subscribe(producto => this.model.emit(producto),
+          error => console.error(error));
+    }
+  }
+
+  cancelar() {
+    this.model.emit();
   }
 }

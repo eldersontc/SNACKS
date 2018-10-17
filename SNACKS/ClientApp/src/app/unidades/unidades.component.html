@@ -22,7 +22,7 @@
     <button type="button" class="btn btn-primary" [routerLink]='["/unidades-form"]'>
       <fa name="plus-circle"></fa> Nuevo
     </button>
-    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/unidades-form/" + seleccion]'>
+    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/unidades-form/" + ((seleccion) ? seleccion.idUnidad : 0)]'>
       <fa name="edit"></fa> Editar
     </button>
     <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">

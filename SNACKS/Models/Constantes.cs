@@ -15,5 +15,6 @@ namespace SNACKS.Models
         public const string Cliente = "Cliente";
         public const string Items = "Items";
         public const string Unidad = "Unidad";
+        public const string Producto = "Producto";
     }
 }

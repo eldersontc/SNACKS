@@ -62,7 +62,6 @@ export class ProductosFormComponent implements OnInit {
     let producto: IProducto = Object.assign({}, this.form.value);
 
     if (this.modoEdicion) {
-      producto.items = this.items;
       this.productoService.updateProducto(producto)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));

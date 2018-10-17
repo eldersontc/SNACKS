@@ -108,8 +108,8 @@
               <div class="col-md-10">
                 <div class="btn-group mb-2 col-md-12 justify-content-center">
                   <span class="ml-2" *ngFor="let i of items">
-                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar item" triggers="mouseenter:mouseleave">
-                      {{i.unidad.nombre}} <fa name="times-circle"></fa>
+                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Unidad" triggers="mouseenter:mouseleave">
+                      {{i.unidad.nombre}} : {{i.factor}} <fa name="times-circle"></fa>
                     </button>
                   </span>
                 </div>

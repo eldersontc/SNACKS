@@ -20,5 +20,6 @@ namespace SNACKS.Data
         public DbSet<Producto> Producto { get; set; }
         public DbSet<ItemProducto> ItemProducto { get; set; }
         public DbSet<Pedido> Pedido { get; set; }
+        public DbSet<ItemPedido> ItemPedido { get; set; }
     }
 }
