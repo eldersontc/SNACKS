@@ -4,6 +4,7 @@ import { ProductosService } from '../productos.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IProducto, IItemProducto } from '../producto';
 import { IUnidad } from '../../unidades/unidad';
+import { ICategoria } from '../../categorias/categoria';
 
 @Component({
   selector: 'app-productos-form',
@@ -19,6 +20,7 @@ export class ProductosFormComponent implements OnInit {
 
   modoEdicion: boolean;
   elegirUnidad: boolean = false;
+  elegirCategoria: boolean = false;
   form: FormGroup;
   formItem: FormGroup;
   
@@ -28,6 +30,10 @@ export class ProductosFormComponent implements OnInit {
     this.form = this.fb.group({
       idProducto: 0,
       nombre: '',
+      categoria: this.fb.group({
+        idCategoria: 0,
+        nombre: ''
+      }),
       esInsumo: false
     });
     this.formItem = this.fb.group({
@@ -53,6 +59,7 @@ export class ProductosFormComponent implements OnInit {
     this.form.patchValue({
       idProducto: producto.idProducto,
       nombre: producto.nombre,
+      categoria: producto.categoria,
       esInsumo: producto.esInsumo
     });
     this.items = producto.items;
@@ -124,6 +131,19 @@ export class ProductosFormComponent implements OnInit {
     if (event) {
       this.formItem.patchValue({
         unidad: event
+      });
+    }
+  }
+
+  buscarCategoria() {
+    this.elegirCategoria = true;
+  }
+
+  asignarCategoria(event: ICategoria) {
+    this.elegirCategoria = false;
+    if (event) {
+      this.form.patchValue({
+        categoria: event
       });
     }
   }

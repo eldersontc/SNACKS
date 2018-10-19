@@ -45,10 +45,13 @@ namespace SNACKS.Controllers
                     case Constantes.Dos:
                         filtros.Add(x => x.EsInsumo == filtro.B);
                         break;
+                    case Constantes.Tres:
+                        filtros.Add(x => x.Categoria.IdCategoria == filtro.N);
+                        break;
                 }
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros);
+            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Categoria });
 
             return Ok(result);
         }
@@ -61,7 +64,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items + '.' + Constantes.Unidad });
+            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Categoria, Constantes.Items + '.' + Constantes.Unidad });
 
             if (producto == null)
             {
@@ -86,7 +89,7 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(producto);
+                await Repositorio.ActualizarAsync(producto, new object[] { producto.Categoria });
             }
             catch (Exception ex)
             {
@@ -107,6 +110,7 @@ namespace SNACKS.Controllers
             try
             {
                 List<object> referencias = new List<object>();
+                referencias.Add(producto.Categoria);
                 foreach (var item in producto.Items)
                 {
                     referencias.Add(item.Unidad);

@@ -10,6 +10,7 @@ using SNACKS.Models;
 
 namespace SNACKS.Controllers
 {
+    [Produces("application/json")]
     [Route("api/Pedidos")]
     [ApiController]
     public class PedidosController : ControllerBase

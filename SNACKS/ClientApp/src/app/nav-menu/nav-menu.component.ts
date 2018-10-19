@@ -24,9 +24,12 @@ export class NavMenuComponent {
       nombre: 'Producción', icono: 'industry',
       subOpciones: [
         { nombre: 'Unidades', icono: 'archive', link: 'unidades' },
+        { nombre: 'Categorias', icono: 'archive', link: 'categorias' },
         { nombre: 'Productos', icono: 'archive', link: 'productos' },
-        { nombre: 'Ingresos', icono: 'file-import' },
-        { nombre: 'Salidas', icono: 'file-export' },
+        { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
+        { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
+        { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },
+        { nombre: 'Salidas Producto', icono: 'file-export', link: 'salidas-producto' },
         { nombre: 'Gastos', icono: 'file-invoice-dollar' }
       ]
     },

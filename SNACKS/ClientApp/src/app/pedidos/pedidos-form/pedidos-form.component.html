@@ -2,7 +2,7 @@
   <app-personas [params]="filtroCliente" (model)="asignarCliente($event)"></app-personas>
 </div>
 <div *ngIf="elegirProducto">
-  <app-productos [modo]="1" (model)="asignarProducto($event)"></app-productos>
+  <app-productos [params]="filtroProducto" (model)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirCliente || elegirProducto">
   <ngb-tabset>

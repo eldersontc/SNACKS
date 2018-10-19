@@ -32,10 +32,19 @@ namespace SNACKS
 
             services.AddScoped<IRepositorioBase<Persona>, RepositorioBase<Persona>>();
             services.AddScoped<IRepositorioBase<Unidad>, RepositorioBase<Unidad>>();
+            services.AddScoped<IRepositorioBase<Categoria>, RepositorioBase<Categoria>>();
             services.AddScoped<IRepositorioBase<Producto>, RepositorioBase<Producto>>();
-            services.AddScoped<IRepositorioBase<Pedido>, RepositorioBase<Pedido>>();
             services.AddScoped<IRepositorioBase<ItemProducto>, RepositorioBase<ItemProducto>>();
+            services.AddScoped<IRepositorioBase<Pedido>, RepositorioBase<Pedido>>();
             services.AddScoped<IRepositorioBase<ItemPedido>, RepositorioBase<ItemPedido>>();
+            services.AddScoped<IRepositorioBase<IngresoInsumo>, RepositorioBase<IngresoInsumo>>();
+            services.AddScoped<IRepositorioBase<ItemIngresoInsumo>, RepositorioBase<ItemIngresoInsumo>>();
+            services.AddScoped<IRepositorioBase<IngresoProducto>, RepositorioBase<IngresoProducto>>();
+            services.AddScoped<IRepositorioBase<ItemIngresoProducto>, RepositorioBase<ItemIngresoProducto>>();
+            services.AddScoped<IRepositorioBase<SalidaInsumo>, RepositorioBase<SalidaInsumo>>();
+            services.AddScoped<IRepositorioBase<ItemSalidaInsumo>, RepositorioBase<ItemSalidaInsumo>>();
+            services.AddScoped<IRepositorioBase<SalidaProducto>, RepositorioBase<SalidaProducto>>();
+            services.AddScoped<IRepositorioBase<ItemSalidaProducto>, RepositorioBase<ItemSalidaProducto>>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddMvc().AddJsonOptions(configureJson);

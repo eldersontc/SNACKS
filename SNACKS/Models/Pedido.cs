@@ -16,6 +16,7 @@ namespace SNACKS.Models
         [ForeignKey("IdUsuario")]
         public Usuario Usuario { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public string Comentario { get; set; }
         public List<ItemPedido> Items { get; set; }
     }
 }

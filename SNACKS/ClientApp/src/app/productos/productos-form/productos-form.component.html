@@ -1,7 +1,10 @@
 <div *ngIf="elegirUnidad">
   <app-unidades [modo]="1" (model)="asignarUnidad($event)"></app-unidades>
 </div>
-<div [hidden]="elegirUnidad">
+<div *ngIf="elegirCategoria">
+  <app-categorias [modo]="1" (model)="asignarCategoria($event)"></app-categorias>
+</div>
+<div [hidden]="elegirUnidad || elegirCategoria">
   <ngb-tabset>
     <ngb-tab>
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
@@ -18,6 +21,26 @@
                        formControlName="nombre"
                        required />
               </div>
+            </div>
+            <div class="form-group" formGroupName="categoria">
+              <label class="col-md-2 control-label" for="categoriaId">Categoria</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="categoriaId"
+                         type="text"
+                         required
+                         formControlName="nombre"
+                         [readonly]="true" />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" (click)="buscarCategoria()">
+                      <fa name="search"></fa>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
               <div class="col-md-8">
                 <div class="custom-control custom-checkbox mt-3">
                   <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
@@ -85,13 +108,10 @@
         <form class="form-horizontal" novalidate>
           <fieldset>
             <div class="form-group">
-              <label class="col-md-2 control-label" for="nombreRO">Nombre</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="nombreRO"
-                       [value]="form.controls.nombre.value"
-                       [readonly]="true" />
-              </div>
+              <label class="col-md-8 control-label" for="nombreRO"><b>Nombre: </b>{{form.value.nombre}}</label>
+            </div>
+            <div class="form-group">
+              <label class="col-md-8 control-label" for="categoriaRO"><b>Categoria: </b>{{form.value.categoria.nombre}}</label>
             </div>
             <div class="form-group">
               <div class="col-md-8">

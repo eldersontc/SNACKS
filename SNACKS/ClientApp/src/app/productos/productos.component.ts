@@ -11,7 +11,7 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class ProductosComponent implements OnInit {
 
-  @Input() modo: number;
+  @Input() params: Filtro;
   @Output() model = new EventEmitter();
 
   pagina: number = 1;
@@ -29,6 +29,9 @@ export class ProductosComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.params) {
+      this.filtros.push(this.params);
+    }
     this.getProductos();
   }
 
@@ -95,7 +98,7 @@ export class ProductosComponent implements OnInit {
   }
 
   elegir() {
-    if (this.modo == 1) {
+    if (this.params) {
       this.productoService.getProducto(this.seleccion.idProducto)
         .subscribe(producto => this.model.emit(producto),
           error => console.error(error));

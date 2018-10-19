@@ -15,6 +15,7 @@ import { IProducto, IItemProducto } from '../../productos/producto';
 export class PedidosFormComponent implements OnInit {
 
   filtroCliente: Filtro = new Filtro(1, 'Cliente', 2);
+  filtroProducto: Filtro = new Filtro(2, 'Producto', 0, new Date(), false);
   elegirCliente: boolean = false;
   elegirProducto: boolean = false;
 

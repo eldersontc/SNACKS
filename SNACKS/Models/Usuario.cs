@@ -16,5 +16,9 @@ namespace SNACKS.Models
         public List<Pedido> Pedidos { get; set; }
         [ForeignKey("IdPersona")]
         public Persona Persona { get; set; }
+        public List<IngresoInsumo> IntresosInsumo { get; set; }
+        public List<IngresoProducto> IntresosProducto { get; set; }
+        public List<SalidaInsumo> SalidasInsumo { get; set; }
+        public List<SalidaProducto> SalidasProducto { get; set; }
     }
 }
