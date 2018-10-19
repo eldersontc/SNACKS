@@ -15,6 +15,7 @@ namespace SNACKS.Data
         {
         }
 
+        public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Persona> Persona { get; set; }
         public DbSet<Unidad> Unidad { get; set; }
         public DbSet<Categoria> Categoria { get; set; }

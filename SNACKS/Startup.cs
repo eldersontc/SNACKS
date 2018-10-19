@@ -30,6 +30,7 @@ namespace SNACKS
             //services.AddDefaultIdentity<IdentityUser>()
             //    .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddScoped<IRepositorioBase<Usuario>, RepositorioBase<Usuario>>();
             services.AddScoped<IRepositorioBase<Persona>, RepositorioBase<Persona>>();
             services.AddScoped<IRepositorioBase<Unidad>, RepositorioBase<Unidad>>();
             services.AddScoped<IRepositorioBase<Categoria>, RepositorioBase<Categoria>>();

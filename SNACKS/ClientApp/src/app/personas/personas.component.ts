@@ -12,6 +12,7 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 export class PersonasComponent implements OnInit {
 
   @Input() params: Filtro;
+  @Input() include: boolean = false;
   @Output() model = new EventEmitter();
 
   pagina: number = 1;

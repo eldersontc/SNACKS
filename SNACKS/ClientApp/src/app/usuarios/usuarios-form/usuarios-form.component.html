@@ -1,0 +1,58 @@
+<div *ngIf="elegirPersona">
+  <app-personas [include]="true" (model)="asignarPersona($event)"></app-personas>
+</div>
+<div [hidden]="elegirPersona">
+  <form class="form-horizontal" novalidate
+        (ngSubmit)="save()" [formGroup]="form">
+    <fieldset>
+      <div class="form-group">
+        <label class="col-md-2 control-label" for=" nombreId">Nombre</label>
+        <div class="col-md-8">
+          <input class="form-control"
+                 id="nombreId"
+                 formControlName="nombre"
+                 required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-md-2 control-label" for="claveId">Clave</label>
+        <div class="col-md-8">
+          <input class="form-control"
+                 id="claveId"
+                 type="password"
+                 formControlName="clave"
+                 required />
+        </div>
+      </div>
+      <div class="form-group" formGroupName="persona">
+        <label class="col-md-2 control-label" for="personaId">Persona</label>
+        <div class="col-md-8">
+          <div class="input-group">
+            <input class="form-control"
+                   id="personaId"
+                   type="text"
+                   required
+                   formControlName="razonSocial"
+                   [readonly]="true" />
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" (click)="buscarPersona()">
+                <fa name="search"></fa>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <button class="btn btn-primary ml-3"
+                type="submit"
+                [disabled]="!form.valid">
+          <fa name="save"></fa> Guardar
+        </button>
+        <button class="btn btn-outline-secondary ml-2"
+                [routerLink]='["/usuarios"]'>
+          <fa name="times-circle"></fa> Cancelar
+        </button>
+      </div>
+    </fieldset>
+  </form>
+</div>

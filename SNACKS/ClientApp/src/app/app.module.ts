@@ -39,6 +39,9 @@ import { IngresosInsumoService } from './ingresos-insumo/ingresos-insumo.service
 import { SalidasInsumoService } from './salidas-insumo/salidas-insumo.service';
 import { IngresosProductoService } from './ingresos-producto/ingresos-producto.service';
 import { SalidasProductoService } from './salidas-producto/salidas-producto.service';
+import { UsuariosComponent } from './usuarios/usuarios.component';
+import { UsuariosFormComponent } from './usuarios/usuarios-form/usuarios-form.component';
+import { UsuariosService } from './usuarios/usuarios.service';
 
 @NgModule({
   declarations: [
@@ -64,7 +67,9 @@ import { SalidasProductoService } from './salidas-producto/salidas-producto.serv
     SalidasProductoComponent,
     SalidasProductoFormComponent,
     IngresosProductoComponent,
-    IngresosProductoFormComponent
+    IngresosProductoFormComponent,
+    UsuariosComponent,
+    UsuariosFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -76,6 +81,9 @@ import { SalidasProductoService } from './salidas-producto/salidas-producto.serv
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'counter', component: CounterComponent },
       { path: 'fetch-data', component: FetchDataComponent },
+      { path: 'usuarios', component: UsuariosComponent },
+      { path: 'usuarios-form', component: UsuariosFormComponent },
+      { path: 'usuarios-form/:id', component: UsuariosFormComponent },
       { path: 'unidades', component: UnidadesComponent },
       { path: 'unidades-form', component: UnidadesFormComponent },
       { path: 'unidades-form/:id', component: UnidadesFormComponent },
@@ -110,6 +118,7 @@ import { SalidasProductoService } from './salidas-producto/salidas-producto.serv
   providers: [
     NgbModalConfig,
     NgbModal,
+    UsuariosService,
     UnidadesService,
     PersonasService,
     CategoriasService,
