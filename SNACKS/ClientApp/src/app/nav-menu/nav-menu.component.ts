@@ -39,7 +39,7 @@ export class NavMenuComponent {
         { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
         { nombre: 'Ususarios', icono: 'user-circle', link: 'usuarios' },
         { nombre: 'Perfiles', icono: 'users-cog' },
-        { nombre: 'Reportes', icono: 'chart-pie' }
+        { nombre: 'Reportes', icono: 'chart-pie', link: 'reportes' }
       ]
     }
   ];

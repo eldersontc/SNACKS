@@ -26,4 +26,10 @@ namespace SNACKS.Models
         public List<T> Lista { get; set; }
         public int TotalRegistros { get; set; }
     }
+
+    public class Estadistica
+    {
+        public string Etiqueta { get; set; }
+        public int Valor { get; set; }
+    }
 }

@@ -15,5 +15,6 @@ namespace SNACKS.Data
         Task<bool> RegistrarAsync(T Entidad, object[] Referencias = null);
         Task<bool> ActualizarAsync(T Entidad, object[] Referencias = null);
         Task<bool> EliminarAsync(T[] Entidad);
+        Task<List<Estadistica>> ObtenerEstadisticasAsync(object[] valores);
     }
 }

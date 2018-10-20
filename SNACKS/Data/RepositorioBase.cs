@@ -120,5 +120,16 @@ namespace SNACKS.Data
             await Context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<Estadistica>> ObtenerEstadisticasAsync(object[] valores)
+        {
+            string sql = "Usp_Estadisticas @p0";
+            for (int i = 1; i < valores.Length; i++)
+            {
+                sql += string.Format(", @p{0}", i);
+            }
+            List<Estadistica> lista = await Context.Estadistica.FromSql(sql, valores).ToListAsync();
+            return lista;
+        }
     }
 }

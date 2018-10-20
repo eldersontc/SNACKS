@@ -1,0 +1,131 @@
+<div>
+  <ngb-tabset>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="form">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="tituloId">Título</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="tituloId"
+                       formControlName="titulo"
+                       required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="tipoId">Tipo</label>
+              <div class="col-md-8">
+                <select id="tipoId" class="custom-select" formControlName="tipoReporte">
+                  <option [ngValue]="1">Barras</option>
+                  <option [ngValue]="2">Circular</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="flagId">Flag</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="flagId"
+                       type="number"
+                       formControlName="flag"
+                       required />
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="formItem">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="nombreId">Parámetro</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="nombreId"
+                       formControlName="nombre"
+                       required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="valorId">Valor</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="valorId"
+                         formControlName="valor"
+                         required />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary"
+                            type="button"
+                            (click)="saveItem()"
+                            [disabled]="!formItem.valid">
+                      <fa name="plus-circle"></fa> Agregar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate>
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-8 control-label" for="nombreRO">
+                <b>Título: </b>{{form.value.titulo}}
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="col-md-8 control-label" for="categoriaRO">
+                <b>Tipo: </b>{{form.value.tipoReporte}}
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="col-md-8 control-label" for="categoriaRO">
+                <b>Flag: </b>{{form.value.tipoReporte}}
+              </label>
+            </div>
+            <div class="form-group">
+              <div class="col-md-10">
+                <div class="btn-group mb-2 col-md-12 justify-content-center">
+                  <span class="ml-2" *ngFor="let i of items">
+                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Parámetro" triggers="mouseenter:mouseleave">
+                      {{i.nombre}} : {{i.valor}} <fa name="times-circle"></fa>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+  </ngb-tabset>
+  <div class="form-group">
+    <button class="btn btn-primary ml-3"
+            type="button"
+            (click)="save()"
+            [disabled]="!form.valid || items.length == 0">
+      <fa name="save"></fa> Guardar
+    </button>
+    <button class="btn btn-outline-secondary ml-2"
+            type="button"
+            [routerLink]='["/reportes"]'>
+      <fa name="times-circle"></fa> Cancelar
+    </button>
+  </div>
+</div>

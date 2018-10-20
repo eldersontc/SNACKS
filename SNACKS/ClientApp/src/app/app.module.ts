@@ -42,6 +42,9 @@ import { SalidasProductoService } from './salidas-producto/salidas-producto.serv
 import { UsuariosComponent } from './usuarios/usuarios.component';
 import { UsuariosFormComponent } from './usuarios/usuarios-form/usuarios-form.component';
 import { UsuariosService } from './usuarios/usuarios.service';
+import { ReportesComponent } from './reportes/reportes.component';
+import { ReportesFormComponent } from './reportes/reportes-form/reportes-form.component';
+import { ReportesService } from './reportes/reportes.service';
 
 @NgModule({
   declarations: [
@@ -69,7 +72,9 @@ import { UsuariosService } from './usuarios/usuarios.service';
     IngresosProductoComponent,
     IngresosProductoFormComponent,
     UsuariosComponent,
-    UsuariosFormComponent
+    UsuariosFormComponent,
+    ReportesComponent,
+    ReportesFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -110,7 +115,10 @@ import { UsuariosService } from './usuarios/usuarios.service';
       { path: 'ingresos-producto-form/:id', component: IngresosProductoFormComponent },
       { path: 'salidas-producto', component: SalidasProductoComponent },
       { path: 'salidas-producto-form', component: SalidasProductoFormComponent },
-      { path: 'salidas-producto-form/:id', component: SalidasProductoFormComponent }
+      { path: 'salidas-producto-form/:id', component: SalidasProductoFormComponent },
+      { path: 'reportes', component: ReportesComponent },
+      { path: 'reportes-form', component: ReportesFormComponent },
+      { path: 'reportes-form/:id', component: ReportesFormComponent }
     ]),
     NgbModule,
     NgbPaginationModule
@@ -128,6 +136,7 @@ import { UsuariosService } from './usuarios/usuarios.service';
     SalidasInsumoService,
     IngresosProductoService,
     SalidasProductoService,
+    ReportesService,
     { provide: NgbDatepickerI18n, useClass: DatepickerI18n },
     { provide: NgbDateAdapter, useClass: DateAdapter },
     { provide: NgbDateParserFormatter, useClass: DateParserFormatter }

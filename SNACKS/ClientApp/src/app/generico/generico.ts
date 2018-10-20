@@ -6,6 +6,11 @@ export interface IListaRetorno<T> {
   totalRegistros: number;
 }
 
+export interface IEstadistica {
+  etiqueta: string;
+  valor: number;
+}
+
 export class Filtro {
   constructor(
     public k: number,
