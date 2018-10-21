@@ -1,3 +1,144 @@
-<p>
-  salidas-producto-form works!
-</p>
+<div *ngIf="elegirProducto">
+  <app-productos [params]="filtroProducto" (model)="asignarProducto($event)"></app-productos>
+</div>
+<div [hidden]="elegirProducto">
+  <ngb-tabset>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="form">
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="nroId">Nro. Salida</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="nroId"
+                       type="text"
+                       [readonly]="true"
+                       formControlName="idSalidaProducto" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-4 control-label">Fecha Creación</label>
+              <div class="col-md-8">
+                <input class="form-control" placeholder="dd/MM/yyyy"
+                       name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="comentarioId">Comentario</label>
+              <div class="col-md-8">
+                <input class="form-control"
+                       id="comentarioId"
+                       type="text"
+                       formControlName="comentario" />
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate
+              [formGroup]="formItem">
+          <fieldset>
+            <div class="form-group" formGroupName="producto">
+              <label class="col-md-2 control-label" for="productoId">Producto</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="productoId"
+                         type="text"
+                         required
+                         formControlName="nombre"
+                         [readonly]="true" />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" (click)="buscarProducto()">
+                      <fa name="search"></fa>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group" [hidden]="!fi.producto.idProducto > 0">
+              <label class="col-md-2 control-label" for="unidadId">Unidad</label>
+              <div class="col-md-8">
+                <select class="custom-select" formControlName="unidad" required>
+                  <option *ngFor="let i of fi.producto.items" [ngValue]="i">{{i.unidad.nombre}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-md-2 control-label" for="cantidadId">Cantidad</label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input class="form-control"
+                         id="cantidadId"
+                         type="number"
+                         formControlName="cantidad"
+                         required />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary"
+                            type="button"
+                            (click)="saveItem()"
+                            [disabled]="!formItem.valid">
+                      <fa name="plus-circle"></fa> Agregar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
+      <ng-template ngbTabContent>
+        <br />
+        <form class="form-horizontal" novalidate>
+          <fieldset>
+            <div class="form-group">
+              <label class="col-md-8 control-label"><b>Nro. Salida:</b> {{form.value.idSalidaProducto}}</label>
+            </div>
+            <div class="form-group">
+              <label class="col-md-8 control-label"><b>Fecha Creación:</b> {{form.value.fechaCreacion | date: 'dd/MM/yyyy'}}</label>
+            </div>
+            <div class="form-group">
+              <label class="col-md-8 control-label"><b>Comentario:</b> {{form.value.comentario}}</label>
+            </div>
+            <div class="form-group">
+              <div class="col-md-10">
+                <div class="btn-group mb-2 col-md-12 justify-content-center">
+                  <span class="ml-2" *ngFor="let i of items">
+                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Item" triggers="mouseenter:mouseleave">
+                      {{i.producto.nombre}} ({{i.unidad.abreviacion}}) : {{i.cantidad}} = {{i.costo}} <fa name="times-circle"></fa>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </ng-template>
+    </ngb-tab>
+  </ngb-tabset>
+  <div class="form-group">
+    <button class="btn btn-primary ml-3"
+            type="button"
+            (click)="save()"
+            [disabled]="!form.valid || items.length == 0">
+      <fa name="save"></fa> Guardar
+    </button>
+    <button class="btn btn-outline-secondary ml-2"
+            type="button"
+            [routerLink]='["/salidas-producto"]'>
+      <fa name="times-circle"></fa> Cancelar
+    </button>
+  </div>
+</div>

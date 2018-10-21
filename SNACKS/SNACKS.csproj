@@ -28,10 +28,13 @@
     <None Remove="ClientApp\src\app\categorias\categoria.ts" />
     <None Remove="ClientApp\src\app\generico\generico.ts" />
     <None Remove="ClientApp\src\app\ingresos-insumo\ingreso-insumo.ts" />
+    <None Remove="ClientApp\src\app\ingresos-producto\ingreso-producto.ts" />
     <None Remove="ClientApp\src\app\pedidos\pedido.ts" />
     <None Remove="ClientApp\src\app\personas\persona.ts" />
     <None Remove="ClientApp\src\app\productos\producto.ts" />
     <None Remove="ClientApp\src\app\reportes\reporte.ts" />
+    <None Remove="ClientApp\src\app\salidas-insumo\salida-insumo.ts" />
+    <None Remove="ClientApp\src\app\salidas-producto\salida-producto.ts" />
     <None Remove="ClientApp\src\app\unidades\unidad.ts" />
     <None Remove="ClientApp\src\app\usuarios\usuario.ts" />
   </ItemGroup>
@@ -40,10 +43,13 @@
     <TypeScriptCompile Include="ClientApp\src\app\categorias\categoria.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\generico\generico.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\ingresos-insumo\ingreso-insumo.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\ingresos-producto\ingreso-producto.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\pedidos\pedido.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\personas\persona.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\productos\producto.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\reportes\reporte.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\salidas-insumo\salida-insumo.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\salidas-producto\salida-producto.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\unidades\unidad.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\usuarios\usuario.ts" />
   </ItemGroup>
