@@ -1,6 +1,43 @@
-<div>
-  <app-nav-menu></app-nav-menu>
+<div *ngIf="logueado">
+  <app-nav-menu [opciones]="opciones" [logueado]="usuarioLogueado" (salir)="cerrarSesion()"></app-nav-menu>
+  <div class='container-fluid'>
+    <router-outlet></router-outlet>
+  </div>
 </div>
-<div class='container-fluid'>
-  <router-outlet></router-outlet>
+<div class='container-fluid' *ngIf="!logueado">
+  <div class="col-md-4">
+    <br />
+    <h3>Sistema para la Gestión de Snacks</h3>
+    <form novalidate
+          (ngSubmit)="auth()" [formGroup]="form">
+      <div class="form-group">
+        <label for="usuarioId">Usuario</label>
+        <input type="text"
+               class="form-control"
+               id="usuarioId"
+               placeholder="Ingrese su usuario"
+               formControlName="nombre"
+               required>
+      </div>
+      <div class="form-group">
+        <label for="passwordId">Password</label>
+        <input type="password"
+               class="form-control"
+               id="passwordId"
+               placeholder="Ingrese su password"
+               formControlName="clave"
+               required>
+      </div>
+      <button type="submit"
+              class="btn btn-primary"
+              [disabled]="!form.valid">
+        <fa name="sign-in"></fa> Iniciar Sesión
+      </button>
+    </form>
+    <br />
+    <ngb-alert type="danger" *ngIf="verAlerta" [dismissible]="true" (close)="verAlerta = false">
+      <fa name="exclamation-circle"></fa> Credenciales incorrectas.
+    </ngb-alert>
+  </div>
+  
 </div>

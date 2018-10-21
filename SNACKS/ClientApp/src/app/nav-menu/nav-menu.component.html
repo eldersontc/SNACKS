@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <a class="navbar-brand" [routerLink]='["/"]'>Snacks</a>
+  <a class="navbar-brand" [routerLink]='["/"]'>SGS</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -12,7 +12,7 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <div *ngFor="let subOpcion of opcion.subOpciones">
-            <a class="dropdown-item" [routerLink]='subOpcion.link' (click)="seleccion(opcion, subOpcion)">
+            <a class="dropdown-item" [routerLink]='subOpcion.link'>
               <fa name="{{subOpcion.icono}}"></fa> {{subOpcion.nombre}}
             </a>
           </div>
@@ -22,11 +22,11 @@
     <ul class="nav navbar-nav ml-auto">
       <li class="nav-item mr-5">
         <span class="navbar-text">
-          Bienvenido, <fa name="user-circle"></fa> {{logueado}}
+          En linea, <fa name="user-circle"></fa> {{logueado}}
         </span>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">
+        <a class="nav-link" [routerLink]='["/"]' (click)="cerrarSesion()">
           <fa name="power-off"></fa> Cerrar Sesión
         </a>
       </li>

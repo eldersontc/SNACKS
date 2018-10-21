@@ -21,6 +21,10 @@ export class UsuariosService {
     return this.http.get<IUsuario>(this.apiURL + '/' + params);
   }
 
+  authUsuario(params: IUsuario): Observable<IUsuario> {
+    return this.http.get<IUsuario>(this.apiURL + '/AuthUsuario/' + params.nombre + '/' + params.clave);
+  }
+
   createUsuario(params: IUsuario): Observable<boolean> {
     return this.http.post<boolean>(this.apiURL, params);
   }

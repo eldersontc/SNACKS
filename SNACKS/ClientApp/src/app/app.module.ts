@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
 import { NgbModule, NgbPaginationModule, NgbModalConfig, NgbModal, NgbDatepickerI18n, NgbDateAdapter, NgbDateParserFormatter  } from '@ng-bootstrap/ng-bootstrap';
+import { StorageServiceModule } from 'angular-webstorage-service';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -45,6 +46,7 @@ import { UsuariosService } from './usuarios/usuarios.service';
 import { ReportesComponent } from './reportes/reportes.component';
 import { ReportesFormComponent } from './reportes/reportes-form/reportes-form.component';
 import { ReportesService } from './reportes/reportes.service';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 @NgModule({
   declarations: [
@@ -74,10 +76,12 @@ import { ReportesService } from './reportes/reportes.service';
     UsuariosComponent,
     UsuariosFormComponent,
     ReportesComponent,
-    ReportesFormComponent
+    ReportesFormComponent,
+    NotFoundComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+    StorageServiceModule,
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
@@ -118,7 +122,9 @@ import { ReportesService } from './reportes/reportes.service';
       { path: 'salidas-producto-form/:id', component: SalidasProductoFormComponent },
       { path: 'reportes', component: ReportesComponent },
       { path: 'reportes-form', component: ReportesFormComponent },
-      { path: 'reportes-form/:id', component: ReportesFormComponent }
+      { path: 'reportes-form/:id', component: ReportesFormComponent },
+      { path: '404', component: NotFoundComponent },
+      { path: '**', redirectTo: '/404' }
     ]),
     NgbModule,
     NgbPaginationModule
