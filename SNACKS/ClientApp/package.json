@@ -29,6 +29,7 @@
     "angular-wizard-form": "^0.4.1",
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^4.1.0",
+    "chart.js": "^2.7.3",
     "core-js": "^2.5.7",
     "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",

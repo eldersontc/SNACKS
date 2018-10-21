@@ -22,11 +22,13 @@ export class ReportesFormComponent implements OnInit {
 
   items: IItemReporte[] = [];
 
+  tipos = ['bar', 'pie', 'line','doughnut'];
+
   ngOnInit() {
     this.form = this.fb.group({
       idReporte: 0,
       titulo: '',
-      tipoReporte: 1,
+      tipoReporte: 'bar',
       flag: ''
     });
     this.formItem = this.fb.group({
@@ -46,11 +48,6 @@ export class ReportesFormComponent implements OnInit {
   }
 
   cargarFormulario(reporte: IReporte) {
-
-    this.reporteService.runReporte(reporte)
-      .subscribe(data => console.log(data),
-        error => console.error(error));
-
     this.form.patchValue({
       idReporte: reporte.idReporte,
       titulo: reporte.titulo,

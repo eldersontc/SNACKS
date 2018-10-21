@@ -29,6 +29,7 @@ namespace SNACKS.Models
 
     public class Estadistica
     {
+        public string Leyenda { get; set; }
         public string Etiqueta { get; set; }
         public int Valor { get; set; }
     }

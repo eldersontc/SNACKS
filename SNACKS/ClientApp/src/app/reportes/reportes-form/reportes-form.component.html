@@ -20,8 +20,7 @@
               <label class="col-md-2 control-label" for="tipoId">Tipo</label>
               <div class="col-md-8">
                 <select id="tipoId" class="custom-select" formControlName="tipoReporte">
-                  <option [ngValue]="1">Barras</option>
-                  <option [ngValue]="2">Circular</option>
+                  <option *ngFor="let t of tipos" [ngValue]="t">{{t}}</option>
                 </select>
               </div>
             </div>

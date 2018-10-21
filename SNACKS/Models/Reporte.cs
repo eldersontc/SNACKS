@@ -11,7 +11,7 @@ namespace SNACKS.Models
         [Key]
         public int IdReporte { get; set; }
         public string Titulo { get; set; }
-        public int TipoReporte { get; set; }
+        public string TipoReporte { get; set; }
         public int Flag { get; set; }
         public List<ItemReporte> Items { get; set; }
     }

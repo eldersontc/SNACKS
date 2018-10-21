@@ -7,6 +7,7 @@ export interface IListaRetorno<T> {
 }
 
 export interface IEstadistica {
+  leyenda: string;
   etiqueta: string;
   valor: number;
 }

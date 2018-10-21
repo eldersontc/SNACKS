@@ -1,7 +1,7 @@
 export interface IReporte {
   idReporte: number;
   titulo: string;
-  tipoReporte: number;
+  tipoReporte: string;
   flag: number;
   items: IItemReporte[];
 }
