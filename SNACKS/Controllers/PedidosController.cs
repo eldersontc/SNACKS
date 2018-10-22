@@ -90,7 +90,7 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(pedido, new object[] { pedido.Cliente });
+                await Repositorio.ActualizarAsync(pedido, new object[] { pedido.Usuario, pedido.Cliente });
             }
             catch (Exception ex)
             {
@@ -111,6 +111,7 @@ namespace SNACKS.Controllers
             try
             {
                 List<object> referencias = new List<object>();
+                referencias.Add(pedido.Usuario);
                 referencias.Add(pedido.Cliente);
                 referencias.AddRange(pedido.Items
                     .Select(x=> x.Producto)

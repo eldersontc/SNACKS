@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Filtro } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { SalidasInsumoService } from '../salidas-insumo.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IItemSalidaInsumo, ISalidaInsumo } from '../salida-insumo';
 import { IProducto } from '../../productos/producto';
+import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { IUsuario } from '../../usuarios/usuario';
 
 @Component({
   selector: 'app-salidas-insumo-form',
@@ -16,7 +18,8 @@ export class SalidasInsumoFormComponent implements OnInit {
   filtroProducto: Filtro = new Filtro(2, 'Insumo', 0, new Date(), true);
   elegirProducto: boolean = false;
 
-  constructor(private fb: FormBuilder,
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private fb: FormBuilder,
     private salidaInsumoService: SalidasInsumoService,
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
@@ -81,6 +84,9 @@ export class SalidasInsumoFormComponent implements OnInit {
 
   save() {
     let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
+    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
+
+    salidaInsumo.usuario = usuario;
 
     if (this.modoEdicion) {
       this.salidaInsumoService.updateSalidaInsumo(salidaInsumo)

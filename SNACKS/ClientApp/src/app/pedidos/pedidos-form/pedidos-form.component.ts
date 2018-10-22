@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { PedidosService } from '../pedidos.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -6,6 +6,8 @@ import { IPedido, IItemPedido } from '../pedido';
 import { Filtro } from '../../generico/generico';
 import { IPersona } from '../../personas/persona';
 import { IProducto, IItemProducto } from '../../productos/producto';
+import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { IUsuario } from '../../usuarios/usuario';
 
 @Component({
   selector: 'app-pedidos-form',
@@ -19,7 +21,8 @@ export class PedidosFormComponent implements OnInit {
   elegirCliente: boolean = false;
   elegirProducto: boolean = false;
 
-  constructor(private fb: FormBuilder,
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private fb: FormBuilder,
     private pedidoService: PedidosService,
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
@@ -100,6 +103,9 @@ export class PedidosFormComponent implements OnInit {
 
   save() {
     let pedido: IPedido = Object.assign({}, this.form.value);
+    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
+
+    pedido.usuario = usuario;
 
     if (this.modoEdicion) {
       this.pedidoService.updatePedido(pedido)

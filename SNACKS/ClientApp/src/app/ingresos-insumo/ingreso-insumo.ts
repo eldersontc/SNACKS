@@ -1,9 +1,11 @@
 import { IProducto } from "../productos/producto";
 import { IUnidad } from "../unidades/unidad";
+import { IUsuario } from "../usuarios/usuario";
 
 export interface IIngresoInsumo {
   idIngresoInsumo: number;
   fechaCreacion: Date;
+  usuario: IUsuario;
   comentario: string;
   costo: number;
   items: IItemIngresoInsumo[];

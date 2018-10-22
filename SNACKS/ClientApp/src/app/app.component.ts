@@ -79,7 +79,7 @@ export class AppComponent {
       nombre: 'Gerencia', icono: 'chart-bar',
       subOpciones: [
         { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
-        { nombre: 'Ususarios', icono: 'user-circle', link: 'usuarios' },
+        { nombre: 'Usuarios', icono: 'user-circle', link: 'usuarios' },
         { nombre: 'Reportes', icono: 'chart-pie', link: 'reportes' }
       ]
     }

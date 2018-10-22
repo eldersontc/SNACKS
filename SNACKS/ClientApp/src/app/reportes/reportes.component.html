@@ -91,7 +91,7 @@
 
 <ng-template #viewer let-c="close" let-d="dismiss">
   <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Ver Reporte</h5>
+    <h5 class="modal-title" id="modal-basic-title"><!--<fa name="exclamation-triangle"></fa>--> Ver Reporte</h5>
     <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -123,9 +123,9 @@
     <button type="button" class="btn btn-primary" (click)="runReporte()" [hidden]="view">
       <fa name="trash"></fa> Generar
     </button>
-    <button type="button" class="btn btn-primary" (click)="exportReporte()" [hidden]="!view">
+    <!--<button type="button" class="btn btn-primary" (click)="exportReporte()" [hidden]="!view">
       <fa name="trash"></fa> Exportar
-    </button>
+    </button>-->
     <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">
       Cancelar
     </button>

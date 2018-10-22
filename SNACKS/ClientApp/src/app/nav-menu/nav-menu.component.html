@@ -8,12 +8,12 @@
     <ul class="navbar-nav">
       <li class="nav-item dropdown" *ngFor="let opcion of opciones">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <fa name="{{opcion.icono}}"></fa> {{opcion.nombre}}
+          <!--<fa name="{{opcion.icono}}"></fa>--> {{opcion.nombre}}
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <div *ngFor="let subOpcion of opcion.subOpciones">
             <a class="dropdown-item" [routerLink]='subOpcion.link'>
-              <fa name="{{subOpcion.icono}}"></fa> {{subOpcion.nombre}}
+              <!--<fa name="{{subOpcion.icono}}"></fa>--> {{subOpcion.nombre}}
             </a>
           </div>
         </div>
@@ -34,12 +34,12 @@
   </div>
 </nav>
 <br />
-<div class='container-fluid'>
+<!--<div class='container-fluid'>
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">xxxxxx</li>
       <li class="breadcrumb-item active" aria-current="page">xxxxxxxxxx</li>
     </ol>
   </nav>
-</div>
+</div>-->
 

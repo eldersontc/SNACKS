@@ -1,9 +1,11 @@
 import { IProducto } from "../productos/producto";
 import { IUnidad } from "../unidades/unidad";
+import { IUsuario } from "../usuarios/usuario";
 
 export interface ISalidaProducto {
   idSalidaProducto: number;
   fechaCreacion: Date;
+  usuario: IUsuario;
   comentario: string;
   items: IItemSalidaProducto[];
 }

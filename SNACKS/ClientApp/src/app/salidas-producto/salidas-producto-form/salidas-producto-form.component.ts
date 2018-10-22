@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Filtro } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { SalidasProductoService } from '../salidas-producto.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IItemSalidaProducto, ISalidaProducto } from '../salida-producto';
 import { IProducto } from '../../productos/producto';
+import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { IUsuario } from '../../usuarios/usuario';
 
 @Component({
   selector: 'app-salidas-producto-form',
@@ -16,7 +18,8 @@ export class SalidasProductoFormComponent implements OnInit {
   filtroProducto: Filtro = new Filtro(2, 'Producto', 0, new Date(), false);
   elegirProducto: boolean = false;
 
-  constructor(private fb: FormBuilder,
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private fb: FormBuilder,
     private salidaProductoService: SalidasProductoService,
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
@@ -81,6 +84,9 @@ export class SalidasProductoFormComponent implements OnInit {
 
   save() {
     let salidaProducto: ISalidaProducto = Object.assign({}, this.form.value);
+    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
+
+    salidaProducto.usuario = usuario;
 
     if (this.modoEdicion) {
       this.salidaProductoService.updateSalidaProducto(salidaProducto)

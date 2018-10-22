@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Filtro } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { IngresosProductoService } from '../ingresos-producto.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IItemIngresoProducto, IIngresoProducto } from '../ingreso-producto';
 import { IProducto } from '../../productos/producto';
+import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { IUsuario } from '../../usuarios/usuario';
 
 @Component({
   selector: 'app-ingresos-producto-form',
@@ -16,7 +18,8 @@ export class IngresosProductoFormComponent implements OnInit {
   filtroProducto: Filtro = new Filtro(2, 'Producto', 0, new Date(), false);
   elegirProducto: boolean = false;
 
-  constructor(private fb: FormBuilder,
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private fb: FormBuilder,
     private ingresoProductoService: IngresosProductoService,
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
@@ -81,6 +84,9 @@ export class IngresosProductoFormComponent implements OnInit {
 
   save() {
     let ingresoProducto: IIngresoProducto = Object.assign({}, this.form.value);
+    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
+
+    ingresoProducto.usuario = usuario;
 
     if (this.modoEdicion) {
       this.ingresoProductoService.updateIngresoProducto(ingresoProducto)
