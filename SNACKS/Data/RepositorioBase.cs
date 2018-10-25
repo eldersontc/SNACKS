@@ -17,24 +17,57 @@ namespace SNACKS.Data
             this.Context = Context;
         }
 
-        public async Task<bool> ActualizarAsync(T Entidad, object[] Referencias = null)
+        public void AgregarReferencia(object Referencia)
         {
-            if (Referencias != null)
+            var Entidad = Context.ChangeTracker.Entries().Where(e => 
+                 e.Entity.GetType().Name.Equals(Referencia.GetType().Name)
+                    && (int)e.Entity.GetType().GetProperty("Id" + e.Entity.GetType().Name).GetValue(e.Entity) 
+                        == (int)Referencia.GetType().GetProperty("Id" + Referencia.GetType().Name).GetValue(Referencia)).FirstOrDefault();
+
+            if (Entidad != null)
             {
-                foreach (object Referencia in Referencias)
-                {
-                    Context.Entry(Referencia).State = EntityState.Unchanged;
-                }
+                Entidad.State = EntityState.Detached;
             }
+
+            Context.Attach(Referencia);
+        }
+
+        public void AgregarReferencias(object[] Referencias)
+        {
+
+            foreach (object Referencia in Referencias)
+            {
+                AgregarReferencia(Referencia);
+            }
+        }
+
+        public async Task<bool> ActualizarAsync(T Entidad, bool Confirmar = true)
+        {
             Context.Entry(Entidad).State = EntityState.Modified;
-            await Context.SaveChangesAsync();
+            if (Confirmar)
+            {
+                await Context.SaveChangesAsync();
+            }
             return true;
         }
 
-        public async Task<bool> EliminarAsync(T[] Entidad)
+        public async Task<bool> EliminarAsync(T Entidad, bool Confirmar = true)
+        {
+            Context.Set<T>().Remove(Entidad);
+            if (Confirmar)
+            {
+                await Context.SaveChangesAsync();
+            }
+            return true;
+        }
+
+        public async Task<bool> EliminarAsync(T[] Entidad, bool Confirmar = true)
         {
             Context.Set<T>().RemoveRange(Entidad);
-            await Context.SaveChangesAsync();
+            if (Confirmar)
+            {
+                await Context.SaveChangesAsync();
+            }
             return true;
         }
 
@@ -107,17 +140,23 @@ namespace SNACKS.Data
             };
         }
 
-        public async Task<bool> RegistrarAsync(T Entidad, object[] Referencias = null)
+        public async Task<bool> RegistrarAsync(T Entidad, bool Confirmar = true)
         {
-            if(Referencias != null)
-            {
-                foreach (object Referencia in Referencias)
-                {
-                    Context.Entry(Referencia).State = EntityState.Unchanged;
-                }
-            }
             Context.Set<T>().Add(Entidad);
-            await Context.SaveChangesAsync();
+            if (Confirmar)
+            {
+                await Context.SaveChangesAsync();
+            }
+            return true;
+        }
+        
+        public async Task<bool> RegistrarAsync(T[] Entidad, bool Confirmar = true)
+        {
+            Context.Set<T>().AddRange(Entidad);
+            if (Confirmar)
+            {
+                await Context.SaveChangesAsync();
+            }
             return true;
         }
 

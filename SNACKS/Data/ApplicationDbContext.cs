@@ -34,5 +34,7 @@ namespace SNACKS.Data
         public DbSet<Reporte> Reporte { get; set; }
         public DbSet<ItemReporte> ItemReporte { get; set; }
         public DbQuery<Estadistica> Estadistica { get; set; }
+        public DbSet<InventarioInsumo> InventarioInsumo { get; set; }
+        public DbSet<InventarioProducto> InventarioProducto { get; set; }
     }
 }

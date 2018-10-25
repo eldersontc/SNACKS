@@ -83,6 +83,15 @@ namespace SNACKS.Controllers
 
             try
             {
+                List<ItemReporte> items = await RepositorioItem.ObtenerTodosAsync(
+                    new List<Expression<Func<ItemReporte, bool>>>() {
+                    (x => x.Reporte.IdReporte == id)
+                });
+
+                await RepositorioItem.EliminarAsync(items.ToArray(), false);
+
+                await RepositorioItem.RegistrarAsync(reporte.Items.ToArray(), false);
+
                 await Repositorio.ActualizarAsync(reporte);
             }
             catch (Exception ex)
@@ -129,8 +138,8 @@ namespace SNACKS.Controllers
 
             try
             {
-                await RepositorioItem.EliminarAsync(reporte.Items.ToArray());
-                await Repositorio.EliminarAsync(new Reporte[] { reporte });
+                await RepositorioItem.EliminarAsync(reporte.Items.ToArray(), false);
+                await Repositorio.EliminarAsync(reporte);
             }
             catch (Exception ex)
             {
@@ -140,51 +149,51 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        [HttpPost("AddItem")]
-        public async Task<IActionResult> PostItem([FromBody] ItemReporte item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("AddItem")]
+        //public async Task<IActionResult> PostItem([FromBody] ItemReporte item)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            try
-            {
-                await RepositorioItem.RegistrarAsync(item, new object[] { item.Reporte });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Reporte });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
 
-        [HttpDelete("DeleteItem/{id}")]
-        public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpDelete("DeleteItem/{id}")]
+        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var item = await RepositorioItem.ObtenerAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+        //    var item = await RepositorioItem.ObtenerAsync(id);
+        //    if (item == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(new ItemReporte[] { item });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.EliminarAsync(new ItemReporte[] { item });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
 
         [HttpPost("RunReporte")]
         public async Task<IActionResult> RunReporte([FromBody] Reporte reporte)

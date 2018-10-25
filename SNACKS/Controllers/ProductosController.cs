@@ -89,7 +89,26 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(producto, new object[] { producto.Categoria });
+                List<ItemProducto> items = await RepositorioItem.ObtenerTodosAsync(
+                    new List<Expression<Func<ItemProducto, bool>>>() {
+                    (x => x.Producto.IdProducto == id)
+                });
+
+                await RepositorioItem.EliminarAsync(items.ToArray(), false);
+
+                List<object> referencias = new List<object>();
+
+                foreach (var item in producto.Items)
+                {
+                    item.Producto = new Producto { IdProducto = id };
+                    referencias.Add(item.Unidad);
+                }
+
+                RepositorioItem.AgregarReferencias(referencias.ToArray());
+                await RepositorioItem.RegistrarAsync(producto.Items.ToArray(), false);
+
+                Repositorio.AgregarReferencias(new object[] { producto, producto.Categoria });
+                await Repositorio.ActualizarAsync(producto);
             }
             catch (Exception ex)
             {
@@ -109,13 +128,15 @@ namespace SNACKS.Controllers
 
             try
             {
-                List<object> referencias = new List<object>();
-                referencias.Add(producto.Categoria);
+                List<object> referencias = new List<object>() { producto.Categoria };
+                
                 foreach (var item in producto.Items)
                 {
                     referencias.Add(item.Unidad);
                 }
-                await Repositorio.RegistrarAsync(producto, referencias.ToArray());
+
+                Repositorio.AgregarReferencias(referencias.ToArray());
+                await Repositorio.RegistrarAsync(producto);
             }
             catch (Exception ex)
             {
@@ -141,8 +162,8 @@ namespace SNACKS.Controllers
 
             try
             {
-                await RepositorioItem.EliminarAsync(producto.Items.ToArray());
-                await Repositorio.EliminarAsync(new Producto[] { producto });
+                await RepositorioItem.EliminarAsync(producto.Items.ToArray(), false);
+                await Repositorio.EliminarAsync(producto);
             }
             catch (Exception ex)
             {
@@ -152,50 +173,50 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        [HttpPost("AddItem")]
-        public async Task<IActionResult> PostItem([FromBody] ItemProducto item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("AddItem")]
+        //public async Task<IActionResult> PostItem([FromBody] ItemProducto item)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            try
-            {
-                await RepositorioItem.RegistrarAsync(item, new object[] { item.Producto, item.Unidad });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Producto, item.Unidad });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
 
-        [HttpDelete("DeleteItem/{id}")]
-        public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpDelete("DeleteItem/{id}")]
+        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var item = await RepositorioItem.ObtenerAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+        //    var item = await RepositorioItem.ObtenerAsync(id);
+        //    if (item == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(new ItemProducto[] { item });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.EliminarAsync(new ItemProducto[] { item });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
     }
 }

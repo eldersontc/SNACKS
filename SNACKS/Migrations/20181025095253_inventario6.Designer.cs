@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SNACKS.Data;
 
 namespace SNACKS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181025095253_inventario6")]
+    partial class inventario6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,28 +80,17 @@ namespace SNACKS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int>("Factor");
+
                     b.Property<int>("IdInsumo");
+
+                    b.Property<int>("IdUnidad");
 
                     b.Property<int>("Stock");
 
                     b.HasKey("IdInventarioInsumo");
 
                     b.ToTable("InventarioInsumo");
-                });
-
-            modelBuilder.Entity("SNACKS.Models.InventarioProducto", b =>
-                {
-                    b.Property<int>("IdInventarioProducto")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("IdProducto");
-
-                    b.Property<int>("Stock");
-
-                    b.HasKey("IdInventarioProducto");
-
-                    b.ToTable("InventarioProducto");
                 });
 
             modelBuilder.Entity("SNACKS.Models.ItemIngresoInsumo", b =>
@@ -173,8 +164,6 @@ namespace SNACKS.Migrations
                     b.Property<int?>("IdProducto");
 
                     b.Property<int?>("IdUnidad");
-
-                    b.Property<decimal>("Total");
 
                     b.HasKey("IdItemPedido");
 
@@ -289,23 +278,11 @@ namespace SNACKS.Migrations
 
                     b.Property<string>("Comentario");
 
-                    b.Property<string>("Estado");
-
                     b.Property<DateTime>("FechaCreacion");
-
-                    b.Property<DateTime>("FechaEntrega");
-
-                    b.Property<DateTime>("FechaPago");
-
-                    b.Property<DateTime>("FechaPropuesta");
 
                     b.Property<int?>("IdCliente");
 
                     b.Property<int?>("IdUsuario");
-
-                    b.Property<decimal>("Pago");
-
-                    b.Property<decimal>("Total");
 
                     b.HasKey("IdPedido");
 
@@ -355,7 +332,9 @@ namespace SNACKS.Migrations
 
                     b.HasKey("IdProducto");
 
-                    b.HasIndex("IdCategoria");
+                    b.HasIndex("IdCategoria")
+                        .IsUnique()
+                        .HasFilter("[IdCategoria] IS NOT NULL");
 
                     b.ToTable("Producto");
                 });
@@ -570,8 +549,8 @@ namespace SNACKS.Migrations
             modelBuilder.Entity("SNACKS.Models.Producto", b =>
                 {
                     b.HasOne("SNACKS.Models.Categoria", "Categoria")
-                        .WithMany("Productos")
-                        .HasForeignKey("IdCategoria");
+                        .WithOne("Producto")
+                        .HasForeignKey("SNACKS.Models.Producto", "IdCategoria");
                 });
 
             modelBuilder.Entity("SNACKS.Models.SalidaInsumo", b =>
@@ -591,7 +570,7 @@ namespace SNACKS.Migrations
             modelBuilder.Entity("SNACKS.Models.Usuario", b =>
                 {
                     b.HasOne("SNACKS.Models.Persona", "Persona")
-                        .WithMany("Usuarios")
+                        .WithMany()
                         .HasForeignKey("IdPersona");
                 });
 #pragma warning restore 612, 618

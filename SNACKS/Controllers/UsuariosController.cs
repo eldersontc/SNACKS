@@ -103,7 +103,8 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(usuario, new object[] { usuario.Persona });
+                Repositorio.AgregarReferencia(usuario.Persona);
+                await Repositorio.ActualizarAsync(usuario);
             }
             catch (Exception ex)
             {
@@ -123,7 +124,8 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.RegistrarAsync(usuario, new object[] { usuario.Persona });
+                Repositorio.AgregarReferencia(usuario.Persona);
+                await Repositorio.RegistrarAsync(usuario);
             }
             catch (Exception ex)
             {

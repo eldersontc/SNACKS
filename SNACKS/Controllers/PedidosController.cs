@@ -48,7 +48,7 @@ namespace SNACKS.Controllers
                 }
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Cliente });
+            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario, Constantes.Cliente });
 
             return Ok(result);
         }
@@ -62,6 +62,7 @@ namespace SNACKS.Controllers
             }
 
             var pedido = await Repositorio.ObtenerAsync(id, new string[] {
+                Constantes.Usuario,
                 Constantes.Cliente,
                 Constantes.Items + '.' + Constantes.Producto,
                 Constantes.Items + '.' + Constantes.Unidad
@@ -90,7 +91,31 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.ActualizarAsync(pedido, new object[] { pedido.Usuario, pedido.Cliente });
+                List<ItemPedido> items = await RepositorioItem.ObtenerTodosAsync(
+                    new List<Expression<Func<ItemPedido, bool>>>() {
+                    (x => x.Pedido.IdPedido == id)
+                });
+
+                await RepositorioItem.EliminarAsync(items.ToArray(), false);
+
+                List<object> referencias = new List<object>();
+                decimal total = 0;
+
+                foreach (var item in pedido.Items)
+                {
+                    item.Pedido = new Pedido { IdPedido = id };
+                    referencias.Add(item.Producto);
+                    referencias.Add(item.Unidad);
+                    total += item.Total;
+                }
+
+                RepositorioItem.AgregarReferencias(referencias.ToArray());
+                await RepositorioItem.RegistrarAsync(pedido.Items.ToArray(), false);
+
+                pedido.Total = total;
+
+                Repositorio.AgregarReferencias(new object[] { pedido, pedido.Usuario, pedido.Cliente });
+                await Repositorio.ActualizarAsync(pedido);
             }
             catch (Exception ex)
             {
@@ -110,19 +135,22 @@ namespace SNACKS.Controllers
 
             try
             {
-                List<object> referencias = new List<object>();
-                referencias.Add(pedido.Usuario);
-                referencias.Add(pedido.Cliente);
-                referencias.AddRange(pedido.Items
-                    .Select(x=> x.Producto)
-                    .GroupBy(g => g.IdProducto)
-                    .Select(g => g.First()).ToList());
-                referencias.AddRange(pedido.Items
-                    .Select(x => x.Unidad)
-                    .GroupBy(g => g.IdUnidad)
-                    .Select(g => g.First()).ToList());
+                List<object> referencias = new List<object>() { pedido.Usuario, pedido.Cliente };
+                decimal total = 0;
+
+                foreach (var item in pedido.Items)
+                {
+                    referencias.Add(item.Producto);
+                    referencias.Add(item.Unidad);
+                    total += item.Total;
+                }
+
                 pedido.FechaCreacion = DateTime.Now;
-                await Repositorio.RegistrarAsync(pedido, referencias.ToArray());
+                pedido.Estado = Constantes.Pendiente;
+                pedido.Total = total;
+
+                Repositorio.AgregarReferencias(referencias.ToArray());
+                await Repositorio.RegistrarAsync(pedido);
             }
             catch (Exception ex)
             {
@@ -148,7 +176,7 @@ namespace SNACKS.Controllers
 
             try
             {
-                await RepositorioItem.EliminarAsync(pedido.Items.ToArray());
+                await RepositorioItem.EliminarAsync(pedido.Items.ToArray(), false);
                 await Repositorio.EliminarAsync(new Pedido[] { pedido });
             }
             catch (Exception ex)
@@ -159,50 +187,50 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        [HttpPost("AddItem")]
-        public async Task<IActionResult> PostItem([FromBody] ItemPedido item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("AddItem")]
+        //public async Task<IActionResult> PostItem([FromBody] ItemPedido item)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            try
-            {
-                await RepositorioItem.RegistrarAsync(item, new object[] { item.Pedido, item.Producto, item.Unidad });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Pedido, item.Producto, item.Unidad });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
 
-        [HttpDelete("DeleteItem/{id}")]
-        public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpDelete("DeleteItem/{id}")]
+        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var item = await RepositorioItem.ObtenerAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+        //    var item = await RepositorioItem.ObtenerAsync(id);
+        //    if (item == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(new ItemPedido[] { item });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.EliminarAsync(new ItemPedido[] { item });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
     }
 }

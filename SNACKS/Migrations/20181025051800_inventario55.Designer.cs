@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SNACKS.Data;
 
 namespace SNACKS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181025051800_inventario55")]
+    partial class inventario55
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,36 +72,6 @@ namespace SNACKS.Migrations
                     b.HasIndex("IdUsuario");
 
                     b.ToTable("IngresoProducto");
-                });
-
-            modelBuilder.Entity("SNACKS.Models.InventarioInsumo", b =>
-                {
-                    b.Property<int>("IdInventarioInsumo")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("IdInsumo");
-
-                    b.Property<int>("Stock");
-
-                    b.HasKey("IdInventarioInsumo");
-
-                    b.ToTable("InventarioInsumo");
-                });
-
-            modelBuilder.Entity("SNACKS.Models.InventarioProducto", b =>
-                {
-                    b.Property<int>("IdInventarioProducto")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("IdProducto");
-
-                    b.Property<int>("Stock");
-
-                    b.HasKey("IdInventarioProducto");
-
-                    b.ToTable("InventarioProducto");
                 });
 
             modelBuilder.Entity("SNACKS.Models.ItemIngresoInsumo", b =>
@@ -173,8 +145,6 @@ namespace SNACKS.Migrations
                     b.Property<int?>("IdProducto");
 
                     b.Property<int?>("IdUnidad");
-
-                    b.Property<decimal>("Total");
 
                     b.HasKey("IdItemPedido");
 
@@ -289,23 +259,11 @@ namespace SNACKS.Migrations
 
                     b.Property<string>("Comentario");
 
-                    b.Property<string>("Estado");
-
                     b.Property<DateTime>("FechaCreacion");
-
-                    b.Property<DateTime>("FechaEntrega");
-
-                    b.Property<DateTime>("FechaPago");
-
-                    b.Property<DateTime>("FechaPropuesta");
 
                     b.Property<int?>("IdCliente");
 
                     b.Property<int?>("IdUsuario");
-
-                    b.Property<decimal>("Pago");
-
-                    b.Property<decimal>("Total");
 
                     b.HasKey("IdPedido");
 

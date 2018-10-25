@@ -90,13 +90,13 @@ export class IngresosInsumoFormComponent implements OnInit {
     let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
 
     ingresoInsumo.usuario = usuario;
+    ingresoInsumo.items = this.items;
 
     if (this.modoEdicion) {
       this.ingresoInsumoService.updateIngresoInsumo(ingresoInsumo)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
-      ingresoInsumo.items = this.items;
       this.ingresoInsumoService.createIngresoInsumo(ingresoInsumo)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -116,18 +116,18 @@ export class IngresosInsumoFormComponent implements OnInit {
 
     let i: IItemIngresoInsumo = Object.assign({}, this.formItem.value);
 
-    if (this.modoEdicion) {
+    //if (this.modoEdicion) {
 
-      let ingresoInsumo: IIngresoInsumo = Object.assign({}, this.form.value);
-      i.ingresoInsumo = ingresoInsumo;
+    //  let ingresoInsumo: IIngresoInsumo = Object.assign({}, this.form.value);
+    //  i.ingresoInsumo = ingresoInsumo;
 
-      this.ingresoInsumoService.createItem(i)
-        .subscribe(data => this.onSaveItemSuccess(i),
-          error => console.error(error));
+    //  this.ingresoInsumoService.createItem(i)
+    //    .subscribe(data => this.onSaveItemSuccess(i),
+    //      error => console.error(error));
 
-    } else {
+    //} else {
       this.onSaveItemSuccess(i);
-    }
+    //}
   }
 
   onSaveItemSuccess(i) {
@@ -136,13 +136,13 @@ export class IngresosInsumoFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemIngresoInsumo) {
-    if (this.modoEdicion) {
-      this.ingresoInsumoService.deleteItem(i.idItemIngresoInsumo)
-        .subscribe(data => this.onDeleteItemSuccess(i),
-          error => console.log(error));
-    } else {
+    //if (this.modoEdicion) {
+    //  this.ingresoInsumoService.deleteItem(i.idItemIngresoInsumo)
+    //    .subscribe(data => this.onDeleteItemSuccess(i),
+    //      error => console.log(error));
+    //} else {
       this.onDeleteItemSuccess(i);
-    }
+    //}
   }
 
   onDeleteItemSuccess(i: IItemIngresoInsumo) {

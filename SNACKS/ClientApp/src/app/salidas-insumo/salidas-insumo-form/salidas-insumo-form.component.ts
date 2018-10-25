@@ -87,13 +87,13 @@ export class SalidasInsumoFormComponent implements OnInit {
     let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
 
     salidaInsumo.usuario = usuario;
+    salidaInsumo.items = this.items;
 
     if (this.modoEdicion) {
       this.salidaInsumoService.updateSalidaInsumo(salidaInsumo)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
-      salidaInsumo.items = this.items;
       this.salidaInsumoService.createSalidaInsumo(salidaInsumo)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -113,18 +113,18 @@ export class SalidasInsumoFormComponent implements OnInit {
 
     let i: IItemSalidaInsumo = Object.assign({}, this.formItem.value);
 
-    if (this.modoEdicion) {
+    //if (this.modoEdicion) {
 
-      let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
-      i.salidaInsumo = salidaInsumo;
+    //  let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
+      //i.salidaInsumo = salidaInsumo;
 
-      this.salidaInsumoService.createItem(i)
-        .subscribe(data => this.onSaveItemSuccess(i),
-          error => console.error(error));
+    //  this.salidaInsumoService.createItem(i)
+    //    .subscribe(data => this.onSaveItemSuccess(i),
+    //      error => console.error(error));
 
-    } else {
+    //} else {
       this.onSaveItemSuccess(i);
-    }
+    //}
   }
 
   onSaveItemSuccess(i) {
@@ -133,13 +133,13 @@ export class SalidasInsumoFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemSalidaInsumo) {
-    if (this.modoEdicion) {
-      this.salidaInsumoService.deleteItem(i.idItemSalidaInsumo)
-        .subscribe(data => this.onDeleteItemSuccess(i),
-          error => console.log(error));
-    } else {
+    //if (this.modoEdicion) {
+    //  this.salidaInsumoService.deleteItem(i.idItemSalidaInsumo)
+    //    .subscribe(data => this.onDeleteItemSuccess(i),
+    //      error => console.log(error));
+    //} else {
       this.onDeleteItemSuccess(i);
-    }
+    //}
   }
 
   onDeleteItemSuccess(i: IItemSalidaInsumo) {

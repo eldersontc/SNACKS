@@ -17,12 +17,15 @@ namespace SNACKS.Controllers
     {
         public IRepositorioBase<SalidaInsumo> Repositorio { get; }
         public IRepositorioBase<ItemSalidaInsumo> RepositorioItem { get; }
+        public IRepositorioBase<InventarioInsumo> RepositorioInventario { get; }
 
         public SalidasInsumoController(IRepositorioBase<SalidaInsumo> repositorio,
-            IRepositorioBase<ItemSalidaInsumo> repositorioItem)
+            IRepositorioBase<ItemSalidaInsumo> repositorioItem,
+            IRepositorioBase<InventarioInsumo> repositorioInventario)
         {
             Repositorio = repositorio;
             RepositorioItem = repositorioItem;
+            RepositorioInventario = repositorioInventario;
         }
 
         [HttpPost("GetSalidasInsumo")]
@@ -58,36 +61,97 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var ingresoInsumo = await Repositorio.ObtenerAsync(id, new string[] {
+            var salidaInsumo = await Repositorio.ObtenerAsync(id, new string[] {
                 Constantes.Usuario,
                 Constantes.Items + '.' + Constantes.Producto,
                 Constantes.Items + '.' + Constantes.Unidad
             });
 
-            if (ingresoInsumo == null)
+            if (salidaInsumo == null)
             {
                 return NotFound();
             }
 
-            return Ok(ingresoInsumo);
+            return Ok(salidaInsumo);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSalidaInsumo([FromRoute] int id, [FromBody] SalidaInsumo ingresoInsumo)
+        public async Task<IActionResult> PutSalidaInsumo([FromRoute] int id, [FromBody] SalidaInsumo salidaInsumo)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != ingresoInsumo.IdSalidaInsumo)
+            if (id != salidaInsumo.IdSalidaInsumo)
             {
                 return BadRequest();
             }
 
             try
             {
-                await Repositorio.ActualizarAsync(ingresoInsumo, new object[] { ingresoInsumo.Usuario });
+                /* Eliminación de los anteriores items */
+                List<ItemSalidaInsumo> items = await RepositorioItem.ObtenerTodosAsync(
+                    new List<Expression<Func<ItemSalidaInsumo, bool>>>() {
+                    (x => x.SalidaInsumo.IdSalidaInsumo == id)
+                },
+                    new string[] {
+                    Constantes.Producto,
+                    Constantes.Unidad
+                });
+
+                foreach (var item in items)
+                {
+                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
+                        (x => x.IdInsumo == item.Producto.IdProducto)
+                    };
+                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
+                    if (inventarios.Count > 0)
+                    {
+                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
+                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                    }
+                    else
+                    {
+                        return StatusCode(500, "No hay stock disponible.");
+                    }
+                }
+
+                await RepositorioItem.EliminarAsync(items.ToArray(), false);
+
+                /* Registro de los nuevos items */
+                List<object> referencias = new List<object>();
+                
+                foreach (var item in salidaInsumo.Items)
+                {
+                    item.SalidaInsumo = new SalidaInsumo { IdSalidaInsumo = id };
+                    referencias.Add(item.Producto);
+                    referencias.Add(item.Unidad);
+                }
+
+                RepositorioItem.AgregarReferencias(referencias.ToArray());
+                await RepositorioItem.RegistrarAsync(salidaInsumo.Items.ToArray(), false);
+
+                foreach (var item in salidaInsumo.Items)
+                {
+                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
+                        (x => x.IdInsumo == item.Producto.IdProducto)
+                    };
+                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
+                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
+                    {
+                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
+                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                    }
+                    else
+                    {
+                        return StatusCode(500, "No hay stock disponible.");
+                    }
+                }
+
+                /* Actualización de la cabecera */
+                Repositorio.AgregarReferencias(new object[] { salidaInsumo, salidaInsumo.Usuario });
+                await Repositorio.ActualizarAsync(salidaInsumo);
             }
             catch (Exception ex)
             {
@@ -98,7 +162,7 @@ namespace SNACKS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostSalidaInsumo([FromBody] SalidaInsumo ingresoInsumo)
+        public async Task<IActionResult> PostSalidaInsumo([FromBody] SalidaInsumo salidaInsumo)
         {
             if (!ModelState.IsValid)
             {
@@ -107,18 +171,35 @@ namespace SNACKS.Controllers
 
             try
             {
-                List<object> referencias = new List<object>();
-                referencias.Add(ingresoInsumo.Usuario);
-                referencias.AddRange(ingresoInsumo.Items
-                    .Select(x => x.Producto)
-                    .GroupBy(g => g.IdProducto)
-                    .Select(g => g.First()).ToList());
-                referencias.AddRange(ingresoInsumo.Items
-                    .Select(x => x.Unidad)
-                    .GroupBy(g => g.IdUnidad)
-                    .Select(g => g.First()).ToList());
-                ingresoInsumo.FechaCreacion = DateTime.Now;
-                await Repositorio.RegistrarAsync(ingresoInsumo, referencias.ToArray());
+                foreach (var item in salidaInsumo.Items)
+                {
+                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
+                        (x => x.IdInsumo == item.Producto.IdProducto)
+                    };
+                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
+                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
+                    {
+                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
+                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                    }
+                    else
+                    {
+                        return StatusCode(500, "No hay stock disponible.");
+                    }
+                }
+
+                List<object> referencias = new List<object>() { salidaInsumo.Usuario };
+                
+                foreach (var item in salidaInsumo.Items)
+                {
+                    referencias.Add(item.Producto);
+                    referencias.Add(item.Unidad);
+                }
+
+                salidaInsumo.FechaCreacion = DateTime.Now;
+                
+                Repositorio.AgregarReferencias(referencias.ToArray());
+                await Repositorio.RegistrarAsync(salidaInsumo);
             }
             catch (Exception ex)
             {
@@ -136,16 +217,34 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var ingresoInsumo = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
-            if (ingresoInsumo == null)
+            var salidaInsumo = await Repositorio.ObtenerAsync(id, new string[] {
+                Constantes.Items + '.' + Constantes.Producto
+            });
+            if (salidaInsumo == null)
             {
                 return NotFound();
             }
 
             try
             {
-                await RepositorioItem.EliminarAsync(ingresoInsumo.Items.ToArray());
-                await Repositorio.EliminarAsync(new SalidaInsumo[] { ingresoInsumo });
+                foreach (var item in salidaInsumo.Items)
+                {
+                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
+                        (x => x.IdInsumo == item.Producto.IdProducto)
+                    };
+                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
+                    if (inventarios.Count > 0)
+                    {
+                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
+                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                    }
+                    else
+                    {
+                        return StatusCode(500, "No hay stock disponible.");
+                    }
+                }
+                await RepositorioItem.EliminarAsync(salidaInsumo.Items.ToArray(), false);
+                await Repositorio.EliminarAsync(salidaInsumo);
             }
             catch (Exception ex)
             {
@@ -155,50 +254,50 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        [HttpPost("AddItem")]
-        public async Task<IActionResult> PostItem([FromBody] ItemSalidaInsumo item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("AddItem")]
+        //public async Task<IActionResult> PostItem([FromBody] ItemSalidaInsumo item)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            try
-            {
-                await RepositorioItem.RegistrarAsync(item, new object[] { item.SalidaInsumo, item.Producto, item.Unidad });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.SalidaInsumo, item.Producto, item.Unidad });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
 
-        [HttpDelete("DeleteItem/{id}")]
-        public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpDelete("DeleteItem/{id}")]
+        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var item = await RepositorioItem.ObtenerAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+        //    var item = await RepositorioItem.ObtenerAsync(id);
+        //    if (item == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(new ItemSalidaInsumo[] { item });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+        //    try
+        //    {
+        //        await RepositorioItem.EliminarAsync(new ItemSalidaInsumo[] { item });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
 
-            return Ok(true);
-        }
+        //    return Ok(true);
+        //}
     }
 }
