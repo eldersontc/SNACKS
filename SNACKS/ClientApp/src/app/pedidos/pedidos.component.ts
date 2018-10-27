@@ -22,6 +22,7 @@ export class PedidosComponent implements OnInit {
   criterio: number = 1;
   busqueda: Date;
   seleccion: IPedido;
+  montoPago: number;
 
   constructor(private pedidoService: PedidosService, config: NgbModalConfig, private modalService: NgbModal) {
     config.backdrop = 'static';
@@ -87,17 +88,39 @@ export class PedidosComponent implements OnInit {
 
   open(content) {
     this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deletePedido(); } });
+      .result.then((result) => { if (result == 'Eliminar') { this.delete(); } });
   }
 
-  deletePedido() {
-    this.pedidoService.deletePedido(this.seleccion.idPedido).subscribe(data => this.onDeleteSuccess(),
+  openDelivery(content) {
+    this.modalService.open(content, { centered: true, size: 'sm' })
+      .result.then((result) => { if (result == 'Entregar') { this.delivery(); } });
+  }
+
+  openPay(content) {
+    this.montoPago = this.seleccion.total - this.seleccion.pago;
+    this.modalService.open(content, { centered: true, size: 'sm' })
+      .result.then((result) => { if (result == 'Pagar') { this.pay(); } });
+  }
+
+  delete() {
+    this.pedidoService.deletePedido(this.seleccion.idPedido).subscribe(data => this.onProcessSuccess(),
       error => console.log(error));
   }
 
-  onDeleteSuccess() {
+  onProcessSuccess() {
     this.seleccion = undefined;
     this.getPedidos();
   }
 
+  delivery() {
+    this.pedidoService.delivery(this.seleccion.idPedido)
+      .subscribe(data => this.onProcessSuccess(),
+        error => console.log(error));
+  }
+
+  pay() {
+    this.pedidoService.pay({ idPedido: this.seleccion.idPedido, pago: this.montoPago })
+      .subscribe(data => this.onProcessSuccess(),
+        error => console.log(error));
+  }
 }

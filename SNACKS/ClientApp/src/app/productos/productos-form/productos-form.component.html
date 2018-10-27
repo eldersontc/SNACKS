@@ -105,38 +105,26 @@
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
       <ng-template ngbTabContent>
         <br />
-        <form class="form-horizontal" novalidate>
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-8 control-label" for="nombreRO"><b>Nombre: </b>{{form.value.nombre}}</label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-8 control-label" for="categoriaRO"><b>Categoria: </b>{{form.value.categoria.nombre}}</label>
-            </div>
-            <div class="form-group">
-              <div class="col-md-8">
-                <div class="custom-control custom-checkbox mt-3">
-                  <input type="checkbox" class="custom-control-input"
-                         id="esInsumoRO"
-                         [checked]="form.controls.esInsumo.value"
-                         disabled />
-                  <label class="custom-control-label" for="esInsumoRO">Es Insumo</label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="col-md-10">
-                <div class="btn-group mb-2 col-md-12 justify-content-center">
-                  <span class="ml-2" *ngFor="let i of items">
-                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Unidad" triggers="mouseenter:mouseleave">
-                      {{i.unidad.nombre}} : {{i.factor}} <fa name="times-circle"></fa>
-                    </button>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
+        <table class="table table-bordered table-hover table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col">Unidad</th>
+              <th scope="col">Factor</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of items">
+              <td>{{i.unidad.nombre}}</td>
+              <td>{{i.factor}}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
+                  <fa name="trash"></fa>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </ng-template>
     </ngb-tab>
   </ngb-tabset>

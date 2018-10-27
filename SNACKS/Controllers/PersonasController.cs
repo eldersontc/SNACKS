@@ -68,7 +68,7 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var persona = await Repositorio.ObtenerAsync(id);
+            var persona = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Vendedor, Constantes.ZonaVenta });
 
             if (persona == null)
             {
@@ -93,6 +93,10 @@ namespace SNACKS.Controllers
 
             try
             {
+                if(persona.TipoPersona == Constantes.EnumCliente)
+                {
+                    Repositorio.AgregarReferencias(new object[] { persona.ZonaVenta, persona.Vendedor });
+                }
                 await Repositorio.ActualizarAsync(persona);
             }
             catch (Exception ex)
@@ -113,6 +117,10 @@ namespace SNACKS.Controllers
 
             try
             {
+                if (persona.TipoPersona == Constantes.EnumCliente)
+                {
+                    Repositorio.AgregarReferencias(new object[] { persona.ZonaVenta, persona.Vendedor });
+                }
                 await Repositorio.RegistrarAsync(persona);
             }
             catch (Exception ex)
@@ -139,7 +147,7 @@ namespace SNACKS.Controllers
 
             try
             {
-                await Repositorio.EliminarAsync(new Persona[] { persona });
+                await Repositorio.EliminarAsync(persona);
             }
             catch (Exception ex)
             {

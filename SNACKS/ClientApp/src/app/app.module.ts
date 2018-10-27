@@ -47,6 +47,9 @@ import { ReportesComponent } from './reportes/reportes.component';
 import { ReportesFormComponent } from './reportes/reportes-form/reportes-form.component';
 import { ReportesService } from './reportes/reportes.service';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { ZonasVentaComponent } from './zonas-venta/zonas-venta.component';
+import { ZonasVentaFormComponent } from './zonas-venta/zonas-venta-form/zonas-venta-form.component';
+import { ZonasVentaService } from './zonas-venta/zonas-venta.service';
 
 @NgModule({
   declarations: [
@@ -77,7 +80,9 @@ import { NotFoundComponent } from './not-found/not-found.component';
     UsuariosFormComponent,
     ReportesComponent,
     ReportesFormComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    ZonasVentaComponent,
+    ZonasVentaFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -108,6 +113,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
       { path: 'pedidos', component: PedidosComponent },
       { path: 'pedidos-form', component: PedidosFormComponent },
       { path: 'pedidos-form/:id', component: PedidosFormComponent },
+      { path: 'pedidos-form/:mode/:id', component: PedidosFormComponent },
       { path: 'ingresos-insumo', component: IngresosInsumoComponent },
       { path: 'ingresos-insumo-form', component: IngresosInsumoFormComponent },
       { path: 'ingresos-insumo-form/:id', component: IngresosInsumoFormComponent },
@@ -123,6 +129,9 @@ import { NotFoundComponent } from './not-found/not-found.component';
       { path: 'reportes', component: ReportesComponent },
       { path: 'reportes-form', component: ReportesFormComponent },
       { path: 'reportes-form/:id', component: ReportesFormComponent },
+      { path: 'zonas-venta', component: ZonasVentaComponent },
+      { path: 'zonas-venta-form', component: ZonasVentaFormComponent },
+      { path: 'zonas-venta-form/:id', component: ZonasVentaFormComponent },
       { path: '404', component: NotFoundComponent },
       { path: '**', redirectTo: '/404' }
     ]),
@@ -143,6 +152,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
     IngresosProductoService,
     SalidasProductoService,
     ReportesService,
+    ZonasVentaService,
     { provide: NgbDatepickerI18n, useClass: DatepickerI18n },
     { provide: NgbDateAdapter, useClass: DateAdapter },
     { provide: NgbDateParserFormatter, useClass: DateParserFormatter }

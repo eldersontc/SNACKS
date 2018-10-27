@@ -69,7 +69,7 @@
           </label>
         </div>
       </td>
-      <td *ngIf="p.tipoPersona == 1">{{p.apellidos + ', ' + p.nombres}}</td>
+      <td *ngIf="p.tipoPersona != 2">{{p.apellidos + ', ' + p.nombres}}</td>
       <td *ngIf="p.tipoPersona == 2">{{p.razonSocial}}</td>
       <td>{{p.numeroDocumento}}</td>
     </tr>

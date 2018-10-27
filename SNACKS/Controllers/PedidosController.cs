@@ -187,50 +187,59 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        //[HttpPost("AddItem")]
-        //public async Task<IActionResult> PostItem([FromBody] ItemPedido item)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+        [HttpPost("Entregar/{id}")]
+        public async Task<IActionResult> Entregar([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        //    try
-        //    {
-        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Pedido, item.Producto, item.Unidad });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
+            try
+            {
+                var pedido = await Repositorio.ObtenerAsync(id);
+                pedido.FechaEntrega = DateTime.Now;
+                pedido.Estado = Constantes.Entregado;
+                await Repositorio.ActualizarAsync(pedido);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
 
-        //    return Ok(true);
-        //}
+            return Ok(true);
+        }
 
-        //[HttpDelete("DeleteItem/{id}")]
-        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+        [HttpPost("Pagar/{id}")]
+        public async Task<IActionResult> Pagar([FromRoute] int id, [FromBody] decimal pago)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        //    var item = await RepositorioItem.ObtenerAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
+            try
+            {
+                var pedido = await Repositorio.ObtenerAsync(id);
+                pedido.FechaPago = DateTime.Now;
+                pedido.Pago += pago;
+                if (pedido.Pago == pedido.Total)
+                {
+                    pedido.Estado = Constantes.Pagado;
+                }
+                else
+                {
+                    pedido.Estado = Constantes.PagoParcial;
+                }
+                await Repositorio.ActualizarAsync(pedido);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
 
-        //    try
-        //    {
-        //        await RepositorioItem.EliminarAsync(new ItemPedido[] { item });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
+            return Ok(true);
+        }
 
-        //    return Ok(true);
-        //}
     }
 }

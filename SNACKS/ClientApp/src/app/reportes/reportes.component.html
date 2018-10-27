@@ -28,7 +28,7 @@
       <fa name="trash"></fa> Eliminar
     </button>
     <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="getReporte(viewer)">
-      <fa name="chart"></fa> Reporte
+      <fa name="play"></fa> Ejecutar
     </button>
   </div>
   <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group" *ngIf="include">
@@ -121,7 +121,7 @@
   </div>
   <div class="modal-footer justify-content-center">
     <button type="button" class="btn btn-primary" (click)="runReporte()" [hidden]="view">
-      <fa name="trash"></fa> Generar
+      <fa name="play"></fa> Generar
     </button>
     <!--<button type="button" class="btn btn-primary" (click)="exportReporte()" [hidden]="!view">
       <fa name="trash"></fa> Exportar

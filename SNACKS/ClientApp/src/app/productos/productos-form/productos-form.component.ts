@@ -68,12 +68,13 @@ export class ProductosFormComponent implements OnInit {
   save() {
     let producto: IProducto = Object.assign({}, this.form.value);
 
+    producto.items = this.items;
+
     if (this.modoEdicion) {
       this.productoService.updateProducto(producto)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
-      producto.items = this.items;
       this.productoService.createProducto(producto)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -87,18 +88,18 @@ export class ProductosFormComponent implements OnInit {
   saveItem() {
     let i: IItemProducto = Object.assign({}, this.formItem.value);
     
-    if (this.modoEdicion) {
+    //if (this.modoEdicion) {
 
-      let producto: IProducto = Object.assign({}, this.form.value);
-      i.producto = producto;
+    //  let producto: IProducto = Object.assign({}, this.form.value);
+    //  i.producto = producto;
 
-      this.productoService.createItem(i)
-        .subscribe(data => this.onSaveItemSuccess(i),
-        error => console.error(error));
+    //  this.productoService.createItem(i)
+    //    .subscribe(data => this.onSaveItemSuccess(i),
+    //    error => console.error(error));
 
-    } else {
+    //} else {
       this.onSaveItemSuccess(i);
-    }
+    //}
   }
 
   onSaveItemSuccess(i) {
@@ -107,13 +108,13 @@ export class ProductosFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemProducto) {
-    if (this.modoEdicion) {
-      this.productoService.deleteItem(i.idItemProducto)
-        .subscribe(data => this.onDeleteItemSuccess(i),
-        error => console.log(error));
-    } else {
+    //if (this.modoEdicion) {
+    //  this.productoService.deleteItem(i.idItemProducto)
+    //    .subscribe(data => this.onDeleteItemSuccess(i),
+    //    error => console.log(error));
+    //} else {
       this.onDeleteItemSuccess(i);
-    }
+    //}
   }
 
   onDeleteItemSuccess(i: IItemProducto) {

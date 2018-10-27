@@ -60,12 +60,13 @@ export class ReportesFormComponent implements OnInit {
   save() {
     let reporte: IReporte = Object.assign({}, this.form.value);
 
+    reporte.items = this.items;
+
     if (this.modoEdicion) {
       this.reporteService.updateReporte(reporte)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
-      reporte.items = this.items;
       this.reporteService.createReporte(reporte)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -79,18 +80,18 @@ export class ReportesFormComponent implements OnInit {
   saveItem() {
     let i: IItemReporte = Object.assign({}, this.formItem.value);
 
-    if (this.modoEdicion) {
+    //if (this.modoEdicion) {
 
-      let reporte: IReporte = Object.assign({}, this.form.value);
-      i.reporte = reporte;
+    //  let reporte: IReporte = Object.assign({}, this.form.value);
+    //  i.reporte = reporte;
 
-      this.reporteService.createItem(i)
-        .subscribe(data => this.onSaveItemSuccess(i),
-          error => console.error(error));
+    //  this.reporteService.createItem(i)
+    //    .subscribe(data => this.onSaveItemSuccess(i),
+    //      error => console.error(error));
 
-    } else {
+    //} else {
       this.onSaveItemSuccess(i);
-    }
+    //}
   }
 
   onSaveItemSuccess(i) {
@@ -99,13 +100,13 @@ export class ReportesFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemReporte) {
-    if (this.modoEdicion) {
-      this.reporteService.deleteItem(i.idItemReporte)
-        .subscribe(data => this.onDeleteItemSuccess(i),
-          error => console.log(error));
-    } else {
+    //if (this.modoEdicion) {
+    //  this.reporteService.deleteItem(i.idItemReporte)
+    //    .subscribe(data => this.onDeleteItemSuccess(i),
+    //      error => console.log(error));
+    //} else {
       this.onDeleteItemSuccess(i);
-    }
+    //}
   }
 
   onDeleteItemSuccess(i: IItemReporte) {

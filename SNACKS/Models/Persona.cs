@@ -18,7 +18,12 @@ namespace SNACKS.Models
         public string RazonSocial { get; set; }
         public int TipoDocumento { get; set; }
         public string NumeroDocumento { get; set; }
+        public string Distrito { get; set; }
         public string Direccion { get; set; }
+        [ForeignKey("IdZonaVenta")]
+        public ZonaVenta ZonaVenta { get; set; }
+        [ForeignKey("IdVendedor")]
+        public Persona Vendedor { get; set; }
         [JsonIgnore]
         public List<Pedido> Pedidos { get; set; }
         [JsonIgnore]

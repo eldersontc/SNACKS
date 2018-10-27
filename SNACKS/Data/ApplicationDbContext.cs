@@ -36,5 +36,6 @@ namespace SNACKS.Data
         public DbQuery<Estadistica> Estadistica { get; set; }
         public DbSet<InventarioInsumo> InventarioInsumo { get; set; }
         public DbSet<InventarioProducto> InventarioProducto { get; set; }
+        public DbSet<ZonaVenta> ZonaVenta { get; set; }
     }
 }

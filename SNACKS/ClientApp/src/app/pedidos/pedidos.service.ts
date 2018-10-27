@@ -31,11 +31,11 @@ export class PedidosService {
     return this.http.delete<boolean>(this.apiURL + '/' + params);
   }
 
-  createItem(params: IItemPedido): Observable<boolean> {
-    return this.http.post<boolean>(this.apiURL + '/AddItem', params);
+  delivery(params): Observable<boolean> {
+    return this.http.post<boolean>(this.apiURL + '/Entregar/' + params, params);
   }
 
-  deleteItem(params): Observable<boolean> {
-    return this.http.delete<boolean>(this.apiURL + '/DeleteItem/' + params);
+  pay(params): Observable<boolean> {
+    return this.http.post<boolean>(this.apiURL + '/Pagar/' + params.idPedido, params.pago);
   }
 }

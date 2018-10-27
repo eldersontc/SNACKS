@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { IIngresoProducto } from './ingreso-producto';
 import { Filtro, IListaRetorno } from '../generico/generico';
 import { IngresosProductoService } from './ingresos-producto.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
 
 @Component({
   selector: 'app-ingresos-producto',
@@ -18,10 +19,15 @@ export class IngresosProductoComponent implements OnInit {
   criterio: number = 1;
   busqueda: Date;
   seleccion: IIngresoProducto;
+  rol: number;
 
-  constructor(private ingresoProductoService: IngresosProductoService, config: NgbModalConfig, private modalService: NgbModal) {
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private ingresoProductoService: IngresosProductoService,
+    config: NgbModalConfig,
+    private modalService: NgbModal) {
     config.backdrop = 'static';
     config.keyboard = false;
+    this.rol = this.storage.get('login').tipo;
   }
 
   ngOnInit() {

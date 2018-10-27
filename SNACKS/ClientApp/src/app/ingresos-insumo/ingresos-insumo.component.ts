@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { IIngresoInsumo } from './ingreso-insumo';
 import { Filtro, IListaRetorno } from '../generico/generico';
 import { IngresosInsumoService } from '../ingresos-insumo/ingresos-insumo.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
 
 @Component({
   selector: 'app-ingresos-insumo',
@@ -18,10 +19,15 @@ export class IngresosInsumoComponent implements OnInit {
   criterio: number = 1;
   busqueda: Date;
   seleccion: IIngresoInsumo;
+  rol: number;
 
-  constructor(private ingresoInsumoService: IngresosInsumoService, config: NgbModalConfig, private modalService: NgbModal) {
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private ingresoInsumoService: IngresosInsumoService,
+    config: NgbModalConfig,
+    private modalService: NgbModal) {
     config.backdrop = 'static';
     config.keyboard = false;
+    this.rol = this.storage.get('login').tipo;
   }
 
   ngOnInit() {

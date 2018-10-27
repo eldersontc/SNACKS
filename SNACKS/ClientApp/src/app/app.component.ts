@@ -19,6 +19,7 @@ export class AppComponent {
   form: FormGroup;
 
   verAlerta: boolean = false;
+  opciones: object;
 
   ngOnInit() {
     this.form = this.fb.group({
@@ -28,6 +29,7 @@ export class AppComponent {
     if (this.storage.get('login')) {
       this.logueado = true;
       this.usuarioLogueado = this.storage.get('login').nombre;
+      this.opciones = this.opcionesxRol(this.storage.get('login').tipo);
     }
   }
 
@@ -47,6 +49,7 @@ export class AppComponent {
       tipo: u.persona.tipoPersona
     });
     this.usuarioLogueado = this.storage.get('login').nombre;
+    this.opciones = this.opcionesxRol(u.persona.tipoPersona);
   }
 
   cerrarSesion() {
@@ -56,33 +59,68 @@ export class AppComponent {
 
   usuarioLogueado: string;
 
-  opciones: Object[] = [
-    {
-      nombre: 'Ventas', icono: 'shopping-cart',
-      subOpciones: [
-        { nombre: 'Pedidos', icono: 'clipboard', link: 'pedidos' }
-      ]
-    },
-    {
-      nombre: 'Producción', icono: 'industry',
-      subOpciones: [
-        { nombre: 'Unidades', icono: 'archive', link: 'unidades' },
-        { nombre: 'Categorias', icono: 'archive', link: 'categorias' },
-        { nombre: 'Productos', icono: 'archive', link: 'productos' },
-        { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
-        { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
-        { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },
-        { nombre: 'Salidas Producto', icono: 'file-export', link: 'salidas-producto' }
-      ]
-    },
-    {
-      nombre: 'Gerencia', icono: 'chart-bar',
-      subOpciones: [
-        { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
-        { nombre: 'Usuarios', icono: 'user-circle', link: 'usuarios' },
-        { nombre: 'Reportes', icono: 'chart-pie', link: 'reportes' }
-      ]
+  opcionesxRol(rol) {
+    var opciones;
+    if (rol == 1) {
+      opciones = [
+        {
+          nombre: 'Ventas', icono: 'shopping-cart',
+          subOpciones: [
+            { nombre: 'Pedidos', icono: 'clipboard', link: 'pedidos' },
+            { nombre: 'Zonas Venta', icono: 'clipboard', link: 'zonas-venta' }
+          ]
+        },
+        {
+          nombre: 'Producción', icono: 'industry',
+          subOpciones: [
+            { nombre: 'Unidades', icono: 'archive', link: 'unidades' },
+            { nombre: 'Categorias', icono: 'archive', link: 'categorias' },
+            { nombre: 'Productos', icono: 'archive', link: 'productos' },
+            { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
+            { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
+            { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },
+            { nombre: 'Salidas Producto', icono: 'file-export', link: 'salidas-producto' }
+          ]
+        },
+        {
+          nombre: 'Gerencia', icono: 'chart-bar',
+          subOpciones: [
+            { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
+            { nombre: 'Usuarios', icono: 'user-circle', link: 'usuarios' },
+            { nombre: 'Reportes', icono: 'chart-pie', link: 'reportes' }
+          ]
+        }
+      ];
     }
-  ];
+
+    if (rol == 2 || rol == 3) {
+      opciones = [
+        {
+          nombre: 'Ventas', icono: 'shopping-cart',
+          subOpciones: [
+            { nombre: 'Pedidos', icono: 'clipboard', link: 'pedidos' }
+          ]
+        }
+      ];
+    }
+
+    if (rol == 4) {
+      opciones = [
+        {
+          nombre: 'Producción', icono: 'industry',
+          subOpciones: [
+            { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
+            { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
+            { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },
+            { nombre: 'Salidas Producto', icono: 'file-export', link: 'salidas-producto' }
+          ]
+        }
+      ];
+    }
+
+    return opciones;
+  }
+
+  
 
 }

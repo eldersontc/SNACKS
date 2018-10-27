@@ -18,8 +18,8 @@ namespace SNACKS.Models
         public DateTime FechaCreacion { get; set; }
         public string Comentario { get; set; }
         public DateTime FechaPropuesta { get; set; }
-        public DateTime FechaEntrega { get; set; }
-        public DateTime FechaPago { get; set; }
+        public DateTime? FechaEntrega { get; set; }
+        public DateTime? FechaPago { get; set; }
         public decimal Total { get; set; }
         public decimal Pago { get; set; }
         public string Estado { get; set; }

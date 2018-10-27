@@ -27,7 +27,8 @@ export class PedidosFormComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
 
-  modoEdicion: boolean;
+  modoEdicion: boolean = false;
+  modoLectura: boolean = false;
   form: FormGroup;
   formItem: FormGroup;
 
@@ -37,10 +38,13 @@ export class PedidosFormComponent implements OnInit {
     this.form = this.fb.group({
       idPedido: 0,
       fechaCreacion: new Date(),
+      fechaPropuesta: new Date(),
       cliente: this.fb.group({
         idPersona: 0,
         razonSocial: ''
-      })
+      }),
+      comentario: '',
+      total: 0
     });
     this.formItem = this.fb.group({
       producto: this.fb.group({
@@ -50,13 +54,17 @@ export class PedidosFormComponent implements OnInit {
       }),
       unidad: '',
       cantidad: '',
-      factor: 0
+      factor: 0,
+      total: ''
     });
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
         return;
       } else {
         this.modoEdicion = true;
+        if (params["mode"]) {
+          this.modoLectura = true;
+        }
         this.pedidoService.getPedido(params["id"]).subscribe(pedido => this.cargarFormulario(pedido),
           error => console.error(error));
       }
@@ -96,7 +104,10 @@ export class PedidosFormComponent implements OnInit {
     this.form.patchValue({
       idPedido: pedido.idPedido,
       fechaCreacion: new Date(pedido.fechaCreacion),
-      cliente: pedido.cliente
+      fechaPropuesta: new Date(pedido.fechaPropuesta),
+      cliente: pedido.cliente,
+      comentario: pedido.comentario,
+      total: pedido.total
     });
     this.items = pedido.items;
   }
@@ -106,13 +117,13 @@ export class PedidosFormComponent implements OnInit {
     let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
 
     pedido.usuario = usuario;
+    pedido.items = this.items;
 
     if (this.modoEdicion) {
       this.pedidoService.updatePedido(pedido)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
     } else {
-      pedido.items = this.items;
       this.pedidoService.createPedido(pedido)
         .subscribe(data => this.onSaveSuccess(),
           error => console.error(error));
@@ -132,18 +143,18 @@ export class PedidosFormComponent implements OnInit {
 
     let i: IItemPedido = Object.assign({}, this.formItem.value);
 
-    if (this.modoEdicion) {
+    //if (this.modoEdicion) {
 
-      let pedido: IPedido = Object.assign({}, this.form.value);
-      i.pedido = pedido;
+    //  let pedido: IPedido = Object.assign({}, this.form.value);
+    //  i.pedido = pedido;
 
-      this.pedidoService.createItem(i)
-        .subscribe(data => this.onSaveItemSuccess(i),
-          error => console.error(error));
+    //  this.pedidoService.createItem(i)
+    //    .subscribe(data => this.onSaveItemSuccess(i),
+    //      error => console.error(error));
 
-    } else {
+    //} else {
       this.onSaveItemSuccess(i);
-    }
+    //}
   }
 
   onSaveItemSuccess(i) {
@@ -152,13 +163,13 @@ export class PedidosFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemPedido) {
-    if (this.modoEdicion) {
-      this.pedidoService.deleteItem(i.idItemPedido)
-        .subscribe(data => this.onDeleteItemSuccess(i),
-          error => console.log(error));
-    } else {
+    //if (this.modoEdicion) {
+    //  this.pedidoService.deleteItem(i.idItemPedido)
+    //    .subscribe(data => this.onDeleteItemSuccess(i),
+    //      error => console.log(error));
+    //} else {
       this.onDeleteItemSuccess(i);
-    }
+    //}
   }
 
   onDeleteItemSuccess(i: IItemPedido) {
@@ -166,4 +177,5 @@ export class PedidosFormComponent implements OnInit {
       if (item.idItemPedido === i.idItemPedido) this.items.splice(index, 1);
     });
   }
+
 }

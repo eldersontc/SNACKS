@@ -24,10 +24,10 @@
       <button type="button" class="btn btn-primary" [routerLink]='["/ingresos-insumo-form"]'>
         <fa name="plus-circle"></fa> Nuevo
       </button>
-      <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/ingresos-insumo-form/" + ((seleccion) ? seleccion.idIngresoInsumo : 0)]'>
+      <button type="button" class="btn btn-primary" *ngIf="seleccion && rol == 1" [routerLink]='["/ingresos-insumo-form/" + ((seleccion) ? seleccion.idIngresoInsumo : 0)]'>
         <fa name="edit"></fa> Editar
       </button>
-      <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
+      <button type="button" class="btn btn-primary" *ngIf="seleccion && rol == 1" (click)="open(content)">
         <fa name="trash"></fa> Eliminar
       </button>
     </div>
@@ -38,6 +38,7 @@
       <tr>
         <th scope="col"></th>
         <th scope="col">Nro. Ingreso</th>
+        <th scope="col">Creado Por</th>
         <th scope="col">Fecha Creación</th>
         <th scope="col">Costo</th>
       </tr>
@@ -53,6 +54,7 @@
           </div>
         </td>
         <td>{{i.idIngresoInsumo}}</td>
+        <td>{{i.usuario.nombre}}</td>
         <td>{{i.fechaCreacion | date: 'dd/MM/yyyy'}}</td>
         <td>{{i.costo}}</td>
       </tr>

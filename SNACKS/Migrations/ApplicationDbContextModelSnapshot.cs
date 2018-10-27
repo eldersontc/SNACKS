@@ -293,9 +293,9 @@ namespace SNACKS.Migrations
 
                     b.Property<DateTime>("FechaCreacion");
 
-                    b.Property<DateTime>("FechaEntrega");
+                    b.Property<DateTime?>("FechaEntrega");
 
-                    b.Property<DateTime>("FechaPago");
+                    b.Property<DateTime?>("FechaPago");
 
                     b.Property<DateTime>("FechaPropuesta");
 
@@ -326,6 +326,12 @@ namespace SNACKS.Migrations
 
                     b.Property<string>("Direccion");
 
+                    b.Property<string>("Distrito");
+
+                    b.Property<int?>("IdVendedor");
+
+                    b.Property<int?>("IdZonaVenta");
+
                     b.Property<string>("Nombres");
 
                     b.Property<string>("NumeroDocumento");
@@ -337,6 +343,10 @@ namespace SNACKS.Migrations
                     b.Property<int>("TipoPersona");
 
                     b.HasKey("IdPersona");
+
+                    b.HasIndex("IdVendedor");
+
+                    b.HasIndex("IdZonaVenta");
 
                     b.ToTable("Persona");
                 });
@@ -447,6 +457,19 @@ namespace SNACKS.Migrations
                     b.HasIndex("IdPersona");
 
                     b.ToTable("Usuario");
+                });
+
+            modelBuilder.Entity("SNACKS.Models.ZonaVenta", b =>
+                {
+                    b.Property<int>("IdZonaVenta")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Nombre");
+
+                    b.HasKey("IdZonaVenta");
+
+                    b.ToTable("ZonaVenta");
                 });
 
             modelBuilder.Entity("SNACKS.Models.IngresoInsumo", b =>
@@ -565,6 +588,17 @@ namespace SNACKS.Migrations
                     b.HasOne("SNACKS.Models.Usuario", "Usuario")
                         .WithMany("Pedidos")
                         .HasForeignKey("IdUsuario");
+                });
+
+            modelBuilder.Entity("SNACKS.Models.Persona", b =>
+                {
+                    b.HasOne("SNACKS.Models.Persona", "Vendedor")
+                        .WithMany()
+                        .HasForeignKey("IdVendedor");
+
+                    b.HasOne("SNACKS.Models.ZonaVenta", "ZonaVenta")
+                        .WithMany("Personas")
+                        .HasForeignKey("IdZonaVenta");
                 });
 
             modelBuilder.Entity("SNACKS.Models.Producto", b =>

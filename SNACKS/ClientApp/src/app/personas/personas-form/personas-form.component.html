@@ -1,4 +1,10 @@
-<form class="form-horizontal" novalidate
+<div *ngIf="elegirZonaVenta">
+  <app-zonas-venta [modo]="1" (model)="asignarZonaVenta($event)"></app-zonas-venta>
+</div>
+<div *ngIf="elegirVendedor">
+  <app-personas [params]="filtroVendedor" (model)="asignarVendedor($event)"></app-personas>
+</div>
+<form [hidden]="elegirZonaVenta || elegirVendedor" class="form-horizontal" novalidate
       (ngSubmit)="save()" [formGroup]="form">
   <fieldset>
     <div class="form-group">
@@ -39,6 +45,42 @@
                [required]="form.controls.tipoPersona.value == 2" />
       </div>
     </div>
+    <div class="form-group" formGroupName="vendedor" [hidden]="form.controls.tipoPersona.value != 2">
+      <label class="col-md-2 control-label" for="vendedorId">Vendedor</label>
+      <div class="col-md-8">
+        <div class="input-group">
+          <input class="form-control"
+                 id="vendedorId"
+                 type="text"
+                 [required]="form.controls.tipoPersona.value == 2"
+                 formControlName="razonSocial"
+                 [readonly]="true" />
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" (click)="buscarVendedor()">
+              <fa name="search"></fa>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" formGroupName="zonaVenta" [hidden]="form.controls.tipoPersona.value != 2">
+      <label class="col-md-2 control-label" for="zonaVentaId">Zona Venta</label>
+      <div class="col-md-8">
+        <div class="input-group">
+          <input class="form-control"
+                 id="zonaVentaId"
+                 type="text"
+                 [required]="form.controls.tipoPersona.value == 2"
+                 formControlName="nombre"
+                 [readonly]="true" />
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" (click)="buscarZonaVenta()">
+              <fa name="search"></fa>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="form-group">
       <label class="col-md-2 control-label" for="tipoId">Tipo Documento</label>
       <div class="col-md-8">
@@ -57,6 +99,14 @@
                id="numeroDocumentoId"
                formControlName="numeroDocumento"
                required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="distritoId">Distrito</label>
+      <div class="col-md-8">
+        <select id="distritoId" class="custom-select" formControlName="distrito">
+          <option *ngFor="let d of distritos" [ngValue]="d">{{d}}</option>
+        </select>
       </div>
     </div>
     <div class="form-group">

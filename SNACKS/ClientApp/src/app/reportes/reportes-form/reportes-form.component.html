@@ -81,36 +81,26 @@
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
       <ng-template ngbTabContent>
         <br />
-        <form class="form-horizontal" novalidate>
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-8 control-label" for="nombreRO">
-                <b>Título: </b>{{form.value.titulo}}
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-8 control-label" for="categoriaRO">
-                <b>Tipo: </b>{{form.value.tipoReporte}}
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-8 control-label" for="categoriaRO">
-                <b>Flag: </b>{{form.value.tipoReporte}}
-              </label>
-            </div>
-            <div class="form-group">
-              <div class="col-md-10">
-                <div class="btn-group mb-2 col-md-12 justify-content-center">
-                  <span class="ml-2" *ngFor="let i of items">
-                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Parámetro" triggers="mouseenter:mouseleave">
-                      {{i.nombre}} : {{i.valor}} <fa name="times-circle"></fa>
-                    </button>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
+        <table class="table table-bordered table-hover table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col">Parámetro</th>
+              <th scope="col">Valor</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of items">
+              <td>{{i.nombre}}</td>
+              <td>{{i.valor}}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
+                  <fa name="trash"></fa>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </ng-template>
     </ngb-tab>
   </ngb-tabset>
