@@ -1,8 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { IUnidad } from './unidad';
 import { UnidadesService } from './unidades.service';
-import { IListaRetorno, Filtro } from '../generico/generico';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { IListaRetorno, IFiltro } from '../generico/generico';
 
 @Component({
   selector: 'app-unidades',
@@ -11,34 +10,43 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class UnidadesComponent implements OnInit {
 
-  @Input() modo: number;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   pagina: number = 1;
   totalRegistros: number = 0;
   unidades: IUnidad[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: string = '';
   seleccion: IUnidad;
 
-  constructor(private unidadService: UnidadesService, config: NgbModalConfig, private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-  }
+  columnas: string[][] = [
+    ['L', 'Nombre'],
+    ['L', 'Abreviación']];
+  atributos: string[][] = [
+    ['S', 'L', 'nombre'],
+    ['S', 'L', 'abreviacion']]
+
+  constructor(private unidadService: UnidadesService) { }
 
   ngOnInit() {
     this.getUnidades();
   }
 
   getUnidades() {
+    this.seleccion = undefined;
     this.unidadService.getUnidades({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IUnidad>) {
@@ -53,28 +61,10 @@ export class UnidadesComponent implements OnInit {
 
   buscar() {
     if (this.busqueda.length > 0) {
-      this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, this.busqueda));
+      this.filtros.push({ k: this.criterio, v: this.busqueda });
       this.busqueda = '';
       this.getUnidades();
     }
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getUnidades();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteUnidad(); } });
   }
 
   deleteUnidad() {
@@ -88,10 +78,10 @@ export class UnidadesComponent implements OnInit {
   }
 
   elegir() {
-    this.model.emit(this.seleccion);
+    this.select.emit(this.seleccion);
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 }

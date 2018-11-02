@@ -1,1 +1,1 @@
-{"version":3,"file":"generico.js","sourceRoot":"","sources":["generico.ts"],"names":[],"mappings":";;AAKA;IACE,gBACS,CAAS,EACT,CAAS,EACT,CAAa,EACb,CAAwB,EACxB,CAAkB;QAFlB,kBAAA,EAAA,KAAa;QACb,kBAAA,EAAA,gBAAwB;QACxB,kBAAA,EAAA,SAAkB;QAJlB,MAAC,GAAD,CAAC,CAAQ;QACT,MAAC,GAAD,CAAC,CAAQ;QACT,MAAC,GAAD,CAAC,CAAY;QACb,MAAC,GAAD,CAAC,CAAuB;QACxB,MAAC,GAAD,CAAC,CAAiB;IACvB,CAAC;IACP,aAAC;AAAD,CAAC,AARD,IAQC;AARY,wBAAM"}
+{"version":3,"file":"generico.js","sourceRoot":"","sources":["generico.ts"],"names":[],"mappings":""}

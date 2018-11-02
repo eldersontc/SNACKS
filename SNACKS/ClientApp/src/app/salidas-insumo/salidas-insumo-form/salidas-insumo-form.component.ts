@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { Filtro } from '../../generico/generico';
+import { IFiltro } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { SalidasInsumoService } from '../salidas-insumo.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -15,7 +15,7 @@ import { IUsuario } from '../../usuarios/usuario';
 })
 export class SalidasInsumoFormComponent implements OnInit {
 
-  filtroProducto: Filtro = new Filtro(2, 'Insumo', 0, new Date(), true);
+  filtrosProducto: IFiltro[] = [];
   elegirProducto: boolean = false;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
@@ -31,6 +31,7 @@ export class SalidasInsumoFormComponent implements OnInit {
   items: IItemSalidaInsumo[] = [];
 
   ngOnInit() {
+    this.filtrosProducto.push({ k: 2, v: 'Insumo', b: true });
     this.form = this.fb.group({
       idSalidaInsumo: 0,
       fechaCreacion: new Date(),

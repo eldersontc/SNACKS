@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IPersona } from './persona';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno } from '../generico/generico';
 import { PersonasService } from './personas.service';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-personas',
@@ -11,40 +10,51 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class PersonasComponent implements OnInit {
 
-  @Input() params: Filtro;
-  @Input() include: boolean = false;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   pagina: number = 1;
   totalRegistros: number = 0;
   personas: IPersona[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: string = '';
   busquedaCombo: string = '1-Gerente';
   seleccion: IPersona;
 
-  constructor(private personaService: PersonasService, config: NgbModalConfig, private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-  }
+  columnas: string[][] = [
+    ['L','Razón Social'],
+    ['L','Nombres'],
+    ['L','Apellidos'],
+    ['L','Nro. Documento']];
+  atributos: string[][] = [
+    ['S', 'L','razonSocial'],
+    ['S', 'L','nombres'],
+    ['S', 'L','apellidos'],
+    ['S', 'L','numeroDocumento']]
+
+  constructor(private personaService: PersonasService) { }
 
   ngOnInit() {
-    if (this.params) {
+    if (this.extern) {
       this.criterio = 2;
-      this.filtros.push(this.params);
     }
     this.getPersonas();
   }
 
   getPersonas() {
+    this.seleccion = undefined;
     this.personaService.getPersonas({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IPersona>) {
@@ -53,43 +63,23 @@ export class PersonasComponent implements OnInit {
   }
 
   pageChange() {
-    this.seleccion = undefined;
     this.getPersonas();
   }
 
   buscar() {
     if (this.criterio == 1) {
-      this.quitarCriterio(this.criterio);
       const arr: string[] = this.busquedaCombo.split('-');
-      this.filtros.push(new Filtro(this.criterio, arr[1], Number(arr[0])));
+      this.filtros.push({ k: this.criterio, v: arr[1], n: Number(arr[0]) });
       this.getPersonas();
     } else {
       if (this.busqueda.length > 0) {
-        this.quitarCriterio(this.criterio);
-        this.filtros.push(new Filtro(this.criterio, this.busqueda));
+        this.filtros.push({ k: this.criterio, v: this.busqueda });
         this.busqueda = '';
         this.getPersonas();
       }
     }
   }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getPersonas();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deletePersona(); } });
-  }
-
+ 
   deletePersona() {
     this.personaService.deletePersona(this.seleccion.idPersona).subscribe(data => this.onDeleteSuccess(),
       error => console.log(error));
@@ -101,10 +91,10 @@ export class PersonasComponent implements OnInit {
   }
 
   elegir() {
-    this.model.emit(this.seleccion);
+    this.select.emit(this.seleccion);
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 }

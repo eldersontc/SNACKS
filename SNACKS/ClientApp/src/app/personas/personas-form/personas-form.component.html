@@ -1,8 +1,8 @@
 <div *ngIf="elegirZonaVenta">
-  <app-zonas-venta [modo]="1" (model)="asignarZonaVenta($event)"></app-zonas-venta>
+  <app-zonas-venta [extern]="[]" (select)="asignarZonaVenta($event)"></app-zonas-venta>
 </div>
 <div *ngIf="elegirVendedor">
-  <app-personas [params]="filtroVendedor" (model)="asignarVendedor($event)"></app-personas>
+  <app-personas [extern]="filtrosVendedor" (select)="asignarVendedor($event)"></app-personas>
 </div>
 <form [hidden]="elegirZonaVenta || elegirVendedor" class="form-horizontal" novalidate
       (ngSubmit)="save()" [formGroup]="form">

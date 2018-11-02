@@ -45,10 +45,16 @@ namespace SNACKS.Controllers
                     case Constantes.Dos:
                         filtros.Add(x => x.FechaCreacion.Date == filtro.D.Date);
                         break;
+                    case Constantes.Tres:
+                        filtros.Add(x => x.Cliente.IdPersona == filtro.N);
+                        break;
+                    case Constantes.Cuatro:
+                        filtros.Add(x => x.Cliente.Vendedor.IdPersona == filtro.N);
+                        break;
                 }
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario, Constantes.Cliente });
+            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario, Constantes.Cliente }, (x => x.FechaCreacion));
 
             return Ok(result);
         }

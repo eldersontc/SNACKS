@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { ICategoria } from './categoria';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno } from '../generico/generico';
 import { CategoriasService } from './categorias.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -11,34 +11,41 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class CategoriasComponent implements OnInit {
 
-  @Input() modo: number;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   pagina: number = 1;
   totalRegistros: number = 0;
   categorias: ICategoria[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: string = '';
   seleccion: ICategoria;
 
-  constructor(private categoriaService: CategoriasService, config: NgbModalConfig, private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-  }
+  columnas: string[][] = [
+    ['L', 'Nombre']];
+  atributos: string[][] = [
+    ['S', 'L', 'nombre']]
+
+  constructor(private categoriaService: CategoriasService) { }
 
   ngOnInit() {
     this.getCategorias();
   }
 
   getCategorias() {
+    this.seleccion = undefined;
     this.categoriaService.getCategorias({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<ICategoria>) {
@@ -53,28 +60,10 @@ export class CategoriasComponent implements OnInit {
 
   buscar() {
     if (this.busqueda.length > 0) {
-      this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, this.busqueda));
+      this.filtros.push({ k: this.criterio, v: this.busqueda });
       this.busqueda = '';
       this.getCategorias();
     }
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getCategorias();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteCategoria(); } });
   }
 
   deleteCategoria() {
@@ -88,10 +77,10 @@ export class CategoriasComponent implements OnInit {
   }
 
   elegir() {
-    this.model.emit(this.seleccion);
+    this.select.emit(this.seleccion);
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 }

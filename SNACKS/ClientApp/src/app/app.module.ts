@@ -24,7 +24,7 @@ import { ProductosService } from './productos/productos.service';
 import { PedidosComponent } from './pedidos/pedidos.component';
 import { PedidosFormComponent } from './pedidos/pedidos-form/pedidos-form.component';
 import { PedidosService } from './pedidos/pedidos.service';
-import { DatepickerI18n, DateAdapter, DateParserFormatter } from './generico/generico';
+import { DatepickerI18n, DateAdapter, DateParserFormatter } from './generico/generico.service';
 import { CategoriasComponent } from './categorias/categorias.component';
 import { CategoriasFormComponent } from './categorias/categorias-form/categorias-form.component';
 import { CategoriasService } from './categorias/categorias.service';
@@ -50,6 +50,9 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ZonasVentaComponent } from './zonas-venta/zonas-venta.component';
 import { ZonasVentaFormComponent } from './zonas-venta/zonas-venta-form/zonas-venta-form.component';
 import { ZonasVentaService } from './zonas-venta/zonas-venta.service';
+import { FiltrosComponent } from './generico/filtros/filtros.component';
+import { AccionesComponent } from './generico/acciones/acciones.component';
+import { TablaComponent } from './generico/tabla/tabla.component';
 
 @NgModule({
   declarations: [
@@ -82,7 +85,10 @@ import { ZonasVentaService } from './zonas-venta/zonas-venta.service';
     ReportesFormComponent,
     NotFoundComponent,
     ZonasVentaComponent,
-    ZonasVentaFormComponent
+    ZonasVentaFormComponent,
+    FiltrosComponent,
+    AccionesComponent,
+    TablaComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

@@ -10,55 +10,26 @@
       </button>
     </div>
   </div>
-  <div class="btn-group col-md-4  mb-2 justify-content-center">
-    <span class="ml-2" *ngFor="let filtro of filtros">
-      <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro" triggers="mouseenter:mouseleave">
-        {{filtro.v}} <fa name="times-circle"></fa>
-      </button>
-    </span>
+  <div class="col-md-4">
+    <app-filtros [filter]="filtros"
+                 [extern]="extern"
+                 (change)="getZonasVenta()"></app-filtros>
   </div>
-  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group" *ngIf="!modo">
-    <button type="button" class="btn btn-primary" [routerLink]='["/zonas-venta-form"]'>
-      <fa name="plus-circle"></fa> Nuevo
-    </button>
-    <button type="button" class="btn btn-primary" [disabled]="!seleccion" [routerLink]='["/zonas-venta-form/" + ((seleccion) ? seleccion.idZonaVenta : 0)]'>
-      <fa name="edit"></fa> Editar
-    </button>
-    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="open(content)">
-      <fa name="trash"></fa> Eliminar
-    </button>
-  </div>
-  <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group" *ngIf="modo">
-    <button type="button" class="btn btn-primary" [disabled]="!seleccion" (click)="elegir()">
-      <fa name="undo"></fa> Seleccionar
-    </button>
-    <button type="button" class="btn btn-primary" (click)="cancelar()">
-      <fa name="times-circle"></fa> Regresar
-    </button>
+  <div class="col-md-4">
+    <app-acciones link="zonas-venta-form"
+                  class="ZonaVenta"
+                  [model]="seleccion"
+                  [modeSearch]="extern"
+                  (delete)="deleteZonaVenta()"
+                  (select)="elegir()"
+                  (cancel)="cancelar()"></app-acciones>
   </div>
 </div>
 
-<table class="table table-bordered table-hover table-sm">
-  <thead class="thead-light">
-    <tr>
-      <th scope="col"></th>
-      <th scope="col">Nombre</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let z of zonasVenta; let idx = index">
-      <td>
-        <div class="custom-control custom-radio text-center">
-          <input type="radio" [id]="idx" name="customRadio" class="custom-control-input" [value]="z" [(ngModel)]="seleccion">
-          <label class="custom-control-label" [for]="idx">
-            <span class="text-hide">.</span>
-          </label>
-        </div>
-      </td>
-      <td>{{z.nombre}}</td>
-    </tr>
-  </tbody>
-</table>
+<app-tabla [columnas]="columnas"
+           [data]="zonasVenta"
+           [atributos]="atributos"
+           (select)="seleccionar($event)"></app-tabla>
 
 <ngb-pagination class="d-flex justify-content-center"
                 [collectionSize]="totalRegistros"
@@ -68,17 +39,3 @@
                 [ellipses]="false"
                 [boundaryLinks]="true"
                 (pageChange)="pageChange()"></ngb-pagination>
-
-<ng-template #content let-c="close" let-d="dismiss">
-  <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
-    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-footer justify-content-center">
-    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
-    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
-  </div>
-</ng-template>
-

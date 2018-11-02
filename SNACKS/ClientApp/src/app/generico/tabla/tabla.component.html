@@ -1,0 +1,40 @@
+<table class="table table-bordered table-hover table-sm">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col"></th>
+      <th scope="col"*ngFor="let c of columnas" >{{c[1]}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let d of data; let i = index">
+      <td>
+        <div class="custom-control custom-radio text-center">
+          <input type="radio"
+                 [id]="i"
+                 name="customRadio"
+                 class="custom-control-input"
+                 (change)="onSelect(d)">
+          <label class="custom-control-label" [for]="i">
+            <span class="text-hide">.</span>
+          </label>
+        </div>
+      </td>
+      <td *ngFor="let a of atributos">
+        <div *ngIf="a[0] == 'I' || a[0] == 'S'">
+          {{getValue(d,a)}}
+        </div>
+        <div *ngIf="a[0] == 'B'">
+          <div class="custom-control custom-checkbox text-center">
+            <input type="checkbox" class="custom-control-input" [checked]="getValue(d,a)" disabled>
+            <label class="custom-control-label">
+              <span class="text-hide">.</span>
+            </label>
+          </div>
+        </div>
+        <div *ngIf="a[0] == 'D'">
+          {{getValue(d,a) | date: 'dd/MM/yyyy'}}
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

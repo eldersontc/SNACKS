@@ -4,7 +4,7 @@ import { PersonasService } from '../personas.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IPersona } from '../persona';
 import { IZonaVenta } from '../../zonas-venta/zonaVenta';
-import { Filtro } from '../../generico/generico';
+import { IFiltro } from '../../generico/generico';
 
 @Component({
   selector: 'app-personas-form',
@@ -18,7 +18,7 @@ export class PersonasFormComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute) { }
 
-  filtroVendedor: Filtro = new Filtro(1, 'Vendedor', 3);
+  filtrosVendedor: IFiltro[] = [];
   elegirVendedor: boolean = false;
   elegirZonaVenta: boolean = false;
   modoEdicion: boolean;
@@ -73,6 +73,7 @@ export class PersonasFormComponent implements OnInit {
     ];
 
   ngOnInit() {
+    this.filtrosVendedor.push({ k: 1, v: 'Vendedor', n: 3 });
     this.form = this.fb.group({
       idPersona: 0,
       tipoPersona: 1,

@@ -1,6 +1,6 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { IReporte } from './reporte';
-import { Filtro, IListaRetorno, IEstadistica } from '../generico/generico';
+import { IFiltro, IListaRetorno, IEstadistica } from '../generico/generico';
 import { ReportesService } from './reportes.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Chart } from 'chart.js';
@@ -12,21 +12,32 @@ import { Chart } from 'chart.js';
 })
 export class ReportesComponent implements OnInit {
 
-  @Input() include: boolean = false;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   view: boolean = false;
 
   pagina: number = 1;
   totalRegistros: number = 0;
   reportes: IReporte[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: string = '';
   seleccion: IReporte;
   reporteView: IReporte;
 
-  constructor(private reporteService: ReportesService, config: NgbModalConfig, private modalService: NgbModal) {
+  columnas: string[][] = [
+    ['L','Nro.'],
+    ['L','Título'],
+    ['L','Tipo']];
+  atributos: string[][] = [
+    ['I','L','idReporte'],
+    ['S','L','titulo'],
+    ['S','L','tipoReporte']]
+
+  constructor(private reporteService: ReportesService,
+    config: NgbModalConfig,
+    private modalService: NgbModal) {
     config.backdrop = 'static';
     config.keyboard = false;
   }
@@ -36,13 +47,18 @@ export class ReportesComponent implements OnInit {
   }
 
   getReportes() {
+    this.seleccion = undefined;
     this.reporteService.getReportes({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IReporte>) {
@@ -57,28 +73,10 @@ export class ReportesComponent implements OnInit {
 
   buscar() {
     if (this.busqueda.length > 0) {
-      this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, this.busqueda));
+      this.filtros.push({ k: this.criterio, v: this.busqueda });
       this.busqueda = '';
       this.getReportes();
     }
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getReportes();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteReporte(); } });
   }
 
   deleteReporte() {
@@ -92,11 +90,11 @@ export class ReportesComponent implements OnInit {
   }
 
   elegir() {
-    this.model.emit(this.seleccion);
+    this.select.emit(this.seleccion);
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 
   getReporte(content) {

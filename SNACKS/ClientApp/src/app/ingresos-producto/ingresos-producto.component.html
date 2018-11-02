@@ -1,84 +1,43 @@
-<div>
-  <div class="form-inline mb-3">
-    <div class="input-group col-md-4  mb-2 justify-content-center">
-      <select class="custom-select" [(ngModel)]="criterio">
-        <option [ngValue]="1">Fecha Creación</option>
-      </select>
-      <input class="form-control" placeholder="dd/MM/yyyy"
-             name="dp" [(ngModel)]="busqueda" (dateSelect)="seleccionFecha()" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
-      <div class="input-group-append">
-        <button class="btn btn-primary" (click)="d.toggle()" type="button">
-          <fa name="calendar"></fa>
-        </button>
-      </div>
-    </div>
-    <div class="btn-group col-md-4  mb-2 justify-content-center">
-      <span class="ml-2" *ngFor="let filtro of filtros">
-        <button type="button" class="btn badge badge-pill badge-secondary" (click)="quitarFiltro(filtro)" ngbPopover="Eliminar filtro" triggers="mouseenter:mouseleave">
-          <span *ngIf="filtro.k == 1"> {{filtro.d | date: 'dd/MM/yyyy'}} </span>
-          <fa name="times-circle"></fa>
-        </button>
-      </span>
-    </div>
-    <div class="btn-group col-md-4 mb-2 justify-content-center" role="group" aria-label="First group">
-      <button type="button" class="btn btn-primary" [routerLink]='["/ingresos-producto-form"]'>
-        <fa name="plus-circle"></fa> Nuevo
-      </button>
-      <button type="button" class="btn btn-primary" *ngIf="seleccion && rol == 1" [routerLink]='["/ingresos-producto-form/" + ((seleccion) ? seleccion.idIngresoProducto : 0)]'>
-        <fa name="edit"></fa> Editar
-      </button>
-      <button type="button" class="btn btn-primary" *ngIf="seleccion && rol == 1" (click)="open(content)">
-        <fa name="trash"></fa> Eliminar
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option [ngValue]="1">Fecha Creación</option>
+    </select>
+    <input class="form-control" placeholder="dd/MM/yyyy"
+           name="dp" [(ngModel)]="busqueda" (dateSelect)="seleccionFecha()" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+    <div class="input-group-append">
+      <button class="btn btn-primary" (click)="d.toggle()" type="button">
+        <fa name="calendar"></fa>
       </button>
     </div>
   </div>
-
-  <table class="table table-bordered table-hover table-sm">
-    <thead class="thead-light">
-      <tr>
-        <th scope="col"></th>
-        <th scope="col">Nro. Ingreso</th>
-        <th scope="col">Creado Por</th>
-        <th scope="col">Fecha Creación</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let i of ingresosProducto; let idx = index">
-        <td>
-          <div class="custom-control custom-radio text-center">
-            <input type="radio" [id]="idx" name="customRadio" class="custom-control-input" [value]="i" [(ngModel)]="seleccion">
-            <label class="custom-control-label" [for]="idx">
-              <span class="text-hide">.</span>
-            </label>
-          </div>
-        </td>
-        <td>{{i.idIngresoProducto}}</td>
-        <td>{{i.usuario.nombre}}</td>
-        <td>{{i.fechaCreacion | date: 'dd/MM/yyyy'}}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <ngb-pagination class="d-flex justify-content-center"
-                  [collectionSize]="totalRegistros"
-                  [(page)]="pagina"
-                  [maxSize]="5"
-                  [rotate]="true"
-                  [ellipses]="false"
-                  [boundaryLinks]="true"
-                  (pageChange)="pageChange()"></ngb-pagination>
-
+  <div class="col-md-4">
+    <app-filtros [filter]="filtros"
+                 [extern]="extern"
+                 (change)="getIngresosProducto()"></app-filtros>
+  </div>
+  <div class="col-md-4">
+    <app-acciones link="ingresos-producto-form"
+                  class="IngresoProducto"
+                  [model]="seleccion"
+                  [modeSearch]="extern"
+                  (delete)="deleteIngresoProducto()"
+                  (select)="elegir()"
+                  (cancel)="cancelar()"
+                  [show]="login.tipo == 1"></app-acciones>
+  </div>
 </div>
 
-<ng-template #content let-c="close" let-d="dismiss">
-  <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
-    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-footer justify-content-center">
-    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
-    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
-  </div>
-</ng-template>
+<app-tabla [columnas]="columnas"
+           [data]="ingresosProducto"
+           [atributos]="atributos"
+           (select)="seleccionar($event)"></app-tabla>
+
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>

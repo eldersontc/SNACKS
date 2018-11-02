@@ -1,8 +1,8 @@
 <div *ngIf="elegirCliente">
-  <app-personas [params]="filtroCliente" (model)="asignarCliente($event)"></app-personas>
+  <app-personas [extern]="filtrosCliente" (select)="asignarCliente($event)"></app-personas>
 </div>
 <div *ngIf="elegirProducto">
-  <app-productos [params]="filtroProducto" (model)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirCliente || elegirProducto">
   <ngb-tabset>
@@ -37,7 +37,7 @@
                          required
                          formControlName="razonSocial"
                          [readonly]="true" />
-                  <div class="input-group-append" *ngIf="!modoLectura">
+                  <div class="input-group-append" *ngIf="!modoLectura && login.tipo != 2">
                     <button class="btn btn-primary" type="button" (click)="buscarCliente()">
                       <fa name="search"></fa>
                     </button>
@@ -52,7 +52,7 @@
                        id="comentarioId"
                        type="text"
                        formControlName="comentario"
-                       [readonly]="modoLectura"/>
+                       [readonly]="modoLectura" />
               </div>
             </div>
             <div class="form-group">
@@ -106,10 +106,10 @@
               <label class="col-md-2 control-label" for="cantidadId">Cantidad</label>
               <div class="col-md-8">
                 <input class="form-control"
-                       id="cantidadId"
-                       type="number"
-                       formControlName="cantidad"
-                       required />
+                        id="cantidadId"
+                        type="number"
+                        formControlName="cantidad"
+                        required />
               </div>
             </div>
             <div class="form-group">
@@ -120,7 +120,8 @@
                          id="totalId"
                          type="number"
                          formControlName="total"
-                         required />
+                         required
+                         [readOnly]="login.tipo == 2"/>
                   <div class="input-group-append">
                     <button class="btn btn-primary"
                             type="button"
@@ -155,7 +156,10 @@
               <td>{{i.producto.nombre}}</td>
               <td>{{i.unidad.abreviacion}}</td>
               <td>{{i.cantidad}}</td>
-              <td>{{i.total}}</td>
+              <td *ngIf="modoLectura || login.tipo == 2">{{i.total}}</td>
+              <td *ngIf="!modoLectura && login.tipo != 2">
+                <input type="number" class="form-control" [(ngModel)]="i.total" />
+              </td>
               <td class="text-center" *ngIf="!modoLectura">
                 <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
                   <fa name="trash"></fa>

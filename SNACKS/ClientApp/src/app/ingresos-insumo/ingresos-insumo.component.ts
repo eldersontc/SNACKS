@@ -1,8 +1,7 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, Input, Output, EventEmitter } from '@angular/core';
 import { IIngresoInsumo } from './ingreso-insumo';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { IngresosInsumoService } from '../ingresos-insumo/ingresos-insumo.service';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
 
 @Component({
@@ -12,22 +11,32 @@ import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
 })
 export class IngresosInsumoComponent implements OnInit {
 
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   ingresosInsumo: IIngresoInsumo[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: Date;
   seleccion: IIngresoInsumo;
-  rol: number;
+  login: ILogin;
+
+  columnas: string[][] = [
+    ['L','Nro. Ingreso'],
+    ['L','Creado Por'],
+    ['L','Fecha Creación'],
+    ['L','Costo']];
+  atributos: string[][] = [
+    ['I','L','idIngresoInsumo'],
+    ['S','L','usuario','nombre'],
+    ['D','L','fechaCreacion'],
+    ['I','L','costo']]
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
-    private ingresoInsumoService: IngresosInsumoService,
-    config: NgbModalConfig,
-    private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-    this.rol = this.storage.get('login').tipo;
+    private ingresoInsumoService: IngresosInsumoService) {
+    this.login = this.storage.get('login');
   }
 
   ngOnInit() {
@@ -35,19 +44,23 @@ export class IngresosInsumoComponent implements OnInit {
   }
 
   seleccionFecha() {
-    this.quitarCriterio(this.criterio);
-    this.filtros.push(new Filtro(this.criterio, '', 0, this.busqueda));
+    this.filtros.push({ k: this.criterio, d: this.busqueda });
     this.getIngresosInsumo();
   }
 
   getIngresosInsumo() {
+    this.seleccion = undefined;
     this.ingresoInsumoService.getIngresosInsumo({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IIngresoInsumo>) {
@@ -58,23 +71,6 @@ export class IngresosInsumoComponent implements OnInit {
   pageChange() {
     this.seleccion = undefined;
     this.getIngresosInsumo();
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getIngresosInsumo();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteIngresoInsumo(); } });
   }
 
   deleteIngresoInsumo() {

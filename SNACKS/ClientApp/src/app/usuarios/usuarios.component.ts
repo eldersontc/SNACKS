@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IUsuario } from './usuario';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno } from '../generico/generico';
 import { UsuariosService } from './usuarios.service';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-usuarios',
@@ -11,34 +10,47 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class UsuariosComponent implements OnInit {
 
-  @Input() modo: number;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   pagina: number = 1;
   totalRegistros: number = 0;
   usuarios: IUsuario[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: string = '';
   seleccion: IUsuario;
 
-  constructor(private unidadService: UsuariosService, config: NgbModalConfig, private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-  }
+  columnas: string[][] = [
+    ['L','Nombre'],
+    ['L','Razón Social'],
+    ['L','Nombres'],
+    ['L','Apellidos']];
+  atributos: string[][] = [
+    ['S','L','nombre'],
+    ['S','L','persona', 'razonSocial'],
+    ['S','L','persona', 'nombres'],
+    ['S','L','persona', 'apellidos']]
+
+  constructor(private unidadService: UsuariosService) { }
 
   ngOnInit() {
     this.getUsuarios();
   }
 
   getUsuarios() {
+    this.seleccion = undefined;
     this.unidadService.getUsuarios({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IUsuario>) {
@@ -53,28 +65,10 @@ export class UsuariosComponent implements OnInit {
 
   buscar() {
     if (this.busqueda.length > 0) {
-      this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, this.busqueda));
+      this.filtros.push({ k: this.criterio, v: this.busqueda });
       this.busqueda = '';
       this.getUsuarios();
     }
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getUsuarios();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteUsuario(); } });
   }
 
   deleteUsuario() {
@@ -88,11 +82,11 @@ export class UsuariosComponent implements OnInit {
   }
 
   elegir() {
-    this.model.emit(this.seleccion);
+    this.select.emit(this.seleccion);
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 
 }

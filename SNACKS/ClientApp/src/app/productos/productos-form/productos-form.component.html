@@ -1,8 +1,8 @@
 <div *ngIf="elegirUnidad">
-  <app-unidades [modo]="1" (model)="asignarUnidad($event)"></app-unidades>
+  <app-unidades [extern]="[]" (select)="asignarUnidad($event)"></app-unidades>
 </div>
 <div *ngIf="elegirCategoria">
-  <app-categorias [modo]="1" (model)="asignarCategoria($event)"></app-categorias>
+  <app-categorias [extern]="[]" (select)="asignarCategoria($event)"></app-categorias>
 </div>
 <div [hidden]="elegirUnidad || elegirCategoria">
   <ngb-tabset>

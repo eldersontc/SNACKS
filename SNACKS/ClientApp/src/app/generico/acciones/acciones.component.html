@@ -1,0 +1,33 @@
+<div class="btn-group col-md-12  mb-2 justify-content-center">
+  <button type="button" class="btn btn-primary" *ngIf="!modeSearch" (click)="nuevo()">
+    <fa name="plus-circle"></fa> Nuevo
+  </button>
+  <button type="button" class="btn btn-primary" *ngIf="model && !modeSearch && showReadOnly" (click)="ver()">
+    <fa name="eye"></fa> Ver
+  </button>
+  <button type="button" class="btn btn-primary" *ngIf="model && !modeSearch && show" (click)="editar()">
+    <fa name="edit"></fa> Editar
+  </button>
+  <button type="button" class="btn btn-primary" *ngIf="model && !modeSearch && show" (click)="open(confirm)">
+    <fa name="trash"></fa> Eliminar
+  </button>
+  <button type="button" class="btn btn-primary" *ngIf="model && modeSearch" (click)="seleccionar()">
+    <fa name="undo"></fa> Seleccionar
+  </button>
+  <button type="button" class="btn btn-primary" *ngIf="modeSearch" (click)="cancelar()">
+    <fa name="times-circle"></fa> Regresar
+  </button>
+</div>
+
+<ng-template #confirm let-c="close" let-d="dismiss">
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
+    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="c('Eliminar')"><fa name="trash"></fa> Eliminar</button>
+    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
+  </div>
+</ng-template>

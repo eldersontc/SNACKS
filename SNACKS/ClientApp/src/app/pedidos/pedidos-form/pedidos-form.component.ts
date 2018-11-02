@@ -3,11 +3,10 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { PedidosService } from '../pedidos.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IPedido, IItemPedido } from '../pedido';
-import { Filtro } from '../../generico/generico';
+import { IFiltro, ILogin } from '../../generico/generico';
 import { IPersona } from '../../personas/persona';
-import { IProducto, IItemProducto } from '../../productos/producto';
+import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
-import { IUsuario } from '../../usuarios/usuario';
 
 @Component({
   selector: 'app-pedidos-form',
@@ -16,16 +15,20 @@ import { IUsuario } from '../../usuarios/usuario';
 })
 export class PedidosFormComponent implements OnInit {
 
-  filtroCliente: Filtro = new Filtro(1, 'Cliente', 2);
-  filtroProducto: Filtro = new Filtro(2, 'Producto', 0, new Date(), false);
+  filtrosCliente: IFiltro[] = [];
+  filtrosProducto: IFiltro[] = [];
   elegirCliente: boolean = false;
   elegirProducto: boolean = false;
+
+  login: ILogin
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
     private pedidoService: PedidosService,
     private router: Router,
-    private activatedRoute: ActivatedRoute) { }
+    private activatedRoute: ActivatedRoute) {
+    this.login = this.storage.get('login');
+  }
 
   modoEdicion: boolean = false;
   modoLectura: boolean = false;
@@ -35,6 +38,14 @@ export class PedidosFormComponent implements OnInit {
   items: IItemPedido[] = [];
 
   ngOnInit() {
+    
+    this.filtrosCliente.push({ k: 1, v: 'Cliente', n: 2 });
+    this.filtrosProducto.push({ k: 2, v: 'Producto', b: false });
+
+    if (this.login.tipo == 3) {
+      this.filtrosCliente.push({ k: 6, v: this.login.nombrePersona, n: this.login.idPersona });
+    }
+
     this.form = this.fb.group({
       idPedido: 0,
       fechaCreacion: new Date(),
@@ -44,8 +55,17 @@ export class PedidosFormComponent implements OnInit {
         razonSocial: ''
       }),
       comentario: '',
-      total: 0
+      total: 0,
+      estado: ''
     });
+    if (this.login.tipo == 2) {
+      this.form.patchValue({
+        cliente: {
+          idPersona: this.login.idPersona,
+          razonSocial: this.login.nombrePersona
+        }
+      });
+    }
     this.formItem = this.fb.group({
       producto: this.fb.group({
         idProducto: 0,
@@ -55,7 +75,7 @@ export class PedidosFormComponent implements OnInit {
       unidad: '',
       cantidad: '',
       factor: 0,
-      total: ''
+      total: 0
     });
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
@@ -81,11 +101,11 @@ export class PedidosFormComponent implements OnInit {
     this.elegirProducto = true;
   }
 
-  asignarCliente(event: IPersona) {
+  asignarCliente(e: IPersona) {
     this.elegirCliente = false;
-    if (event) {
+    if (e) {
       this.form.patchValue({
-        cliente: event
+        cliente: e
       });
     }
   }
@@ -107,16 +127,16 @@ export class PedidosFormComponent implements OnInit {
       fechaPropuesta: new Date(pedido.fechaPropuesta),
       cliente: pedido.cliente,
       comentario: pedido.comentario,
-      total: pedido.total
+      total: pedido.total,
+      estado: pedido.estado
     });
     this.items = pedido.items;
   }
 
   save() {
     let pedido: IPedido = Object.assign({}, this.form.value);
-    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
 
-    pedido.usuario = usuario;
+    pedido.usuario = { idUsuario: this.login.id };
     pedido.items = this.items;
 
     if (this.modoEdicion) {
@@ -143,33 +163,17 @@ export class PedidosFormComponent implements OnInit {
 
     let i: IItemPedido = Object.assign({}, this.formItem.value);
 
-    //if (this.modoEdicion) {
-
-    //  let pedido: IPedido = Object.assign({}, this.form.value);
-    //  i.pedido = pedido;
-
-    //  this.pedidoService.createItem(i)
-    //    .subscribe(data => this.onSaveItemSuccess(i),
-    //      error => console.error(error));
-
-    //} else {
-      this.onSaveItemSuccess(i);
-    //}
+    this.onSaveItemSuccess(i);
   }
 
   onSaveItemSuccess(i) {
     this.items.push(i);
     this.formItem.reset();
+    this.formItem.patchValue({ total: 0 });
   }
 
   deleteItem(i: IItemPedido) {
-    //if (this.modoEdicion) {
-    //  this.pedidoService.deleteItem(i.idItemPedido)
-    //    .subscribe(data => this.onDeleteItemSuccess(i),
-    //      error => console.log(error));
-    //} else {
-      this.onDeleteItemSuccess(i);
-    //}
+    this.onDeleteItemSuccess(i);
   }
 
   onDeleteItemSuccess(i: IItemPedido) {

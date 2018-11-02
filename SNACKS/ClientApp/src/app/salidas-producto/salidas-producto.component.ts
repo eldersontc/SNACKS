@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, Input, Output, EventEmitter } from '@angular/core';
 import { ISalidaProducto } from './salida-producto';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { SalidasProductoService } from './salidas-producto.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
@@ -12,22 +12,30 @@ import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
 })
 export class SalidasProductoComponent implements OnInit {
 
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   salidasProducto: ISalidaProducto[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: Date;
   seleccion: ISalidaProducto;
-  rol: number;
+  login: ILogin;
+
+  columnas: string[][] = [
+    ['L', 'Nro. Salida'],
+    ['L', 'Creado Por'],
+    ['L', 'Fecha Creación']];
+  atributos: string[][] = [
+    ['I', 'L', 'idSalidaProducto'],
+    ['S', 'L', 'usuario', 'nombre'],
+    ['D', 'L', 'fechaCreacion']]
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
-    private salidaProductoService: SalidasProductoService,
-    config: NgbModalConfig,
-    private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-    this.rol = this.storage.get('login').tipo;
+    private salidaProductoService: SalidasProductoService) {
+    this.login = this.storage.get('login');
   }
 
   ngOnInit() {
@@ -35,19 +43,23 @@ export class SalidasProductoComponent implements OnInit {
   }
 
   seleccionFecha() {
-    this.quitarCriterio(this.criterio);
-    this.filtros.push(new Filtro(this.criterio, '', 0, this.busqueda));
+    this.filtros.push({ k: this.criterio, d: this.busqueda });
     this.getSalidasProducto();
   }
 
   getSalidasProducto() {
+    this.seleccion = undefined;
     this.salidaProductoService.getSalidasProducto({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<ISalidaProducto>) {
@@ -58,23 +70,6 @@ export class SalidasProductoComponent implements OnInit {
   pageChange() {
     this.seleccion = undefined;
     this.getSalidasProducto();
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getSalidasProducto();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteSalidaProducto(); } });
   }
 
   deleteSalidaProducto() {

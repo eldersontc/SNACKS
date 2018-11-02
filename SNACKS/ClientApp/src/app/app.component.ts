@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { UsuariosService } from './usuarios/usuarios.service';
 import { IUsuario } from './usuarios/usuario';
+import { ILogin } from './generico/generico';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
 
 @Component({
@@ -26,10 +27,11 @@ export class AppComponent {
       nombre: '',
       clave: ''
     });
-    if (this.storage.get('login')) {
+    let login: ILogin = Object.assign({}, this.storage.get('login'));
+    if (login) {
       this.logueado = true;
-      this.usuarioLogueado = this.storage.get('login').nombre;
-      this.opciones = this.opcionesxRol(this.storage.get('login').tipo);
+      this.usuarioLogueado = this.getUserLogin(login);
+      this.opciones = this.opcionesxRol(login.tipo);
     }
   }
 
@@ -40,16 +42,37 @@ export class AppComponent {
       error => this.verAlerta = true);
   }
 
+  getUserLogin(login) {
+    var rol;
+    switch (login.tipo) {
+      case 1:
+        rol = 'Gerente';
+        break;
+      case 2:
+        rol = 'Cliente';
+        break;
+      case 3:
+        rol = 'Vendedor';
+        break;
+      case 4:
+        rol = 'Empleado';
+        break;
+    }
+    return login.nombrePersona + ' | ' + rol;
+  }
+
   onAuthSuccess(u: IUsuario) {
     this.logueado = true;
     this.storage.set('login', {
       id: u.idUsuario,
-      nombre: u.persona.tipoPersona == 2
+      nombre: u.nombre,
+      idPersona: u.persona.idPersona,
+      nombrePersona: u.persona.tipoPersona == 2
         ? u.persona.razonSocial : u.persona.nombres + ' ' + u.persona.apellidos,
       tipo: u.persona.tipoPersona
     });
-    this.usuarioLogueado = this.storage.get('login').nombre;
-    this.opciones = this.opcionesxRol(u.persona.tipoPersona);
+    this.usuarioLogueado = this.getUserLogin(this.storage.get('login'));
+    this.opciones = this.opcionesxRol(this.storage.get('login').tipo);
   }
 
   cerrarSesion() {

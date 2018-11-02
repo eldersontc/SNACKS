@@ -52,6 +52,9 @@ namespace SNACKS.Controllers
                     case Constantes.Cinco:
                         filtros.Add(x => x.NumeroDocumento.Contains(filtro.V));
                         break;
+                    case Constantes.Seis:
+                        filtros.Add(x => x.Vendedor.IdPersona == filtro.N);
+                        break;
                 }
             }
 

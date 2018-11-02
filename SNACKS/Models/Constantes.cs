@@ -12,6 +12,7 @@ namespace SNACKS.Models
         public const int Tres = 3;
         public const int Cuatro = 4;
         public const int Cinco = 5;
+        public const int Seis = 6;
         public const int EnumCliente = 2;
         public const int EnumVendedor = 3;
         public const string Cliente = "Cliente";

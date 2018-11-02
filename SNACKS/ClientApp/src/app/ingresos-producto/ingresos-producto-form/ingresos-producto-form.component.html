@@ -1,5 +1,5 @@
 <div *ngIf="elegirProducto">
-  <app-productos [params]="filtroProducto" (model)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirProducto">
   <ngb-tabset>
@@ -101,30 +101,28 @@
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
       <ng-template ngbTabContent>
         <br />
-        <form class="form-horizontal" novalidate>
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-8 control-label"><b>Nro. Ingreso:</b> {{form.value.idIngresoProducto}}</label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-8 control-label"><b>Fecha Creación:</b> {{form.value.fechaCreacion | date: 'dd/MM/yyyy'}}</label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-8 control-label"><b>Comentario:</b> {{form.value.comentario}}</label>
-            </div>
-            <div class="form-group">
-              <div class="col-md-10">
-                <div class="btn-group mb-2 col-md-12 justify-content-center">
-                  <span class="ml-2" *ngFor="let i of items">
-                    <button type="button" class="btn badge badge-pill badge-secondary" (click)="deleteItem(i)" ngbPopover="Eliminar Item" triggers="mouseenter:mouseleave">
-                      {{i.producto.nombre}} ({{i.unidad.abreviacion}}) : {{i.cantidad}} = {{i.costo}} <fa name="times-circle"></fa>
-                    </button>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
+        <table class="table table-bordered table-hover table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col">Producto</th>
+              <th scope="col">Unidad</th>
+              <th scope="col">Cantidad</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of items">
+              <td>{{i.producto.nombre}}</td>
+              <td>{{i.unidad.abreviacion}}</td>
+              <td>{{i.cantidad}}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
+                  <fa name="trash"></fa>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </ng-template>
     </ngb-tab>
   </ngb-tabset>

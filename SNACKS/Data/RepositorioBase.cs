@@ -110,7 +110,7 @@ namespace SNACKS.Data
             return Lista;
         }
 
-        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null)
+        public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null, Expression<Func<T, object>> Orden = null)
         {
             IQueryable<T> Query = Context.Set<T>();
 
@@ -127,9 +127,15 @@ namespace SNACKS.Data
                 Query = Query.Where(Expresion);
             }
 
-            var Lista = await Query.Skip((Paginacion.Pagina - 1) * Paginacion.Registros)
-                                    .Take(Paginacion.Registros)
-                                    .ToListAsync();
+            Query = Query.Skip((Paginacion.Pagina - 1) * Paginacion.Registros)
+                                    .Take(Paginacion.Registros);
+
+            if(Orden != null)
+            {
+                Query = Query.OrderByDescending(Orden);
+            }
+
+            var Lista = await Query.ToListAsync();
 
             var TotalRegistros = await Query.CountAsync();
 

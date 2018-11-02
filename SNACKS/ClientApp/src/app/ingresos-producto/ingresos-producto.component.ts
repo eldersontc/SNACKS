@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, Input, Output, EventEmitter } from '@angular/core';
 import { IIngresoProducto } from './ingreso-producto';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { IngresosProductoService } from './ingresos-producto.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
@@ -12,22 +12,30 @@ import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
 })
 export class IngresosProductoComponent implements OnInit {
 
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
+
   pagina: number = 1;
   totalRegistros: number = 0;
   ingresosProducto: IIngresoProducto[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   busqueda: Date;
   seleccion: IIngresoProducto;
-  rol: number;
+  login: ILogin;
+
+  columnas: string[][] = [
+    ['L', 'Nro. Ingreso'],
+    ['L', 'Creado Por'],
+    ['L', 'Fecha Creación']];
+  atributos: string[][] = [
+    ['I', 'L', 'idIngresoProducto'],
+    ['S', 'L', 'usuario', 'nombre'],
+    ['D', 'L', 'fechaCreacion']]
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
-    private ingresoProductoService: IngresosProductoService,
-    config: NgbModalConfig,
-    private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-    this.rol = this.storage.get('login').tipo;
+    private ingresoProductoService: IngresosProductoService) {
+    this.login = this.storage.get('login');
   }
 
   ngOnInit() {
@@ -35,19 +43,23 @@ export class IngresosProductoComponent implements OnInit {
   }
 
   seleccionFecha() {
-    this.quitarCriterio(this.criterio);
-    this.filtros.push(new Filtro(this.criterio, '', 0, this.busqueda));
+    this.filtros.push({ k: this.criterio, d: this.busqueda });
     this.getIngresosProducto();
   }
 
   getIngresosProducto() {
+    this.seleccion = undefined;
     this.ingresoProductoService.getIngresosProducto({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IIngresoProducto>) {
@@ -58,23 +70,6 @@ export class IngresosProductoComponent implements OnInit {
   pageChange() {
     this.seleccion = undefined;
     this.getIngresosProducto();
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getIngresosProducto();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteIngresoProducto(); } });
   }
 
   deleteIngresoProducto() {

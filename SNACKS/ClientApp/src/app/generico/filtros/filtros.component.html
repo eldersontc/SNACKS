@@ -1,0 +1,25 @@
+<div class="btn-group col-md-12  mb-2 justify-content-center">
+  <span class="ml-2" *ngFor="let e of extern">
+    <button class="btn badge badge-pill badge-secondary">
+      {{e.v}}
+    </button>
+  </span>
+  <span class="ml-2" *ngFor="let f of filter">
+    <button type="button"
+            *ngIf="!f.d"
+            class="btn badge badge-pill badge-secondary"
+            (click)="quitarFiltro(f)"
+            ngbPopover="Eliminar filtro"
+            triggers="mouseenter:mouseleave">
+      {{f.v}} <fa name="times-circle"></fa>
+    </button>
+    <button type="button"
+            *ngIf="f.d"
+            class="btn badge badge-pill badge-secondary"
+            (click)="quitarFiltro(f)"
+            ngbPopover="Eliminar filtro"
+            triggers="mouseenter:mouseleave">
+      {{f.d | date: 'dd/MM/yyyy'}} <fa name="times-circle"></fa>
+    </button>
+  </span>
+</div>

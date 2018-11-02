@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IProducto } from './producto';
-import { Filtro, IListaRetorno } from '../generico/generico';
+import { IFiltro, IListaRetorno } from '../generico/generico';
 import { ProductosService } from './productos.service';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-productos',
@@ -11,38 +10,46 @@ import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class ProductosComponent implements OnInit {
 
-  @Input() params: Filtro;
-  @Output() model = new EventEmitter();
+  @Input() extern: IFiltro[];
+  @Output() select = new EventEmitter();
 
   pagina: number = 1;
   totalRegistros: number = 0;
   productos: IProducto[];
-  filtros: Filtro[] = [];
+  filtros: IFiltro[] = [];
   criterio: number = 1;
   criterioCk: boolean = false;
   busqueda: string = '';
   seleccion: IProducto;
 
-  constructor(private productoService: ProductosService, config: NgbModalConfig, private modalService: NgbModal) {
-    config.backdrop = 'static';
-    config.keyboard = false;
-  }
+  columnas: string[][] = [
+    ['L', 'Nombre'],
+    ['L', 'Categoria'],
+    ['C', 'Es Insumo']];
+  atributos: string[][] = [
+    ['S', 'L', 'nombre'],
+    ['S', 'L', 'categoria', 'nombre'],
+    ['B', 'C', 'esInsumo']]
+
+  constructor(private productoService: ProductosService) { }
 
   ngOnInit() {
-    if (this.params) {
-      this.filtros.push(this.params);
-    }
     this.getProductos();
   }
 
   getProductos() {
+    this.seleccion = undefined;
     this.productoService.getProductos({
       "Registros": 10,
       "Pagina": this.pagina,
-      "filtros": this.filtros
+      "filtros": this.filtros.concat(this.extern || [])
     })
       .subscribe(data => this.onGetSuccess(data),
         error => console.error(error));
+  }
+
+  seleccionar(e) {
+    this.seleccion = e;
   }
 
   onGetSuccess(data: IListaRetorno<IProducto>) {
@@ -58,33 +65,14 @@ export class ProductosComponent implements OnInit {
   buscar() {
     if (this.criterio == 1) {
       if (this.busqueda.length > 0) {
-        this.quitarCriterio(this.criterio);
-        this.filtros.push(new Filtro(this.criterio, this.busqueda));
+        this.filtros.push({ k: this.criterio, v: this.busqueda });
         this.busqueda = '';
         this.getProductos();
       }
     } else {
-      this.quitarCriterio(this.criterio);
-      this.filtros.push(new Filtro(this.criterio, 'Es Insumo : ' + ((this.criterioCk) ? 'Si' : 'No'), 0, new Date(), this.criterioCk));
+      this.filtros.push({ k: this.criterio, v: 'Es Insumo : ' + ((this.criterioCk) ? 'Si' : 'No'), b: this.criterioCk });
       this.getProductos();
     }
-  }
-
-  quitarCriterio(k: number) {
-    this.filtros.forEach((item, index) => {
-      if (item.k === k) this.filtros.splice(index, 1);
-    });
-    this.seleccion = undefined;
-  }
-
-  quitarFiltro(filtro: Filtro) {
-    this.quitarCriterio(filtro.k);
-    this.getProductos();
-  }
-
-  open(content) {
-    this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Eliminar') { this.deleteProducto(); } });
   }
 
   deleteProducto() {
@@ -98,14 +86,14 @@ export class ProductosComponent implements OnInit {
   }
 
   elegir() {
-    if (this.params) {
+    if (this.extern) {
       this.productoService.getProducto(this.seleccion.idProducto)
-        .subscribe(producto => this.model.emit(producto),
+        .subscribe(producto => this.select.emit(producto),
           error => console.error(error));
     }
   }
 
   cancelar() {
-    this.model.emit();
+    this.select.emit();
   }
 }
