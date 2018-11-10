@@ -8,11 +8,15 @@ namespace SNACKS.Models
 {
     public class Reporte
     {
-        [Key]
-        public int IdReporte { get; set; }
-        public string Titulo { get; set; }
-        public string TipoReporte { get; set; }
-        public int Flag { get; set; }
-        public List<ItemReporte> Items { get; set; }
+        public virtual int IdReporte { get; set; }
+        public virtual string Titulo { get; set; }
+        public virtual string TipoReporte { get; set; }
+        public virtual int Flag { get; set; }
+        public virtual List<ItemReporte> Items { get; set; }
+
+        public Reporte()
+        {
+            Items = new List<ItemReporte>();
+        }
     }
 }

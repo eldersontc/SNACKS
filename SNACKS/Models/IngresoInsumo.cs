@@ -9,13 +9,18 @@ namespace SNACKS.Models
 {
     public class IngresoInsumo
     {
-        [Key]
         public int IdIngresoInsumo { get; set; }
-        [ForeignKey("IdUsuario")]
         public Usuario Usuario { get; set; }
+        public Almacen Almacen { get; set; }
+        public Caja Caja { get; set; }
         public DateTime FechaCreacion { get; set; }
         public string Comentario { get; set; }
         public decimal Costo { get; set; }
         public List<ItemIngresoInsumo> Items { get; set; }
+
+        public IngresoInsumo()
+        {
+            Items = new List<ItemIngresoInsumo>();
+        }
     }
 }

@@ -1,6 +1,8 @@
 import { IProducto } from "../productos/producto";
 import { IUnidad } from "../unidades/unidad";
 import { IUsuario } from "../usuarios/usuario";
+import { IAlmacen } from "../almacenes/almacen";
+import { ICaja } from "../cajas/caja";
 
 export interface IIngresoInsumo {
   idIngresoInsumo: number;
@@ -8,6 +10,8 @@ export interface IIngresoInsumo {
   usuario: IUsuario;
   comentario: string;
   costo: number;
+  almacen: IAlmacen,
+  caja: ICaja,
   items: IItemIngresoInsumo[];
 }
 

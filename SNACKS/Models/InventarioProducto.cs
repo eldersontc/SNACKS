@@ -12,5 +12,6 @@ namespace SNACKS.Models
         public int IdInventarioProducto { get; set; }
         public int IdProducto { get; set; }
         public int Stock { get; set; }
+        public int IdAlmacen { get; set; }
     }
 }

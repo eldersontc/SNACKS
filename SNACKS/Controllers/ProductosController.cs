@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SNACKS.Data;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Models;
 
 namespace SNACKS.Controllers
@@ -13,17 +12,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Productos")]
     [ApiController]
-    public class ProductosController : ControllerBase
+    public class ProductosController : UtilController
     {
-        public IRepositorioBase<Producto> Repositorio { get; }
-        public IRepositorioBase<ItemProducto> RepositorioItem { get; }
-
-        public ProductosController(IRepositorioBase<Producto> repositorio, 
-            IRepositorioBase<ItemProducto> repositorioItem)
-        {
-            Repositorio = repositorio;
-            RepositorioItem = repositorioItem;
-        }
+        public ProductosController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetProductos")]
         public async Task<IActionResult> GetProductos([FromBody] Paginacion paginacion)
@@ -33,27 +24,42 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Producto, bool>>>();
+            List<Producto> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Producto> query = sn.Query<Producto>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.Nombre.Contains(filtro.V));
-                        break;
-                    case Constantes.Dos:
-                        filtros.Add(x => x.EsInsumo == filtro.B);
-                        break;
-                    case Constantes.Tres:
-                        filtros.Add(x => x.Categoria.IdCategoria == filtro.N);
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.Nombre.Contains(filtro.V));
+                            break;
+                        case Constantes.Dos:
+                            query = query.Where(x => x.EsInsumo == filtro.B);
+                            break;
+                        case Constantes.Tres:
+                            query = query.Where(x => x.Categoria.IdCategoria == filtro.N);
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderBy(x => x.Nombre);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Categoria });
-
-            return Ok(result);
+            return Ok(new {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -64,7 +70,13 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Categoria, Constantes.Items + '.' + Constantes.Unidad });
+            Producto producto = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                producto = await sn.GetAsync<Producto>(id);
+                producto.Items = await sn.Query<ItemProducto>().Where(x => x.IdProducto == id).ToListAsync();
+            }
 
             if (producto == null)
             {
@@ -87,32 +99,30 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                List<ItemProducto> items = await RepositorioItem.ObtenerTodosAsync(
-                    new List<Expression<Func<ItemProducto, bool>>>() {
-                    (x => x.Producto.IdProducto == id)
-                });
-
-                await RepositorioItem.EliminarAsync(items.ToArray(), false);
-
-                List<object> referencias = new List<object>();
-
-                foreach (var item in producto.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    item.Producto = new Producto { IdProducto = id };
-                    referencias.Add(item.Unidad);
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemProducto WHERE IdProducto = {0}", id));
+
+                        foreach (var item in producto.Items)
+                        {
+                            item.IdProducto = id;
+                            sn.Save(item);
+                        }
+
+                        sn.SaveOrUpdate(producto);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-
-                RepositorioItem.AgregarReferencias(referencias.ToArray());
-                await RepositorioItem.RegistrarAsync(producto.Items.ToArray(), false);
-
-                Repositorio.AgregarReferencias(new object[] { producto, producto.Categoria });
-                await Repositorio.ActualizarAsync(producto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -126,21 +136,28 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                List<object> referencias = new List<object>() { producto.Categoria };
-                
-                foreach (var item in producto.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    referencias.Add(item.Unidad);
-                }
+                    try
+                    {
+                        sn.Save(producto);
 
-                Repositorio.AgregarReferencias(referencias.ToArray());
-                await Repositorio.RegistrarAsync(producto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        foreach (var item in producto.Items)
+                        {
+                            item.IdProducto = producto.IdProducto;
+                            sn.Save(item);
+                        }
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -154,69 +171,27 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var producto = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
-            if (producto == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemProducto WHERE IdProducto = {0}", id));
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(producto.Items.ToArray(), false);
-                await Repositorio.EliminarAsync(producto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        sn.Delete(new Producto { IdProducto = id });
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
         }
-
-        //[HttpPost("AddItem")]
-        //public async Task<IActionResult> PostItem([FromBody] ItemProducto item)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Producto, item.Unidad });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
-
-        //[HttpDelete("DeleteItem/{id}")]
-        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var item = await RepositorioItem.ObtenerAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.EliminarAsync(new ItemProducto[] { item });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
     }
 }

@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -13,20 +15,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/SalidasInsumo")]
     [ApiController]
-    public class SalidasInsumoController : ControllerBase
+    public class SalidasInsumoController : UtilController
     {
-        public IRepositorioBase<SalidaInsumo> Repositorio { get; }
-        public IRepositorioBase<ItemSalidaInsumo> RepositorioItem { get; }
-        public IRepositorioBase<InventarioInsumo> RepositorioInventario { get; }
-
-        public SalidasInsumoController(IRepositorioBase<SalidaInsumo> repositorio,
-            IRepositorioBase<ItemSalidaInsumo> repositorioItem,
-            IRepositorioBase<InventarioInsumo> repositorioInventario)
-        {
-            Repositorio = repositorio;
-            RepositorioItem = repositorioItem;
-            RepositorioInventario = repositorioInventario;
-        }
+        public SalidasInsumoController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetSalidasInsumo")]
         public async Task<IActionResult> GetSalidasInsumo([FromBody] Paginacion paginacion)
@@ -36,21 +27,37 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<SalidaInsumo, bool>>>();
+            List<SalidaInsumo> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<SalidaInsumo> query = sn.Query<SalidaInsumo>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.FechaCreacion.Date == filtro.D.Date);
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.FechaCreacion.Date == filtro.D.Date);
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderByDescending(x => x.FechaCreacion);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario });
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -61,11 +68,13 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var salidaInsumo = await Repositorio.ObtenerAsync(id, new string[] {
-                Constantes.Usuario,
-                Constantes.Items + '.' + Constantes.Producto,
-                Constantes.Items + '.' + Constantes.Unidad
-            });
+            SalidaInsumo salidaInsumo = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                salidaInsumo = await sn.GetAsync<SalidaInsumo>(id);
+                salidaInsumo.Items = await sn.Query<ItemSalidaInsumo>().Where(x => x.IdSalidaInsumo == id).ToListAsync();
+            }
 
             if (salidaInsumo == null)
             {
@@ -88,74 +97,59 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                /* Eliminación de los anteriores items */
-                List<ItemSalidaInsumo> items = await RepositorioItem.ObtenerTodosAsync(
-                    new List<Expression<Func<ItemSalidaInsumo, bool>>>() {
-                    (x => x.SalidaInsumo.IdSalidaInsumo == id)
-                },
-                    new string[] {
-                    Constantes.Producto,
-                    Constantes.Unidad
-                });
-
-                foreach (var item in items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
-                        (x => x.IdInsumo == item.Producto.IdProducto)
-                    };
-                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0)
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        List<ItemSalidaInsumo> items = await sn.Query<ItemSalidaInsumo>()
+                            .Where(x => x.IdSalidaInsumo == id)
+                            .ToListAsync();
+
+                        foreach (var item in items)
+                        {
+                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                                .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
+                                    && x.IdInsumo == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                        }
+
+                        sn.Delete(string.Format("FROM ItemSalidaInsumo WHERE IdSalidaInsumo = {0}", id));
+
+                        foreach (var item in salidaInsumo.Items)
+                        {
+                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                                .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
+                                    && x.IdInsumo == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                            {
+                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                            }
+                            else
+                            {
+                                throw new Exception("No hay stock disponible.");
+                            }
+
+                            item.IdSalidaInsumo = id;
+
+                            sn.Save(item);
+                        }
+
+                        sn.SaveOrUpdate(salidaInsumo);
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-
-                await RepositorioItem.EliminarAsync(items.ToArray(), false);
-
-                /* Registro de los nuevos items */
-                List<object> referencias = new List<object>();
-                
-                foreach (var item in salidaInsumo.Items)
-                {
-                    item.SalidaInsumo = new SalidaInsumo { IdSalidaInsumo = id };
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                }
-
-                RepositorioItem.AgregarReferencias(referencias.ToArray());
-                await RepositorioItem.RegistrarAsync(salidaInsumo.Items.ToArray(), false);
-
-                foreach (var item in salidaInsumo.Items)
-                {
-                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
-                        (x => x.IdInsumo == item.Producto.IdProducto)
-                    };
-                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
-                    {
-                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
-                    }
-                    else
-                    {
-                        return StatusCode(500, "No hay stock disponible.");
-                    }
-                }
-
-                /* Actualización de la cabecera */
-                Repositorio.AgregarReferencias(new object[] { salidaInsumo, salidaInsumo.Usuario });
-                await Repositorio.ActualizarAsync(salidaInsumo);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -169,41 +163,41 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                foreach (var item in salidaInsumo.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
-                        (x => x.IdInsumo == item.Producto.IdProducto)
-                    };
-                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        foreach (var item in salidaInsumo.Items)
+                        {
+                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                                .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
+                                    && x.IdInsumo == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                            {
+                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                            }
+                            else
+                            {
+                                throw new Exception("No hay stock disponible.");
+                            }
+                        }
+
+                        salidaInsumo.FechaCreacion = DateTime.Now;
+
+                        sn.Save(salidaInsumo);
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-
-                List<object> referencias = new List<object>() { salidaInsumo.Usuario };
-                
-                foreach (var item in salidaInsumo.Items)
-                {
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                }
-
-                salidaInsumo.FechaCreacion = DateTime.Now;
-                
-                Repositorio.AgregarReferencias(referencias.ToArray());
-                await Repositorio.RegistrarAsync(salidaInsumo);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -217,87 +211,44 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var salidaInsumo = await Repositorio.ObtenerAsync(id, new string[] {
-                Constantes.Items + '.' + Constantes.Producto
-            });
-            if (salidaInsumo == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
-
-            try
-            {
-                foreach (var item in salidaInsumo.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioInsumo, bool>>>() {
-                        (x => x.IdInsumo == item.Producto.IdProducto)
-                    };
-                    List<InventarioInsumo> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0)
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        SalidaInsumo salidaInsumo = sn.Get<SalidaInsumo>(id);
+
+                        List<ItemSalidaInsumo> items = await sn.Query<ItemSalidaInsumo>()
+                            .Where(x => x.IdSalidaInsumo == id)
+                            .ToListAsync();
+
+                        foreach (var item in items)
+                        {
+                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                                .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
+                                    && x.IdInsumo == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                        }
+
+                        sn.Delete(string.Format("FROM ItemSalidaInsumo WHERE IdSalidaInsumo = {0}", id));
+
+                        sn.Delete(salidaInsumo);
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-                await RepositorioItem.EliminarAsync(salidaInsumo.Items.ToArray(), false);
-                await Repositorio.EliminarAsync(salidaInsumo);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
         }
 
-        //[HttpPost("AddItem")]
-        //public async Task<IActionResult> PostItem([FromBody] ItemSalidaInsumo item)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.SalidaInsumo, item.Producto, item.Unidad });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
-
-        //[HttpDelete("DeleteItem/{id}")]
-        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var item = await RepositorioItem.ObtenerAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.EliminarAsync(new ItemSalidaInsumo[] { item });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
     }
 }

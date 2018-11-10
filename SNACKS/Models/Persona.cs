@@ -10,7 +10,6 @@ namespace SNACKS.Models
 {
     public class Persona
     {
-        [Key]
         public int IdPersona { get; set; }
         public int TipoPersona { get; set; }
         public string Nombres { get; set; }
@@ -20,13 +19,7 @@ namespace SNACKS.Models
         public string NumeroDocumento { get; set; }
         public string Distrito { get; set; }
         public string Direccion { get; set; }
-        [ForeignKey("IdZonaVenta")]
         public ZonaVenta ZonaVenta { get; set; }
-        [ForeignKey("IdVendedor")]
         public Persona Vendedor { get; set; }
-        [JsonIgnore]
-        public List<Pedido> Pedidos { get; set; }
-        [JsonIgnore]
-        public List<Usuario> Usuarios { get; set; }
     }
 }

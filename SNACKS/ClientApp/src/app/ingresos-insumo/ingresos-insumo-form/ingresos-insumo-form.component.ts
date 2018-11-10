@@ -1,12 +1,15 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { IFiltro } from '../../generico/generico';
+import { IFiltro, ILogin } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { IngresosInsumoService } from '../ingresos-insumo.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IItemIngresoInsumo, IIngresoInsumo } from '../ingreso-insumo';
 import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
-import { IUsuario } from '../../usuarios/usuario';
+import { AlmacenesService } from '../../almacenes/almacenes.service';
+import { CajasService } from '../../cajas/cajas.service';
+import { IAlmacen } from '../../almacenes/almacen';
+import { ICaja } from '../../cajas/caja';
 
 @Component({
   selector: 'app-ingresos-insumo-form',
@@ -15,26 +18,71 @@ import { IUsuario } from '../../usuarios/usuario';
 })
 export class IngresosInsumoFormComponent implements OnInit {
 
-  filtrosProducto: IFiltro[] = [];
+  filtrosProducto: IFiltro[] = [
+    { k: 2, v: 'Insumo', b: true }
+  ];
   elegirProducto: boolean = false;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
     private ingresoInsumoService: IngresosInsumoService,
+    private almacenService: AlmacenesService,
+    private cajaService: CajasService,
     private router: Router,
-    private activatedRoute: ActivatedRoute) { }
+    private activatedRoute: ActivatedRoute) {
+    this.login = this.storage.get('login');
+    this.activatedRoute.params.subscribe(params => {
+      if (params["id"] == undefined) {
+        return;
+      } else {
+        this.modoEdicion = true;
+        this.ingresoInsumoService.getIngresoInsumo(params["id"])
+          .subscribe(ingresoInsumo => this.cargarFormulario(ingresoInsumo),
+          error => console.error(error));
+      }
+    });
+  }
+
+  getAlmacenes() {
+    this.almacenService.getAll()
+      .subscribe(d => this.onGetAlmacenesSuccess(d), error => console.error(error));
+  }
+
+  onGetAlmacenesSuccess(d) {
+    this.almacenes = d;
+    if (this.almacenes.length > 0) {
+      this.form.patchValue({ almacen: this.almacenes[0] });
+    }
+  }
+
+  getCajas() {
+    this.cajaService.getAll()
+      .subscribe(d => this.onGetCajasSuccess(d), error => console.error(error));
+  }
+
+  onGetCajasSuccess(d) {
+    this.cajas = d;
+    if (this.cajas.length > 0) {
+      this.form.patchValue({ caja: this.cajas[0] });
+    }
+  }
 
   modoEdicion: boolean;
+
   form: FormGroup;
   formItem: FormGroup;
 
   items: IItemIngresoInsumo[] = [];
+  almacenes: IAlmacen[] = [];
+  cajas: ICaja[] = []
+  login: ILogin;
 
   ngOnInit() {
-    this.filtrosProducto.push({ k: 2, v: 'Insumo', b: true });
     this.form = this.fb.group({
       idIngresoInsumo: 0,
       fechaCreacion: new Date(),
+      almacen: '',
+      caja: '',
       comentario: '',
       costo: 0
     });
@@ -49,15 +97,10 @@ export class IngresosInsumoFormComponent implements OnInit {
       costo: '',
       factor: 0
     });
-    this.activatedRoute.params.subscribe(params => {
-      if (params["id"] == undefined) {
-        return;
-      } else {
-        this.modoEdicion = true;
-        this.ingresoInsumoService.getIngresoInsumo(params["id"]).subscribe(ingresoInsumo => this.cargarFormulario(ingresoInsumo),
-          error => console.error(error));
-      }
-    });
+    if (!this.modoEdicion) {
+      this.getAlmacenes();
+      this.getCajas();
+    }
   }
 
   get fi() { return this.formItem.value; }
@@ -81,16 +124,17 @@ export class IngresosInsumoFormComponent implements OnInit {
       idIngresoInsumo: ingresoInsumo.idIngresoInsumo,
       fechaCreacion: new Date(ingresoInsumo.fechaCreacion),
       comentario: ingresoInsumo.comentario,
-      costo: ingresoInsumo.costo
+      costo: ingresoInsumo.costo,
+      almacen: ingresoInsumo.almacen,
+      caja: ingresoInsumo.caja
     });
     this.items = ingresoInsumo.items;
   }
 
   save() {
     let ingresoInsumo: IIngresoInsumo = Object.assign({}, this.form.value);
-    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
-
-    ingresoInsumo.usuario = usuario;
+    
+    ingresoInsumo.usuario = { idUsuario: this.login.id };
     ingresoInsumo.items = this.items;
 
     if (this.modoEdicion) {
@@ -117,18 +161,7 @@ export class IngresosInsumoFormComponent implements OnInit {
 
     let i: IItemIngresoInsumo = Object.assign({}, this.formItem.value);
 
-    //if (this.modoEdicion) {
-
-    //  let ingresoInsumo: IIngresoInsumo = Object.assign({}, this.form.value);
-    //  i.ingresoInsumo = ingresoInsumo;
-
-    //  this.ingresoInsumoService.createItem(i)
-    //    .subscribe(data => this.onSaveItemSuccess(i),
-    //      error => console.error(error));
-
-    //} else {
-      this.onSaveItemSuccess(i);
-    //}
+    this.onSaveItemSuccess(i);
   }
 
   onSaveItemSuccess(i) {
@@ -137,13 +170,7 @@ export class IngresosInsumoFormComponent implements OnInit {
   }
 
   deleteItem(i: IItemIngresoInsumo) {
-    //if (this.modoEdicion) {
-    //  this.ingresoInsumoService.deleteItem(i.idItemIngresoInsumo)
-    //    .subscribe(data => this.onDeleteItemSuccess(i),
-    //      error => console.log(error));
-    //} else {
-      this.onDeleteItemSuccess(i);
-    //}
+    this.onDeleteItemSuccess(i);
   }
 
   onDeleteItemSuccess(i: IItemIngresoInsumo) {

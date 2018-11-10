@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,12 +10,9 @@ namespace SNACKS.Models
 {
     public class ItemProducto
     {
-        [Key]
-        public int IdItemProducto { get; set; }
-        [ForeignKey("IdProducto")]
-        public Producto Producto { get; set; }
-        [ForeignKey("IdUnidad")]
-        public Unidad Unidad { get; set; }
-        public int Factor { get; set; }
+        public virtual int IdItemProducto { get; set; }
+        public virtual int IdProducto { get; set; }
+        public virtual Unidad Unidad { get; set; }
+        public virtual int Factor { get; set; }
     }
 }

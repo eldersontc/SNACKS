@@ -9,13 +9,9 @@ namespace SNACKS.Models
 {
     public class ItemIngresoInsumo
     {
-        [Key]
         public int IdItemIngresoInsumo { get; set; }
-        [ForeignKey("IdIngresoInsumo")]
-        public IngresoInsumo IngresoInsumo { get; set; }
-        [ForeignKey("IdProducto")]
+        public int IdIngresoInsumo { get; set; }
         public Producto Producto { get; set; }
-        [ForeignKey("IdUnidad")]
         public Unidad Unidad { get; set; }
         public int Factor { get; set; }
         public int Cantidad { get; set; }

@@ -19,6 +19,34 @@ namespace SNACKS.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("SNACKS.Models.Almacen", b =>
+                {
+                    b.Property<int>("IdAlmacen")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Nombre");
+
+                    b.HasKey("IdAlmacen");
+
+                    b.ToTable("Almacen");
+                });
+
+            modelBuilder.Entity("SNACKS.Models.Caja", b =>
+                {
+                    b.Property<int>("IdCaja")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Nombre");
+
+                    b.Property<decimal>("Saldo");
+
+                    b.HasKey("IdCaja");
+
+                    b.ToTable("Caja");
+                });
+
             modelBuilder.Entity("SNACKS.Models.Categoria", b =>
                 {
                     b.Property<int>("IdCategoria")
@@ -44,9 +72,17 @@ namespace SNACKS.Migrations
 
                     b.Property<DateTime>("FechaCreacion");
 
+                    b.Property<int?>("IdAlmacen");
+
+                    b.Property<int?>("IdCaja");
+
                     b.Property<int?>("IdUsuario");
 
                     b.HasKey("IdIngresoInsumo");
+
+                    b.HasIndex("IdAlmacen");
+
+                    b.HasIndex("IdCaja");
 
                     b.HasIndex("IdUsuario");
 
@@ -63,9 +99,13 @@ namespace SNACKS.Migrations
 
                     b.Property<DateTime>("FechaCreacion");
 
+                    b.Property<int?>("IdAlmacen");
+
                     b.Property<int?>("IdUsuario");
 
                     b.HasKey("IdIngresoProducto");
+
+                    b.HasIndex("IdAlmacen");
 
                     b.HasIndex("IdUsuario");
 
@@ -77,6 +117,8 @@ namespace SNACKS.Migrations
                     b.Property<int>("IdInventarioInsumo")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("IdAlmacen");
 
                     b.Property<int>("IdInsumo");
 
@@ -92,6 +134,8 @@ namespace SNACKS.Migrations
                     b.Property<int>("IdInventarioProducto")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("IdAlmacen");
 
                     b.Property<int>("IdProducto");
 
@@ -281,6 +325,35 @@ namespace SNACKS.Migrations
                     b.ToTable("ItemSalidaProducto");
                 });
 
+            modelBuilder.Entity("SNACKS.Models.MovimientoCaja", b =>
+                {
+                    b.Property<int>("IdMovimientoCaja")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Fecha");
+
+                    b.Property<string>("Glosa");
+
+                    b.Property<int?>("IdCaja");
+
+                    b.Property<int?>("IdCajaOrigen");
+
+                    b.Property<int?>("IdIngresoInsumo");
+
+                    b.Property<int?>("IdPedido");
+
+                    b.Property<decimal>("Importe");
+
+                    b.Property<string>("TipoMovimiento");
+
+                    b.HasKey("IdMovimientoCaja");
+
+                    b.HasIndex("IdCaja");
+
+                    b.ToTable("MovimientoCaja");
+                });
+
             modelBuilder.Entity("SNACKS.Models.Pedido", b =>
                 {
                     b.Property<int>("IdPedido")
@@ -397,9 +470,13 @@ namespace SNACKS.Migrations
 
                     b.Property<DateTime>("FechaCreacion");
 
+                    b.Property<int?>("IdAlmacen");
+
                     b.Property<int?>("IdUsuario");
 
                     b.HasKey("IdSalidaInsumo");
+
+                    b.HasIndex("IdAlmacen");
 
                     b.HasIndex("IdUsuario");
 
@@ -416,9 +493,13 @@ namespace SNACKS.Migrations
 
                     b.Property<DateTime>("FechaCreacion");
 
+                    b.Property<int?>("IdAlmacen");
+
                     b.Property<int?>("IdUsuario");
 
                     b.HasKey("IdSalidaProducto");
+
+                    b.HasIndex("IdAlmacen");
 
                     b.HasIndex("IdUsuario");
 
@@ -474,6 +555,14 @@ namespace SNACKS.Migrations
 
             modelBuilder.Entity("SNACKS.Models.IngresoInsumo", b =>
                 {
+                    b.HasOne("SNACKS.Models.Almacen", "Almacen")
+                        .WithMany()
+                        .HasForeignKey("IdAlmacen");
+
+                    b.HasOne("SNACKS.Models.Caja", "Caja")
+                        .WithMany()
+                        .HasForeignKey("IdCaja");
+
                     b.HasOne("SNACKS.Models.Usuario", "Usuario")
                         .WithMany("IntresosInsumo")
                         .HasForeignKey("IdUsuario");
@@ -481,6 +570,10 @@ namespace SNACKS.Migrations
 
             modelBuilder.Entity("SNACKS.Models.IngresoProducto", b =>
                 {
+                    b.HasOne("SNACKS.Models.Almacen", "Almacen")
+                        .WithMany()
+                        .HasForeignKey("IdAlmacen");
+
                     b.HasOne("SNACKS.Models.Usuario", "Usuario")
                         .WithMany("IntresosProducto")
                         .HasForeignKey("IdUsuario");
@@ -579,6 +672,13 @@ namespace SNACKS.Migrations
                         .HasForeignKey("IdUnidad");
                 });
 
+            modelBuilder.Entity("SNACKS.Models.MovimientoCaja", b =>
+                {
+                    b.HasOne("SNACKS.Models.Caja", "Caja")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("IdCaja");
+                });
+
             modelBuilder.Entity("SNACKS.Models.Pedido", b =>
                 {
                     b.HasOne("SNACKS.Models.Persona", "Cliente")
@@ -610,6 +710,10 @@ namespace SNACKS.Migrations
 
             modelBuilder.Entity("SNACKS.Models.SalidaInsumo", b =>
                 {
+                    b.HasOne("SNACKS.Models.Almacen", "Almacen")
+                        .WithMany()
+                        .HasForeignKey("IdAlmacen");
+
                     b.HasOne("SNACKS.Models.Usuario", "Usuario")
                         .WithMany("SalidasInsumo")
                         .HasForeignKey("IdUsuario");
@@ -617,6 +721,10 @@ namespace SNACKS.Migrations
 
             modelBuilder.Entity("SNACKS.Models.SalidaProducto", b =>
                 {
+                    b.HasOne("SNACKS.Models.Almacen", "Almacen")
+                        .WithMany()
+                        .HasForeignKey("IdAlmacen");
+
                     b.HasOne("SNACKS.Models.Usuario", "Usuario")
                         .WithMany("SalidasProducto")
                         .HasForeignKey("IdUsuario");

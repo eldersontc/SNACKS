@@ -9,13 +9,15 @@ namespace SNACKS.Models
 {
     public class Producto
     {
-        [Key]
-        public int IdProducto { get; set; }
-        public string Nombre { get; set; }
-        public bool EsInsumo { get; set; }
-        [ForeignKey("IdCategoria")]
-        public Categoria Categoria { get; set; }
-        public List<ItemPedido> ItemsPedido { get; set; }
-        public List<ItemProducto> Items { get; set; }
+        public virtual int IdProducto { get; set; }
+        public virtual string Nombre { get; set; }
+        public virtual bool EsInsumo { get; set; }
+        public virtual Categoria Categoria { get; set; }
+        public virtual IList<ItemProducto> Items { get; set; }
+
+        public Producto()
+        {
+            Items = new List<ItemProducto>();
+        }
     }
 }

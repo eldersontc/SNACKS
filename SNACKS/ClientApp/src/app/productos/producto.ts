@@ -10,8 +10,8 @@ export interface IProducto {
 }
 
 export interface IItemProducto {
-  idItemProducto: number;
-  producto: IProducto;
-  unidad: IUnidad;
-  factor: number;
+  idItemProducto?: number;
+  producto?: IProducto;
+  unidad?: IUnidad;
+  factor?: number;
 }

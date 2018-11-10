@@ -1,0 +1,25 @@
+<form class="form-horizontal" novalidate
+      (ngSubmit)="save()" [formGroup]="form">
+  <fieldset>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for=" nombreId">Nombre</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="nombreId"
+               formControlName="nombre"
+               required />
+      </div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary ml-3"
+              type="submit"
+              [disabled]="!form.valid">
+        <fa name="save"></fa> Guardar
+      </button>
+      <button class="btn btn-outline-secondary ml-2"
+              [routerLink]='["/almacenes"]'>
+        <fa name="times-circle"></fa> Cancelar
+      </button>
+    </div>
+  </fieldset>
+</form>

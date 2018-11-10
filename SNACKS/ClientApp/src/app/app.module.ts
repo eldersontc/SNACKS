@@ -53,6 +53,15 @@ import { ZonasVentaService } from './zonas-venta/zonas-venta.service';
 import { FiltrosComponent } from './generico/filtros/filtros.component';
 import { AccionesComponent } from './generico/acciones/acciones.component';
 import { TablaComponent } from './generico/tabla/tabla.component';
+import { CajasComponent } from './cajas/cajas.component';
+import { CajasFormComponent } from './cajas/cajas-form/cajas-form.component';
+import { CajasService } from './cajas/cajas.service';
+import { AlmacenesComponent } from './almacenes/almacenes.component';
+import { AlmacenesFormComponent } from './almacenes/almacenes-form/almacenes-form.component';
+import { AlmacenesService } from './almacenes/almacenes.service';
+import { LotesComponent } from './lotes/lotes.component';
+import { LotesFormComponent } from './lotes/lotes-form/lotes-form.component';
+import { LotesService } from './lotes/lotes.service';
 
 @NgModule({
   declarations: [
@@ -88,7 +97,13 @@ import { TablaComponent } from './generico/tabla/tabla.component';
     ZonasVentaFormComponent,
     FiltrosComponent,
     AccionesComponent,
-    TablaComponent
+    TablaComponent,
+    CajasComponent,
+    CajasFormComponent,
+    AlmacenesComponent,
+    AlmacenesFormComponent,
+    LotesComponent,
+    LotesFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -138,6 +153,15 @@ import { TablaComponent } from './generico/tabla/tabla.component';
       { path: 'zonas-venta', component: ZonasVentaComponent },
       { path: 'zonas-venta-form', component: ZonasVentaFormComponent },
       { path: 'zonas-venta-form/:id', component: ZonasVentaFormComponent },
+      { path: 'cajas', component: CajasComponent },
+      { path: 'cajas-form', component: CajasFormComponent },
+      { path: 'cajas-form/:id', component: CajasFormComponent },
+      { path: 'almacenes', component: AlmacenesComponent },
+      { path: 'almacenes-form', component: AlmacenesFormComponent },
+      { path: 'almacenes-form/:id', component: AlmacenesFormComponent },
+      { path: 'lotes', component: LotesComponent },
+      { path: 'lotes-form', component: LotesFormComponent },
+      { path: 'lotes-form/:id', component: LotesFormComponent },
       { path: '404', component: NotFoundComponent },
       { path: '**', redirectTo: '/404' }
     ]),
@@ -159,6 +183,7 @@ import { TablaComponent } from './generico/tabla/tabla.component';
     SalidasProductoService,
     ReportesService,
     ZonasVentaService,
+    LotesService,
     { provide: NgbDatepickerI18n, useClass: DatepickerI18n },
     { provide: NgbDateAdapter, useClass: DateAdapter },
     { provide: NgbDateParserFormatter, useClass: DateParserFormatter }

@@ -30,12 +30,4 @@ export class ProductosService {
   deleteProducto(params): Observable<boolean> {
     return this.http.delete<boolean>(this.apiURL + '/' + params);
   }
-
-  createItem(params: IItemProducto): Observable<boolean> {
-    return this.http.post<boolean>(this.apiURL + '/AddItem', params);
-  }
-
-  deleteItem(params): Observable<boolean> {
-    return this.http.delete<boolean>(this.apiURL + '/DeleteItem/' + params);
-  }
 }

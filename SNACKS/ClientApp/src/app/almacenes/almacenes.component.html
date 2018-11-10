@@ -1,0 +1,41 @@
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option [ngValue]="1">Nombre</option>
+    </select>
+    <input type="text" class="form-control" [(ngModel)]="busqueda">
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" (click)="buscar()">
+        <fa name="search"></fa>
+      </button>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <app-filtros [filter]="filtros"
+                 [extern]="extern"
+                 (change)="getAlmacenes()"></app-filtros>
+  </div>
+  <div class="col-md-4">
+    <app-acciones link="almacenes-form"
+                  class="Almacen"
+                  [model]="seleccion"
+                  [modeSearch]="extern"
+                  (delete)="deleteAlmacen()"
+                  (select)="elegir()"
+                  (cancel)="cancelar()"></app-acciones>
+  </div>
+</div>
+
+<app-tabla [columnas]="columnas"
+           [data]="almacenes"
+           [atributos]="atributos"
+           (select)="seleccionar($event)"></app-tabla>
+
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>

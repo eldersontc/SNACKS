@@ -13,6 +13,8 @@ namespace SNACKS.Models
         public int IdSalidaProducto { get; set; }
         [ForeignKey("IdUsuario")]
         public Usuario Usuario { get; set; }
+        [ForeignKey("IdAlmacen")]
+        public Almacen Almacen { get; set; }
         public DateTime FechaCreacion { get; set; }
         public string Comentario { get; set; }
         public List<ItemSalidaProducto> Items { get; set; }

@@ -8,11 +8,8 @@ namespace SNACKS.Models
 {
     public class Unidad
     {
-        [Key]
-        public int IdUnidad { get; set; }
-        public string Nombre { get; set; }
-        public string Abreviacion { get; set; }
-        public List<ItemProducto> ItemsProducto { get; set; }
-        public List<ItemPedido> ItemsPedido { get; set; }
+        public virtual int IdUnidad { get; set; }
+        public virtual string Nombre { get; set; }
+        public virtual string Abreviacion { get; set; }
     }
 }

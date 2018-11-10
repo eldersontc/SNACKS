@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -13,14 +15,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Usuarios")]
     [ApiController]
-    public class UsuariosController : ControllerBase
+    public class UsuariosController : UtilController
     {
-        public IRepositorioBase<Usuario> Repositorio { get; }
-
-        public UsuariosController(IRepositorioBase<Usuario> repositorio)
-        {
-            Repositorio = repositorio;
-        }
+        public UsuariosController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetUsuarios")]
         public async Task<IActionResult> GetUsuarios([FromBody] Paginacion paginacion)
@@ -30,21 +27,37 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Usuario, bool>>>();
+            List<Usuario> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Usuario> query = sn.Query<Usuario>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.Nombre.Contains(filtro.V));
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.Nombre.Contains(filtro.V));
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderBy(x => x.Nombre);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Persona });
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -55,7 +68,12 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var usuario = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Persona });
+            Usuario usuario = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                usuario = await sn.GetAsync<Usuario>(id);
+            }
 
             if (usuario == null)
             {
@@ -73,19 +91,21 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Usuario, bool>>>() {
-                (x => x.Nombre.Equals(nombre)),
-                (x => x.Clave.Equals(clave))
-            };
+            Usuario usuario = null;
 
-            List<Usuario> usuarios = await Repositorio.ObtenerTodosAsync(filtros, new string[] { Constantes.Persona });
+            using (var sn = factory.OpenSession())
+            {
+                usuario = await sn.Query<Usuario>()
+                    .Where(x => x.Nombre.Equals(nombre) && x.Clave.Equals(clave))
+                    .FirstOrDefaultAsync();
+            }
 
-            if (usuarios.Count == 0)
+            if (usuario == null)
             {
                 return NotFound();
             }
 
-            return Ok(usuarios[0]);
+            return Ok(usuario);
         }
 
         [HttpPut("{id}")]
@@ -101,14 +121,22 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                Repositorio.AgregarReferencia(usuario.Persona);
-                await Repositorio.ActualizarAsync(usuario);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.SaveOrUpdate(usuario);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -122,14 +150,22 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                Repositorio.AgregarReferencia(usuario.Persona);
-                await Repositorio.RegistrarAsync(usuario);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Save(usuario);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -143,19 +179,22 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var usuario = await Repositorio.ObtenerAsync(id);
-            if (usuario == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(new Usuario { IdUsuario = id });
 
-            try
-            {
-                await Repositorio.EliminarAsync(new Usuario[] { usuario });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);

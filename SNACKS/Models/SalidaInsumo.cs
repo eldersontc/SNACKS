@@ -9,12 +9,17 @@ namespace SNACKS.Models
 {
     public class SalidaInsumo
     {
-        [Key]
         public int IdSalidaInsumo { get; set; }
-        [ForeignKey("IdUsuario")]
+        public int IdLote { get; set; }
         public Usuario Usuario { get; set; }
+        public Almacen Almacen { get; set; }
         public DateTime FechaCreacion { get; set; }
         public string Comentario { get; set; }
-        public List<ItemSalidaInsumo> Items { get; set; }
+        public IList<ItemSalidaInsumo> Items { get; set; }
+
+        public SalidaInsumo()
+        {
+            Items = new List<ItemSalidaInsumo>();
+        }
     }
 }

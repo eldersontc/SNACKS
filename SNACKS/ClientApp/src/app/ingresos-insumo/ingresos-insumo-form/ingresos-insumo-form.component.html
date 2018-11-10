@@ -10,21 +10,37 @@
         <form class="form-horizontal" novalidate
               [formGroup]="form">
           <fieldset>
+            <!--<div class="form-group">
+    <label class="col-md-2 control-label" for="nroId">Nro. Ingreso</label>
+    <div class="col-md-8">
+      <input class="form-control"
+             id="nroId"
+             type="text"
+             [readonly]="true"
+             formControlName="idIngresoInsumo" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-md-4 control-label">Fecha Creación</label>
+    <div class="col-md-8">
+      <input class="form-control" placeholder="dd/MM/yyyy"
+             name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+    </div>
+  </div>-->
             <div class="form-group">
-              <label class="col-md-2 control-label" for="nroId">Nro. Ingreso</label>
+              <label class="col-md-2 control-label">Almacen</label>
               <div class="col-md-8">
-                <input class="form-control"
-                       id="nroId"
-                       type="text"
-                       [readonly]="true"
-                       formControlName="idIngresoInsumo" />
+                <select class="custom-select" formControlName="almacen" required>
+                  <option *ngFor="let a of almacenes" [ngValue]="a">{{a.nombre}}</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-md-4 control-label">Fecha Creación</label>
+              <label class="col-md-2 control-label">Caja</label>
               <div class="col-md-8">
-                <input class="form-control" placeholder="dd/MM/yyyy"
-                       name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+                <select class="custom-select" formControlName="caja" required>
+                  <option *ngFor="let c of cajas" [ngValue]="c">{{c.nombre}}</option>
+                </select>
               </div>
             </div>
             <div class="form-group">

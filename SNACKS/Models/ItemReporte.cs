@@ -9,11 +9,9 @@ namespace SNACKS.Models
 {
     public class ItemReporte
     {
-        [Key]
-        public int IdItemReporte { get; set; }
-        [ForeignKey("IdReporte")]
-        public Reporte Reporte { get; set; }
-        public string Nombre { get; set; }
-        public string Valor { get; set; }
+        public virtual int IdItemReporte { get; set; }
+        public virtual int IdReporte { get; set; }
+        public virtual string Nombre { get; set; }
+        public virtual string Valor { get; set; }
     }
 }

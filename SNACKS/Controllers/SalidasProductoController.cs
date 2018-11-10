@@ -48,7 +48,7 @@ namespace SNACKS.Controllers
                 }
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario });
+            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario }, (x => x.FechaCreacion));
 
             return Ok(result);
         }
@@ -254,50 +254,5 @@ namespace SNACKS.Controllers
             return Ok(true);
         }
 
-        //[HttpPost("AddItem")]
-        //public async Task<IActionResult> PostItem([FromBody] ItemSalidaProducto item)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.SalidaProducto, item.Producto, item.Unidad });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
-
-        //[HttpDelete("DeleteItem/{id}")]
-        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var item = await RepositorioItem.ObtenerAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.EliminarAsync(new ItemSalidaProducto[] { item });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
     }
 }

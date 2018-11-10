@@ -8,9 +8,7 @@ namespace SNACKS.Models
 {
     public class Categoria
     {
-        [Key]
-        public int IdCategoria { get; set; }
-        public string Nombre { get; set; }
-        public List<Producto> Productos { get; set; }
+        public virtual int IdCategoria { get; set; }
+        public virtual string Nombre { get; set; }
     }
 }

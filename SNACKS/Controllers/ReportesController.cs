@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SNACKS.Data;
+using NHibernate;
+using NHibernate.Linq;
+using NHibernate.Transform;
 using SNACKS.Models;
 
 namespace SNACKS.Controllers
@@ -13,17 +13,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Reportes")]
     [ApiController]
-    public class ReportesController : ControllerBase
+    public class ReportesController : UtilController
     {
-        public IRepositorioBase<Reporte> Repositorio { get; }
-        public IRepositorioBase<ItemReporte> RepositorioItem { get; }
-
-        public ReportesController(IRepositorioBase<Reporte> repositorio,
-            IRepositorioBase<ItemReporte> repositorioItem)
-        {
-            Repositorio = repositorio;
-            RepositorioItem = repositorioItem;
-        }
+        public ReportesController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetReportes")]
         public async Task<IActionResult> GetReportes([FromBody] Paginacion paginacion)
@@ -33,21 +25,37 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Reporte, bool>>>();
+            List<Reporte> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Reporte> query = sn.Query<Reporte>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.Titulo.Contains(filtro.V));
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.Titulo.Contains(filtro.V));
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderBy(x => x.Titulo);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros);
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -58,7 +66,13 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var reporte = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
+            Reporte reporte = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                reporte = await sn.GetAsync<Reporte>(id);
+                reporte.Items = await sn.Query<ItemReporte>().Where(x => x.IdReporte == id).ToListAsync();
+            }
 
             if (reporte == null)
             {
@@ -81,22 +95,30 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                List<ItemReporte> items = await RepositorioItem.ObtenerTodosAsync(
-                    new List<Expression<Func<ItemReporte, bool>>>() {
-                    (x => x.Reporte.IdReporte == id)
-                });
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemReporte WHERE IdReporte = {0}", id));
 
-                await RepositorioItem.EliminarAsync(items.ToArray(), false);
+                        foreach (var item in reporte.Items)
+                        {
+                            item.IdReporte = id;
+                            sn.Save(item);
+                        }
 
-                await RepositorioItem.RegistrarAsync(reporte.Items.ToArray(), false);
+                        sn.SaveOrUpdate(reporte);
 
-                await Repositorio.ActualizarAsync(reporte);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -110,13 +132,28 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                await Repositorio.RegistrarAsync(reporte);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Save(reporte);
+
+                        foreach (var item in reporte.Items)
+                        {
+                            item.IdReporte = reporte.IdReporte;
+                            sn.Save(item);
+                        }
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -130,70 +167,28 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var reporte = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
-            if (reporte == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemReporte WHERE IdReporte = {0}", id));
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(reporte.Items.ToArray(), false);
-                await Repositorio.EliminarAsync(reporte);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        sn.Delete(new Reporte { IdReporte = id });
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
         }
-
-        //[HttpPost("AddItem")]
-        //public async Task<IActionResult> PostItem([FromBody] ItemReporte item)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.RegistrarAsync(item, new object[] { item.Reporte });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
-
-        //[HttpDelete("DeleteItem/{id}")]
-        //public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var item = await RepositorioItem.ObtenerAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    try
-        //    {
-        //        await RepositorioItem.EliminarAsync(new ItemReporte[] { item });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, ex.Message);
-        //    }
-
-        //    return Ok(true);
-        //}
 
         [HttpPost("RunReporte")]
         public async Task<IActionResult> RunReporte([FromBody] Reporte reporte)
@@ -203,16 +198,24 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            List<object> valores = new List<object>() { reporte.Flag };
+            string sql = string.Format("Usp_Estadisticas {0}", reporte.Flag);
+            
             foreach (var item in reporte.Items)
             {
-                valores.Add(item.Valor);
+                sql += string.Format(", '{0}'", item.Valor);
             }
+
+            IList<Estadistica> lista;
 
             try
             {
-                var result = await Repositorio.ObtenerEstadisticasAsync(valores.ToArray());
-                return Ok(result);
+                using (var sn = factory.OpenSession())
+                {
+                    lista = await sn.CreateSQLQuery(sql)
+                        .SetResultTransformer(Transformers.AliasToBean<Estadistica>())
+                        .ListAsync<Estadistica>();
+                    return Ok(lista);
+                }
             }
             catch (Exception ex)
             {

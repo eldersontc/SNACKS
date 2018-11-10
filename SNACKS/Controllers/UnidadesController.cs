@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SNACKS.Data;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Models;
 
 namespace SNACKS.Controllers
@@ -13,14 +12,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Unidades")]
     [ApiController]
-    public class UnidadesController : ControllerBase
+    public class UnidadesController : UtilController
     {
-        public IRepositorioBase<Unidad> Repositorio { get; }
-
-        public UnidadesController(IRepositorioBase<Unidad> repositorio)
-        {
-            Repositorio = repositorio;
-        }
+        public UnidadesController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetUnidades")]
         public async Task<IActionResult> GetUnidades([FromBody] Paginacion paginacion)
@@ -30,24 +24,40 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Unidad, bool>>>();
+            List<Unidad> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Unidad> query = sn.Query<Unidad>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.Nombre.Contains(filtro.V));
-                        break;
-                    case Constantes.Dos:
-                        filtros.Add(x => x.Abreviacion.Contains(filtro.V));
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.Nombre.Contains(filtro.V));
+                            break;
+                        case Constantes.Dos:
+                            query = query.Where(x => x.Abreviacion.Contains(filtro.V));
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderBy(x => x.Nombre);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros);
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -58,7 +68,12 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var unidad = await Repositorio.ObtenerAsync(id);
+            Unidad unidad = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                unidad = await sn.GetAsync<Unidad>(id);
+            }
 
             if (unidad == null)
             {
@@ -81,13 +96,22 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                await Repositorio.ActualizarAsync(unidad);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.SaveOrUpdate(unidad);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -101,13 +125,22 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                await Repositorio.RegistrarAsync(unidad);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Save(unidad);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
@@ -121,19 +154,22 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var unidad = await Repositorio.ObtenerAsync(id);
-            if (unidad == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(new Unidad { IdUnidad = id });
 
-            try
-            {
-                await Repositorio.EliminarAsync(new Unidad[] { unidad });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);

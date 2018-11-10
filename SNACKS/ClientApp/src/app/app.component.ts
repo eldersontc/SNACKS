@@ -96,9 +96,11 @@ export class AppComponent {
         {
           nombre: 'Producción', icono: 'industry',
           subOpciones: [
+            { nombre: 'Almacenes', icono: 'archive', link: 'almacenes' },
             { nombre: 'Unidades', icono: 'archive', link: 'unidades' },
             { nombre: 'Categorias', icono: 'archive', link: 'categorias' },
             { nombre: 'Productos', icono: 'archive', link: 'productos' },
+            { nombre: 'Lotes', icono: 'archive', link: 'lotes' },
             { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
             { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
             { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },
@@ -108,6 +110,7 @@ export class AppComponent {
         {
           nombre: 'Gerencia', icono: 'chart-bar',
           subOpciones: [
+            { nombre: 'Cajas', icono: 'user-circle', link: 'cajas' },
             { nombre: 'Personas', icono: 'user-circle', link: 'personas' },
             { nombre: 'Usuarios', icono: 'user-circle', link: 'usuarios' },
             { nombre: 'Reportes', icono: 'chart-pie', link: 'reportes' }

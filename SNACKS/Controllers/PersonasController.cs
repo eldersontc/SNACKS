@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NHibernate;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -14,14 +15,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Personas")]
     [ApiController]
-    public class PersonasController : ControllerBase
+    public class PersonasController : UtilController
     {
-        public IRepositorioBase<Persona> Repositorio { get; }
-
-        public PersonasController(IRepositorioBase<Persona> repositorio)
-        {
-            Repositorio = repositorio;
-        }
+        public PersonasController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetPersonas")]
         public async Task<IActionResult> GetPersonas([FromBody] Paginacion paginacion)
@@ -31,36 +27,52 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Persona, bool>>>();
+            List<Persona> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Persona> query = sn.Query<Persona>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.TipoPersona == filtro.N);
-                        break;
-                    case Constantes.Dos:
-                        filtros.Add(x => x.Nombres.Contains(filtro.V));
-                        break;
-                    case Constantes.Tres:
-                        filtros.Add(x => x.Apellidos.Contains(filtro.V));
-                        break;
-                    case Constantes.Cuatro:
-                        filtros.Add(x => x.RazonSocial.Contains(filtro.V));
-                        break;
-                    case Constantes.Cinco:
-                        filtros.Add(x => x.NumeroDocumento.Contains(filtro.V));
-                        break;
-                    case Constantes.Seis:
-                        filtros.Add(x => x.Vendedor.IdPersona == filtro.N);
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.TipoPersona == filtro.N);
+                            break;
+                        case Constantes.Dos:
+                            query = query.Where(x => x.Nombres.Contains(filtro.V));
+                            break;
+                        case Constantes.Tres:
+                            query = query.Where(x => x.Apellidos.Contains(filtro.V));
+                            break;
+                        case Constantes.Cuatro:
+                            query = query.Where(x => x.RazonSocial.Contains(filtro.V));
+                            break;
+                        case Constantes.Cinco:
+                            query = query.Where(x => x.NumeroDocumento.Contains(filtro.V));
+                            break;
+                        case Constantes.Seis:
+                            query = query.Where(x => x.Vendedor.IdPersona == filtro.N);
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderBy(x => x.RazonSocial);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros);
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -71,7 +83,12 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var persona = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Vendedor, Constantes.ZonaVenta });
+            Persona persona = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                persona = await sn.GetAsync<Persona>(id);
+            }
 
             if (persona == null)
             {
@@ -94,17 +111,22 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                if(persona.TipoPersona == Constantes.EnumCliente)
+                using (var tx = sn.BeginTransaction())
                 {
-                    Repositorio.AgregarReferencias(new object[] { persona.ZonaVenta, persona.Vendedor });
+                    try
+                    {
+                        sn.SaveOrUpdate(persona);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-                await Repositorio.ActualizarAsync(persona);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -118,17 +140,22 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                if (persona.TipoPersona == Constantes.EnumCliente)
+                using (var tx = sn.BeginTransaction())
                 {
-                    Repositorio.AgregarReferencias(new object[] { persona.ZonaVenta, persona.Vendedor });
+                    try
+                    {
+                        sn.Save(persona);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-                await Repositorio.RegistrarAsync(persona);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -142,21 +169,24 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var persona = await Repositorio.ObtenerAsync(id);
-            if (persona == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(new Persona { IdPersona = id });
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
-            try
-            {
-                await Repositorio.EliminarAsync(persona);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-            
             return Ok(true);
         }
     }

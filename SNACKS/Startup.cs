@@ -1,3 +1,5 @@
+using FluentNHibernate.Cfg;
+using FluentNHibernate.Conventions.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NHibernate;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -51,6 +54,28 @@ namespace SNACKS
             services.AddScoped<IRepositorioBase<InventarioInsumo>, RepositorioBase<InventarioInsumo>>();
             services.AddScoped<IRepositorioBase<InventarioProducto>, RepositorioBase<InventarioProducto>>();
             services.AddScoped<IRepositorioBase<ZonaVenta>, RepositorioBase<ZonaVenta>>();
+            services.AddScoped<IRepositorioBase<Caja>, RepositorioBase<Caja>>();
+            services.AddScoped<IRepositorioBase<Almacen>, RepositorioBase<Almacen>>();
+            services.AddScoped<IRepositorioBase<MovimientoCaja>, RepositorioBase<MovimientoCaja>>();
+
+
+
+            //NHibernate
+            services.AddSingleton<ISessionFactory>((provider) => {
+                return Fluently.Configure()
+                .Database(FluentNHibernate.Cfg.Db.MsSqlConfiguration.MsSql2012
+                .ConnectionString(Configuration.GetConnectionString("DefaultConnection")).ShowSql())
+                .Mappings(m => m.FluentMappings.AddFromAssemblyOf<Unidad>().Conventions.Add(DefaultLazy.Never()))
+                .BuildSessionFactory();
+            });
+
+            services.AddScoped<IRepBase, RepBase>();
+
+            //services.AddScoped<ISession>((provider) =>
+            //{
+            //    var factory = provider.GetService<ISessionFactory>();
+            //    return factory.OpenSession();
+            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddMvc().AddJsonOptions(configureJson);

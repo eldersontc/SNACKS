@@ -11,6 +11,7 @@ namespace SNACKS.Data
     {
         void AgregarReferencia(object Referencia);
         void AgregarReferencias(object[] Referencias);
+        Task<List<T>> ObtenerTodosAsync();
         Task<List<T>> ObtenerTodosAsync(List<Expression<Func<T, bool>>> Filtros, string[] Includes = null);
         Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null, Expression<Func<T, object>> Orden = null);
         Task<T> ObtenerAsync(int Id, string[] Includes = null);
@@ -20,5 +21,7 @@ namespace SNACKS.Data
         Task<bool> EliminarAsync(T Entidad, bool Confirmar = true);
         Task<bool> EliminarAsync(T[] Entidad, bool Confirmar = true);
         Task<List<Estadistica>> ObtenerEstadisticasAsync(object[] valores);
+        void LimpiarContexto();
+        Task<T> ObtenerPrimeroAsync(List<Expression<Func<T, bool>>> Filtros, string[] Includes = null);
     }
 }

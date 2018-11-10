@@ -37,5 +37,8 @@ namespace SNACKS.Data
         public DbSet<InventarioInsumo> InventarioInsumo { get; set; }
         public DbSet<InventarioProducto> InventarioProducto { get; set; }
         public DbSet<ZonaVenta> ZonaVenta { get; set; }
+        public DbSet<Almacen> Almacen { get; set; }
+        public DbSet<Caja> Caja { get; set; }
+        public DbSet<MovimientoCaja> MovimientoCaja { get; set; }
     }
 }

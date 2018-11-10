@@ -28,5 +28,10 @@ namespace SNACKS.Models
         public const string PagoParcial = "PAGO PARCIAL";
         public const string Pagado = "PAGADO";
         public const string Entregado = "ENTREGADO";
+        public const string Ingreso = "INGRESO";
+        public const string Salida = "SALIDA";
+        public const string Transferencia = "TRANSFERENCIA";
+        public const string Caja = "Caja";
+        public const string Almacen = "Almacen";
     }
 }

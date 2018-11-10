@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using NHibernate;
 using SNACKS.Models;
 
 namespace SNACKS.Data
@@ -30,6 +31,15 @@ namespace SNACKS.Data
             }
 
             Context.Attach(Referencia);
+        }
+
+        public void LimpiarContexto()
+        {
+            var Entidades = Context.ChangeTracker.Entries().ToList();
+            foreach (var Entidad in Entidades)
+            {
+                Entidad.State = EntityState.Detached;
+            }
         }
 
         public void AgregarReferencias(object[] Referencias)
@@ -88,6 +98,11 @@ namespace SNACKS.Data
             return await Query.FirstOrDefaultAsync(e => EF.Property<int>(e, Key.Name) == Id);
         }
 
+        public async Task<List<T>> ObtenerTodosAsync()
+        {
+            return await Context.Set<T>().ToListAsync();
+        }
+
         public async Task<List<T>> ObtenerTodosAsync(List<Expression<Func<T, bool>>> Filtros, string[] Includes = null)
         {
             IQueryable<T> Query = Context.Set<T>();
@@ -108,6 +123,28 @@ namespace SNACKS.Data
             var Lista = await Query.ToListAsync();
 
             return Lista;
+        }
+
+        public async Task<T> ObtenerPrimeroAsync(List<Expression<Func<T, bool>>> Filtros, string[] Includes = null)
+        {
+            IQueryable<T> Query = Context.Set<T>();
+
+            if (Includes != null)
+            {
+                foreach (var Include in Includes)
+                {
+                    Query = Query.Include(Include);
+                }
+            }
+
+            foreach (var Expresion in Filtros)
+            {
+                Query = Query.Where(Expresion);
+            }
+
+            var Entidad = await Query.FirstOrDefaultAsync();
+
+            return Entidad;
         }
 
         public async Task<ListaRetorno<T>> ObtenerTodosAsync(Paginacion Paginacion, List<Expression<Func<T, bool>>> Filtros, string[] Includes = null, Expression<Func<T, object>> Orden = null)
