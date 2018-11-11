@@ -254,7 +254,8 @@ namespace SNACKS.Controllers
                             IdIngresoInsumo = ingresoInsumo.IdIngresoInsumo,
                             TipoMovimiento = Constantes.Salida,
                             Importe = costo * -1,
-                            Glosa = "COMPRA DE INSUMOS"
+                            Glosa = "COMPRA DE INSUMOS",
+                            Usuario = ingresoInsumo.Usuario
                         });
 
                         await tx.CommitAsync();

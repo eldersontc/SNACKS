@@ -1,5 +1,5 @@
 <div *ngIf="elegirProducto">
-  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="[{ k: 2, v: 'Insumo', b: true }]" (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirProducto">
   <ngb-tabset>

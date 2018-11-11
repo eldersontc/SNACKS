@@ -1,0 +1,39 @@
+<div class="form-inline mb-3">
+  <div class="input-group col-md-4  mb-2 justify-content-center">
+    <select class="custom-select" [(ngModel)]="criterio">
+      <option [ngValue]="2">Fecha</option>
+    </select>
+    <input class="form-control" placeholder="dd/MM/yyyy"
+           name="dp" [(ngModel)]="busqueda" (dateSelect)="seleccionFecha()" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+    <div class="input-group-append">
+      <button class="btn btn-primary" (click)="d.toggle()" type="button">
+        <fa name="calendar"></fa>
+      </button>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <app-filtros [filter]="filtros"
+                 [extern]="extern"
+                 (change)="getMovimientosCaja()"></app-filtros>
+  </div>
+  <div class="btn-group col-md-3 mb-2 justify-content-center">
+    <button class="btn btn-outline-secondary ml-2"
+            [routerLink]='["/cajas"]'>
+      <fa name="reply"></fa> Regresar
+    </button>
+  </div>
+</div>
+
+<app-tabla [columnas]="columnas"
+           [data]="movimientosCaja"
+           [atributos]="atributos"
+           [showSeleccion]="false"></app-tabla>
+
+<ngb-pagination class="d-flex justify-content-center"
+                [collectionSize]="totalRegistros"
+                [(page)]="pagina"
+                [maxSize]="5"
+                [rotate]="true"
+                [ellipses]="false"
+                [boundaryLinks]="true"
+                (pageChange)="pageChange()"></ngb-pagination>

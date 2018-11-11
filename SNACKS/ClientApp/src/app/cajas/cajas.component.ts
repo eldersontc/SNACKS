@@ -1,7 +1,9 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IFiltro, IListaRetorno } from '../generico/generico';
-import { ICaja } from './caja';
 import { CajasService } from './cajas.service';
+import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ICaja } from './caja';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cajas',
@@ -23,12 +25,13 @@ export class CajasComponent implements OnInit {
 
   columnas: string[][] = [
     ['L', 'Nombre'],
-    ['L', 'Saldo']];
+    ['L', 'Saldo (S/.)']];
   atributos: string[][] = [
     ['S', 'L', 'nombre'],
     ['I', 'L', 'saldo']]
 
-  constructor(private cajaService: CajasService) { }
+  constructor(private cajaService: CajasService,
+    private router: Router) { }
 
   ngOnInit() {
     this.getCajas();
@@ -85,4 +88,11 @@ export class CajasComponent implements OnInit {
     this.select.emit();
   }
 
+  verMovimientos() {
+    this.router.navigate(["/movimientos-caja/" + this.seleccion.idCaja]);
+  }
+
+  nuevoMovimiento() {
+    this.router.navigate(["/movimientos-caja-form/" + this.seleccion.idCaja]);
+  }
 }

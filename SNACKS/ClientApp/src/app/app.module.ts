@@ -62,6 +62,9 @@ import { AlmacenesService } from './almacenes/almacenes.service';
 import { LotesComponent } from './lotes/lotes.component';
 import { LotesFormComponent } from './lotes/lotes-form/lotes-form.component';
 import { LotesService } from './lotes/lotes.service';
+import { MovimientosCajaComponent } from './movimientos-caja/movimientos-caja.component';
+import { MovimientosCajaFormComponent } from './movimientos-caja/movimientos-caja-form/movimientos-caja-form.component';
+import { MovimientosCajaService } from './movimientos-caja/movimientos-caja.service';
 
 @NgModule({
   declarations: [
@@ -103,7 +106,9 @@ import { LotesService } from './lotes/lotes.service';
     AlmacenesComponent,
     AlmacenesFormComponent,
     LotesComponent,
-    LotesFormComponent
+    LotesFormComponent,
+    MovimientosCajaComponent,
+    MovimientosCajaFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -162,6 +167,8 @@ import { LotesService } from './lotes/lotes.service';
       { path: 'lotes', component: LotesComponent },
       { path: 'lotes-form', component: LotesFormComponent },
       { path: 'lotes-form/:id', component: LotesFormComponent },
+      { path: 'movimientos-caja/:id', component: MovimientosCajaComponent },
+      { path: 'movimientos-caja-form/:id', component: MovimientosCajaFormComponent },
       { path: '404', component: NotFoundComponent },
       { path: '**', redirectTo: '/404' }
     ]),
@@ -184,6 +191,7 @@ import { LotesService } from './lotes/lotes.service';
     ReportesService,
     ZonasVentaService,
     LotesService,
+    MovimientosCajaService,
     { provide: NgbDatepickerI18n, useClass: DatepickerI18n },
     { provide: NgbDateAdapter, useClass: DateAdapter },
     { provide: NgbDateParserFormatter, useClass: DateParserFormatter }

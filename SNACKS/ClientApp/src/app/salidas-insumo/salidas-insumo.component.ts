@@ -25,11 +25,13 @@ export class SalidasInsumoComponent implements OnInit {
   login: ILogin;
 
   columnas: string[][] = [
-    ['L', 'Nro. Ingreso'],
+    ['L', 'Nro. Salida'],
+    ['L', 'Lote'],
     ['L', 'Creado Por'],
     ['L', 'Fecha Creación']];
   atributos: string[][] = [
     ['I', 'L', 'idSalidaInsumo'],
+    ['I', 'L', 'idLote'],
     ['S', 'L', 'usuario', 'nombre'],
     ['D', 'L', 'fechaCreacion']]
 

@@ -10,6 +10,7 @@ export class TablaComponent implements OnInit {
   @Input() data: object[];
   @Input() columnas: string[];
   @Input() atributos: string[][];
+  @Input() showSeleccion: boolean = true;
 
   @Output() select = new EventEmitter();
 

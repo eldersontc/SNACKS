@@ -25,6 +25,10 @@ export class LotesService {
     return this.http.get<IItemLote[]>(this.apiURL + '/GetItems/' + params);
   }
 
+  getItemsWithInsumos(params): Observable<IItemLote[]> {
+    return this.http.get<IItemLote[]>(this.apiURL + '/GetItemsWithInsumos/' + params);
+  }
+
   getLote(params): Observable<ILote> {
     return this.http.get<ILote>(this.apiURL + '/' + params);
   }

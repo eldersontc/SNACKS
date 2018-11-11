@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { IFiltro } from '../../generico/generico';
+import { IFiltro, ILogin } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { SalidasInsumoService } from '../salidas-insumo.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,6 +7,10 @@ import { IItemSalidaInsumo, ISalidaInsumo } from '../salida-insumo';
 import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
 import { IUsuario } from '../../usuarios/usuario';
+import { IAlmacen } from '../../almacenes/almacen';
+import { AlmacenesService } from '../../almacenes/almacenes.service';
+import { LotesService } from '../../lotes/lotes.service';
+import { IItemLote } from '../../lotes/lote';
 
 @Component({
   selector: 'app-salidas-insumo-form',
@@ -15,27 +19,55 @@ import { IUsuario } from '../../usuarios/usuario';
 })
 export class SalidasInsumoFormComponent implements OnInit {
 
-  filtrosProducto: IFiltro[] = [];
   elegirProducto: boolean = false;
-
-  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
-    private fb: FormBuilder,
-    private salidaInsumoService: SalidasInsumoService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute) { }
-
   modoEdicion: boolean;
+
   form: FormGroup;
   formItem: FormGroup;
 
   items: IItemSalidaInsumo[] = [];
+  almacenes: IAlmacen[] = [];
+  login: ILogin;
+
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    private fb: FormBuilder,
+    private salidaInsumoService: SalidasInsumoService,
+    private almacenService: AlmacenesService,
+    private loteService: LotesService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute) {
+    this.login = this.storage.get('login');
+    this.activatedRoute.params.subscribe(params => {
+      if (params["id"] == undefined) {
+        this.getAlmacenes();
+        return;
+      } else {
+        this.modoEdicion = true;
+        this.salidaInsumoService.getSalidaInsumo(params["id"]).subscribe(salidaInsumo => this.cargarFormulario(salidaInsumo),
+          error => console.error(error));
+      }
+    });
+  }
+
+  getAlmacenes() {
+    this.almacenService.getAll()
+      .subscribe(d => this.onGetAlmacenesSuccess(d), error => console.error(error));
+  }
+
+  onGetAlmacenesSuccess(d) {
+    this.almacenes = d;
+    if (this.almacenes.length > 0) {
+      this.form.patchValue({ almacen: this.almacenes[0] });
+    }
+  }
 
   ngOnInit() {
-    this.filtrosProducto.push({ k: 2, v: 'Insumo', b: true });
     this.form = this.fb.group({
       idSalidaInsumo: 0,
       fechaCreacion: new Date(),
-      comentario: ''
+      comentario: '',
+      idLote: '',
+      almacen: ''
     });
     this.formItem = this.fb.group({
       producto: this.fb.group({
@@ -46,15 +78,6 @@ export class SalidasInsumoFormComponent implements OnInit {
       unidad: '',
       cantidad: '',
       factor: 0
-    });
-    this.activatedRoute.params.subscribe(params => {
-      if (params["id"] == undefined) {
-        return;
-      } else {
-        this.modoEdicion = true;
-        this.salidaInsumoService.getSalidaInsumo(params["id"]).subscribe(salidaInsumo => this.cargarFormulario(salidaInsumo),
-          error => console.error(error));
-      }
     });
   }
 
@@ -74,20 +97,56 @@ export class SalidasInsumoFormComponent implements OnInit {
     }
   }
 
+  buscarLote() {
+    let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
+
+    this.loteService.getItemsWithInsumos(salidaInsumo.idLote)
+      .subscribe(data => this.cargarProductos(data),
+        error => console.error(error));
+  }
+
+  cargarProductos(data: IItemLote[]) {
+    data.forEach((d) => {
+
+      d.producto.insumos.forEach((i) => {
+        this.items.push({
+          producto: d.producto,
+          insumo: i.insumo,
+          cantidad: 0,
+          unidad: i.insumo.items[0].unidad,
+          factor: i.insumo.items[0].factor
+        });
+      });
+
+    });
+  }
+
+  setFactor(i: IItemSalidaInsumo) {
+    i.insumo.items.forEach((ip) => {
+      if (i.unidad.idUnidad == ip.unidad.idUnidad)
+        i.factor = ip.factor
+    });
+  }
+
   cargarFormulario(salidaInsumo: ISalidaInsumo) {
     this.form.patchValue({
       idSalidaInsumo: salidaInsumo.idSalidaInsumo,
       fechaCreacion: new Date(salidaInsumo.fechaCreacion),
-      comentario: salidaInsumo.comentario
+      comentario: salidaInsumo.comentario,
+      almacen: salidaInsumo.almacen,
+      idLote: salidaInsumo.idLote
     });
     this.items = salidaInsumo.items;
+    this.almacenes.push(salidaInsumo.almacen);
+    this.items.forEach((i) => {
+      i.insumo.items.push({ unidad: i.unidad });
+    });
   }
 
   save() {
     let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
-    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
-
-    salidaInsumo.usuario = usuario;
+    
+    salidaInsumo.usuario = { idUsuario: this.login.id };
     salidaInsumo.items = this.items;
 
     if (this.modoEdicion) {

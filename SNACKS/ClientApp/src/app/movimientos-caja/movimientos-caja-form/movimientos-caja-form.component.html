@@ -1,0 +1,46 @@
+<div class="form-horizontal">
+  <div class="form-group">
+    <label class="col-md-2 control-label" for=" cajaId">Caja</label>
+    <div class="col-md-8">
+      <input class="form-control"
+             id="cajaId"
+             [ngModel]="nombreCaja"
+             [readonly]="true" />
+    </div>
+  </div>
+</div>
+<form class="form-horizontal" novalidate
+      (ngSubmit)="save()" [formGroup]="form">
+  <fieldset>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="glosaId">Glosa</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="glosaId"
+               type="text"
+               required
+               formControlName="glosa" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="importeId">Importe</label>
+      <div class="col-md-8">
+        <input class="form-control"
+               id="importeId"
+               type="number"
+               formControlName="importe" />
+      </div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary ml-3"
+              type="submit"
+              [disabled]="!form.valid">
+        <fa name="save"></fa> Guardar
+      </button>
+      <button class="btn btn-outline-secondary ml-2"
+              [routerLink]='["/cajas"]'>
+        <fa name="reply"></fa> Regresar
+      </button>
+    </div>
+  </fieldset>
+</form>

@@ -111,7 +111,7 @@ namespace SNACKS.Controllers
                         {
                             InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
-                                    && x.IdInsumo == item.Producto.IdProducto)
+                                    && x.IdInsumo == item.Insumo.IdProducto)
                                 .FirstOrDefaultAsync();
 
                             inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
@@ -123,7 +123,7 @@ namespace SNACKS.Controllers
                         {
                             InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
-                                    && x.IdInsumo == item.Producto.IdProducto)
+                                    && x.IdInsumo == item.Insumo.IdProducto)
                                 .FirstOrDefaultAsync();
 
                             if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
@@ -169,11 +169,15 @@ namespace SNACKS.Controllers
                 {
                     try
                     {
+                        salidaInsumo.FechaCreacion = DateTime.Now;
+
+                        sn.Save(salidaInsumo);
+
                         foreach (var item in salidaInsumo.Items)
                         {
                             InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
-                                    && x.IdInsumo == item.Producto.IdProducto)
+                                    && x.IdInsumo == item.Insumo.IdProducto)
                                 .FirstOrDefaultAsync();
 
                             if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
@@ -184,11 +188,11 @@ namespace SNACKS.Controllers
                             {
                                 throw new Exception("No hay stock disponible.");
                             }
+
+                            item.IdSalidaInsumo = salidaInsumo.IdSalidaInsumo;
+
+                            sn.Save(item);
                         }
-
-                        salidaInsumo.FechaCreacion = DateTime.Now;
-
-                        sn.Save(salidaInsumo);
 
                         await tx.CommitAsync();
                     }
@@ -227,7 +231,7 @@ namespace SNACKS.Controllers
                         {
                             InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == salidaInsumo.Almacen.IdAlmacen
-                                    && x.IdInsumo == item.Producto.IdProducto)
+                                    && x.IdInsumo == item.Insumo.IdProducto)
                                 .FirstOrDefaultAsync();
 
                             inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);

@@ -4,141 +4,182 @@
 <div *ngIf="elegirCategoria">
   <app-categorias [extern]="[]" (select)="asignarCategoria($event)"></app-categorias>
 </div>
-<div [hidden]="elegirUnidad || elegirCategoria">
+<div *ngIf="elegirInsumo">
+  <app-productos [extern]="[{k:2, v:'Insumo', b: true}]" (select)="asignarInsumo($event)"></app-productos>
+</div>
+<div [hidden]="elegirUnidad || elegirCategoria || elegirInsumo">
+  <form class="form-horizontal" novalidate
+        [formGroup]="form">
+    <fieldset>
+      <div class="form-group">
+        <label class="col-md-12 control-label" for="nombreId">Nombre</label>
+        <div class="col-md-12">
+          <input class="form-control"
+                 id="nombreId"
+                 formControlName="nombre"
+                 required />
+        </div>
+      </div>
+      <div class="form-group" formGroupName="categoria">
+        <label class="col-md-12 control-label" for="categoriaId">Categoria</label>
+        <div class="col-md-12">
+          <div class="input-group">
+            <input class="form-control"
+                   id="categoriaId"
+                   type="text"
+                   required
+                   formControlName="nombre"
+                   [readonly]="true" />
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" (click)="buscarCategoria()">
+                <fa name="search"></fa>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-md-12">
+          <div class="custom-control custom-checkbox mt-3">
+            <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
+            <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
   <ngb-tabset>
     <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <form class="form-horizontal" novalidate
-              [formGroup]="form">
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="nombreId">Nombre</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="nombreId"
-                       formControlName="nombre"
-                       required />
-              </div>
-            </div>
-            <div class="form-group" formGroupName="categoria">
-              <label class="col-md-2 control-label" for="categoriaId">Categoria</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="categoriaId"
-                         type="text"
-                         required
-                         formControlName="nombre"
-                         [readonly]="true" />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" (click)="buscarCategoria()">
-                      <fa name="search"></fa>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="col-md-8">
-                <div class="custom-control custom-checkbox mt-3">
-                  <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
-                  <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Unidades</b></ng-template>
       <ng-template ngbTabContent>
         <br />
         <form class="form-horizontal" novalidate
               [formGroup]="formItem">
           <fieldset>
-            <div class="form-group" formGroupName="unidad">
-              <label class="col-md-2 control-label" for="unidadId">Unidad</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="unidadId"
-                         type="text"
-                         required
-                         formControlName="nombre"
-                         [readonly]="true" />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" (click)="buscarUnidad()">
-                      <fa name="search"></fa>
-                    </button>
+            <div class="form-row">
+              <div class="col-6">
+                <div class="form-group" formGroupName="unidad">
+                  <label class="col-md-12 control-label" for="unidadId">Unidad</label>
+                  <div class="col-md-12">
+                    <div class="input-group">
+                      <input class="form-control"
+                             id="unidadId"
+                             type="text"
+                             required
+                             formControlName="nombre"
+                             [readonly]="true" />
+                      <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" (click)="buscarUnidad()">
+                          <fa name="search"></fa>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="factorId">Factor</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="factorId"
-                         type="number"
-                         formControlName="factor"
-                         required />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary"
-                            type="button"
-                            (click)="saveItem()"
-                            [disabled]="!formItem.valid">
-                      <fa name="plus-circle"></fa> Agregar
-                    </button>
+              <div class="col-6">
+                <div class="form-group">
+                  <label class="col-md-12 control-label" for="factorId">Factor</label>
+                  <div class="col-md-12">
+                    <div class="input-group">
+                      <input class="form-control"
+                             id="factorId"
+                             type="number"
+                             formControlName="factor"
+                             required />
+                      <div class="input-group-append">
+                        <button class="btn btn-primary"
+                                type="button"
+                                (click)="saveItem()"
+                                [disabled]="!formItem.valid">
+                          <fa name="plus-circle"></fa> Agregar
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </fieldset>
         </form>
+        <div class="form-horizontal">
+          <div class="form-row">
+            <div class="col-12">
+              <div class="col-md-12">
+                <ngb-alert type="info" *ngFor="let i of items" [dismissible]="true" (close)="deleteItem(i)">
+                  {{i.unidad.nombre}} <b>({{i.factor}})</b>
+                </ngb-alert>
+              </div>
+            </div>
+          </div>
+        </div>
       </ng-template>
     </ngb-tab>
     <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
+      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Insumos</b></ng-template>
       <ng-template ngbTabContent>
         <br />
-        <table class="table table-bordered table-hover table-sm">
-          <thead class="thead-light">
-            <tr>
-              <th scope="col">Unidad</th>
-              <th scope="col">Factor</th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let i of items">
-              <td>{{i.unidad.nombre}}</td>
-              <td>{{i.factor}}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
-                  <fa name="trash"></fa>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <form class="form-horizontal" novalidate
+              [formGroup]="formInsumo">
+          <fieldset>
+            <div class="form-row">
+              <div class="col-12">
+                <div class="form-group" formGroupName="insumo">
+                  <label class="col-md-12 control-label" for="insumoId">Insumo</label>
+                  <div class="col-md-12">
+                    <div class="input-group">
+                      <input class="form-control"
+                             id="insumoId"
+                             type="text"
+                             required
+                             formControlName="nombre"
+                             [readonly]="true" />
+                      <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" (click)="buscarInsumo()">
+                          <fa name="search"></fa>
+                        </button>
+                      </div>
+                      <div class="input-group-append">
+                        <button class="btn btn-primary"
+                                type="button"
+                                (click)="saveInsumo()"
+                                [disabled]="!formInsumo.valid">
+                          <fa name="plus-circle"></fa> Agregar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <div class="form-horizontal">
+          <div class="form-row">
+            <div class="col-12">
+              <div class="col-md-12">
+                <ngb-alert type="info" *ngFor="let i of insumos" [dismissible]="true" (close)="deleteInsumo(i)">
+                  {{i.insumo.nombre}}
+                </ngb-alert>
+              </div>
+            </div>
+          </div>
+        </div>
       </ng-template>
     </ngb-tab>
   </ngb-tabset>
   <div class="form-group">
     <button class="btn btn-primary ml-3"
-              type="button"
-              (click)="save()"
-              [disabled]="!form.valid || items.length == 0">
-        <fa name="save"></fa> Guardar
-      </button>
-      <button class="btn btn-outline-secondary ml-2"
-              type="button"
-              [routerLink]='["/productos"]'>
-        <fa name="times-circle"></fa> Cancelar
-      </button>
+            type="button"
+            (click)="save()"
+            [disabled]="!form.valid || items.length == 0">
+      <fa name="save"></fa> Guardar
+    </button>
+    <button class="btn btn-outline-secondary ml-2"
+            type="button"
+            [routerLink]='["/productos"]'>
+      <fa name="times-circle"></fa> Cancelar
+    </button>
   </div>
 </div>

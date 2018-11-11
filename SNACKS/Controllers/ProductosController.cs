@@ -42,6 +42,12 @@ namespace SNACKS.Controllers
                             query = query.Where(x => x.EsInsumo == filtro.B);
                             break;
                         case Constantes.Tres:
+                            query = query.Where(x => x.EsProducto == filtro.B);
+                            break;
+                        case Constantes.Cuatro:
+                            query = query.Where(x => x.EsGasto == filtro.B);
+                            break;
+                        case Constantes.Cinco:
                             query = query.Where(x => x.Categoria.IdCategoria == filtro.N);
                             break;
                     }
@@ -75,7 +81,14 @@ namespace SNACKS.Controllers
             using (var sn = factory.OpenSession())
             {
                 producto = await sn.GetAsync<Producto>(id);
-                producto.Items = await sn.Query<ItemProducto>().Where(x => x.IdProducto == id).ToListAsync();
+
+                producto.Items = await sn.Query<ItemProducto>()
+                    .Where(x => x.IdProducto == id)
+                    .ToListAsync();
+
+                producto.Insumos = await sn.Query<InsumoProducto>()
+                    .Where(x => x.IdProducto == id)
+                    .ToListAsync();
             }
 
             if (producto == null)
@@ -108,6 +121,14 @@ namespace SNACKS.Controllers
                         sn.Delete(string.Format("FROM ItemProducto WHERE IdProducto = {0}", id));
 
                         foreach (var item in producto.Items)
+                        {
+                            item.IdProducto = id;
+                            sn.Save(item);
+                        }
+
+                        sn.Delete(string.Format("FROM InsumoProducto WHERE IdProducto = {0}", id));
+
+                        foreach (var item in producto.Insumos)
                         {
                             item.IdProducto = id;
                             sn.Save(item);
@@ -150,6 +171,12 @@ namespace SNACKS.Controllers
                             sn.Save(item);
                         }
 
+                        foreach (var item in producto.Insumos)
+                        {
+                            item.IdProducto = producto.IdProducto;
+                            sn.Save(item);
+                        }
+
                         await tx.CommitAsync();
                     }
                     catch (Exception ex)
@@ -178,6 +205,8 @@ namespace SNACKS.Controllers
                     try
                     {
                         sn.Delete(string.Format("FROM ItemProducto WHERE IdProducto = {0}", id));
+
+                        sn.Delete(string.Format("FROM InsumoProducto WHERE IdProducto = {0}", id));
 
                         sn.Delete(new Producto { IdProducto = id });
 

@@ -10,12 +10,12 @@
       </button>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-2">
     <app-filtros [filter]="filtros"
                  [extern]="extern"
                  (change)="getCajas()"></app-filtros>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <app-acciones link="cajas-form"
                   class="Caja"
                   [model]="seleccion"
@@ -23,6 +23,19 @@
                   (delete)="deleteCaja()"
                   (select)="elegir()"
                   (cancel)="cancelar()"></app-acciones>
+  </div>
+  <div class="btn-group col-md-3 mb-2 justify-content-center"
+       *ngIf="seleccion">
+    <button type="button"
+            class="btn btn-primary"
+            (click)="nuevoMovimiento()">
+      <fa name="exchange"></fa> Abonar / Cargar
+    </button>
+    <button type="button"
+            class="btn btn-primary"
+            (click)="verMovimientos()">
+      <fa name="retweet"></fa> Movimientos
+    </button>
   </div>
 </div>
 

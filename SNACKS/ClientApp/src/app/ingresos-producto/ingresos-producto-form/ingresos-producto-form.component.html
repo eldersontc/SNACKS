@@ -1,255 +1,124 @@
-<div *ngIf="elegirProducto">
-  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
-</div>
-<div [hidden]="elegirProducto">
-
-  <form class="form-horizontal" novalidate
-        [formGroup]="form">
-    <div class="form-row">
-      <div class="col-6">
-        <div class="form-group">
-          <label class="col-md-12 control-label" for="nroId">Nro. Ingreso</label>
-          <div class="col-md-12">
-            <input class="form-control"
-                   id="nroId"
-                   type="text"
-                   [readonly]="true"
-                   formControlName="idIngresoProducto" />
-          </div>
-        </div>
-      </div>
-      <div class="col-6">
-        <div class="form-group">
-          <label class="col-md-12 control-label">Fecha</label>
-          <div class="col-md-12">
-            <input class="form-control" placeholder="dd/MM/yyyy"
-                   name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="col-6">
-        <div class="form-group">
-          <label class="col-md-12 control-label">Almacen</label>
-          <div class="col-md-12">
-            <select class="custom-select"
-                    formControlName="almacen">
-              <option *ngFor="let a of almacenes" [ngValue]="a">
-                {{a.nombre}}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="col-6">
-        <div class="form-group">
-          <label class="col-md-12 control-label" for="loteId">Lote</label>
-          <div class="col-md-12">
-            <div class="input-group">
-              <input class="form-control"
-                     id="loteId"
-                     type="text"
-                     required
-                     [readonly]="modoEdicion"
-                     formControlName="idLote" />
-              <div class="input-group-append" *ngIf="!modoEdicion">
-                <button class="btn btn-primary"
-                        type="button"
-                        [disabled]="!form.valid"
-                        (click)="buscarLote()">
-                  <fa name="search"></fa>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="col-12">
-        <div class="form-group">
-          <label class="col-md-12 control-label" for="comentarioId">Comentario</label>
-          <div class="col-md-12">
-            <input class="form-control"
-                   id="comentarioId"
-                   type="text"
-                   formControlName="comentario" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>
-  <div class="form-horizontal">
-    <div class="form-row">
-      <div class="col-12">
+<form class="form-horizontal" novalidate
+      [formGroup]="form">
+  <div class="form-row">
+    <div class="col-6">
+      <div class="form-group">
+        <label class="col-md-12 control-label" for="nroId">Nro. Ingreso</label>
         <div class="col-md-12">
-          <table class="table table-bordered table-hover table-sm">
-            <thead class="thead-light">
-              <tr>
-                <th scope="col">Producto</th>
-                <th scope="col">Unidad</th>
-                <th scope="col">Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let i of items">
-                <td>{{i.producto.nombre}}</td>
-                <td>
-                  <select class="custom-select" [(ngModel)]="i.unidad">
-                    <option *ngFor="let ip of i.producto.items" [ngValue]="ip.unidad">
-                      {{ip.unidad.abreviacion}}
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <input type="number"
-                         class="form-control"
-                         [(ngModel)]="i.cantidad" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <input class="form-control"
+                 id="nroId"
+                 type="text"
+                 [readonly]="true"
+                 formControlName="idIngresoProducto" />
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="form-group">
+        <label class="col-md-12 control-label">Fecha</label>
+        <div class="col-md-12">
+          <input class="form-control" placeholder="dd/MM/yyyy"
+                 name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
         </div>
       </div>
     </div>
   </div>
-
-  <!--<ngb-tabset>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <form class="form-horizontal" novalidate
-              [formGroup]="form">
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="nroId">Nro. Ingreso</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="nroId"
-                       type="text"
-                       [readonly]="true"
-                       formControlName="idIngresoProducto" />
-              </div>
+  <div class="form-row">
+    <div class="col-6">
+      <div class="form-group">
+        <label class="col-md-12 control-label">Almacen</label>
+        <div class="col-md-12">
+          <select class="custom-select"
+                  formControlName="almacen">
+            <option *ngFor="let a of almacenes" [ngValue]="a">
+              {{a.nombre}}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="form-group">
+        <label class="col-md-12 control-label" for="loteId">Lote</label>
+        <div class="col-md-12">
+          <div class="input-group">
+            <input class="form-control"
+                   id="loteId"
+                   type="text"
+                   required
+                   [readonly]="modoEdicion"
+                   formControlName="idLote" />
+            <div class="input-group-append" *ngIf="!modoEdicion">
+              <button class="btn btn-primary"
+                      type="button"
+                      [disabled]="!form.valid"
+                      (click)="buscarLote()">
+                <fa name="search"></fa>
+              </button>
             </div>
-            <div class="form-group">
-              <label class="col-md-4 control-label">Fecha Creación</label>
-              <div class="col-md-8">
-                <input class="form-control" placeholder="dd/MM/yyyy"
-                       name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="comentarioId">Comentario</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="comentarioId"
-                       type="text"
-                       formControlName="comentario" />
-              </div>
-            </div>
-          </fieldset>
-        </form>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <form class="form-horizontal" novalidate
-              [formGroup]="formItem">
-          <fieldset>
-            <div class="form-group" formGroupName="producto">
-              <label class="col-md-2 control-label" for="productoId">Producto</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="productoId"
-                         type="text"
-                         required
-                         formControlName="nombre"
-                         [readonly]="true" />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" (click)="buscarProducto()">
-                      <fa name="search"></fa>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group" [hidden]="!fi.producto.idProducto > 0">
-              <label class="col-md-2 control-label" for="unidadId">Unidad</label>
-              <div class="col-md-8">
-                <select class="custom-select" formControlName="unidad" required>
-                  <option *ngFor="let i of fi.producto.items" [ngValue]="i">{{i.unidad.nombre}}</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="cantidadId">Cantidad</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="cantidadId"
-                         type="number"
-                         formControlName="cantidad"
-                         required />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary"
-                            type="button"
-                            (click)="saveItem()"
-                            [disabled]="!formItem.valid">
-                      <fa name="plus-circle"></fa> Agregar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-12">
+      <div class="form-group">
+        <label class="col-md-12 control-label" for="comentarioId">Comentario</label>
+        <div class="col-md-12">
+          <input class="form-control"
+                 id="comentarioId"
+                 type="text"
+                 formControlName="comentario" />
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<div class="form-horizontal">
+  <div class="form-row">
+    <div class="col-12">
+      <div class="col-md-12">
         <table class="table table-bordered table-hover table-sm">
           <thead class="thead-light">
             <tr>
               <th scope="col">Producto</th>
               <th scope="col">Unidad</th>
               <th scope="col">Cantidad</th>
-              <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let i of items">
               <td>{{i.producto.nombre}}</td>
-              <td>{{i.unidad.abreviacion}}</td>
-              <td>{{i.cantidad}}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
-                  <fa name="trash"></fa>
-                </button>
+              <td>
+                <select class="custom-select" [(ngModel)]="i.unidad" (change)="setFactor(i)">
+                  <option *ngFor="let ip of i.producto.items" [ngValue]="ip.unidad">
+                    {{ip.unidad.abreviacion}}
+                  </option>
+                </select>
+              </td>
+              <td>
+                <input type="number"
+                       class="form-control"
+                       [(ngModel)]="i.cantidad" />
               </td>
             </tr>
           </tbody>
         </table>
-      </ng-template>
-    </ngb-tab>
-  </ngb-tabset>-->
-  <div class="form-group">
-    <button class="btn btn-primary ml-3"
-            type="button"
-            (click)="save()"
-            [disabled]="!form.valid || items.length == 0">
-      <fa name="save"></fa> Guardar
-    </button>
-    <button class="btn btn-outline-secondary ml-2"
-            type="button"
-            [routerLink]='["/ingresos-producto"]'>
-      <fa name="times-circle"></fa> Cancelar
-    </button>
+      </div>
+    </div>
   </div>
+</div>
+<div class="form-group">
+  <button class="btn btn-primary ml-3"
+          type="button"
+          (click)="save()"
+          [disabled]="!form.valid || items.length == 0">
+    <fa name="save"></fa> Guardar
+  </button>
+  <button class="btn btn-outline-secondary ml-2"
+          type="button"
+          [routerLink]='["/ingresos-producto"]'>
+    <fa name="times-circle"></fa> Cancelar
+  </button>
 </div>

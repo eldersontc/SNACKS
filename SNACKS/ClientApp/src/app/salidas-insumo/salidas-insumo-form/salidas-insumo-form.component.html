@@ -1,8 +1,123 @@
 <div *ngIf="elegirProducto">
-  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="[{ k: 2, v: 'Insumo', b: true }]" (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirProducto">
-  <ngb-tabset>
+  <form class="form-horizontal" novalidate
+        [formGroup]="form">
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="nroId">Nro. Salida</label>
+          <div class="col-md-12">
+            <input class="form-control"
+                   id="nroId"
+                   type="text"
+                   [readonly]="true"
+                   formControlName="idSalidaInsumo" />
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label">Fecha</label>
+          <div class="col-md-12">
+            <input class="form-control" placeholder="dd/MM/yyyy"
+                   name="dp" formControlName="fechaCreacion" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label">Almacen</label>
+          <div class="col-md-12">
+            <select class="custom-select"
+                    formControlName="almacen">
+              <option *ngFor="let a of almacenes" [ngValue]="a">
+                {{a.nombre}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="loteId">Lote</label>
+          <div class="col-md-12">
+            <div class="input-group">
+              <input class="form-control"
+                     id="loteId"
+                     type="text"
+                     required
+                     [readonly]="modoEdicion"
+                     formControlName="idLote" />
+              <div class="input-group-append" *ngIf="!modoEdicion">
+                <button class="btn btn-primary"
+                        type="button"
+                        [disabled]="!form.valid"
+                        (click)="buscarLote()">
+                  <fa name="search"></fa>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="comentarioId">Comentario</label>
+          <div class="col-md-12">
+            <input class="form-control"
+                   id="comentarioId"
+                   type="text"
+                   formControlName="comentario" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="form-horizontal">
+    <div class="form-row">
+      <div class="col-12">
+        <div class="col-md-12">
+          <table class="table table-bordered table-hover table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Insumo</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of items">
+                <td>{{i.producto.nombre}}</td>
+                <td>{{i.insumo.nombre}}</td>
+                <td>
+                  <select class="custom-select" [(ngModel)]="i.unidad" (change)="setFactor(i)">
+                    <option *ngFor="let ip of i.insumo.items" [ngValue]="ip.unidad">
+                      {{ip.unidad.abreviacion}}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number"
+                         class="form-control"
+                         [(ngModel)]="i.cantidad" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--<ngb-tabset>
     <ngb-tab>
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
       <ng-template ngbTabContent>
@@ -125,7 +240,7 @@
         </table>
       </ng-template>
     </ngb-tab>
-  </ngb-tabset>
+  </ngb-tabset>-->
   <div class="form-group">
     <button class="btn btn-primary ml-3"
             type="button"

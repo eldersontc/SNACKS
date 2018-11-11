@@ -12,7 +12,9 @@ namespace SNACKS.Models
         {
             Id(x => x.IdProducto);
             Map(x => x.Nombre);
+            Map(x => x.EsProducto);
             Map(x => x.EsInsumo);
+            Map(x => x.EsGasto);
             References(x => x.Categoria).Column("IdCategoria");
         }
     }

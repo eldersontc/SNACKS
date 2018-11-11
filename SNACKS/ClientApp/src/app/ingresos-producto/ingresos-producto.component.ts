@@ -26,10 +26,12 @@ export class IngresosProductoComponent implements OnInit {
 
   columnas: string[][] = [
     ['L', 'Nro. Ingreso'],
+    ['L', 'Lote'],
     ['L', 'Creado Por'],
     ['L', 'Fecha Creación']];
   atributos: string[][] = [
     ['I', 'L', 'idIngresoProducto'],
+    ['I', 'L', 'idLote'],
     ['S', 'L', 'usuario', 'nombre'],
     ['D', 'L', 'fechaCreacion']]
 

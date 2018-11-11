@@ -91,6 +91,34 @@ namespace SNACKS.Controllers
             return Ok(lista);
         }
 
+        [HttpGet("GetItemsWithInsumos/{id}")]
+        public async Task<IActionResult> GetItemsWithInsumos([FromRoute] int id)
+        {
+            List<ItemLote> lista = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                lista = await sn.Query<ItemLote>()
+                    .Where(x => x.IdLote == id).ToListAsync();
+
+                foreach (var it in lista)
+                {
+                    it.Producto.Insumos = sn.Query<InsumoProducto>()
+                        .Where(x => x.IdProducto == it.Producto.IdProducto)
+                        .ToList();
+
+                    foreach (var ip in it.Producto.Insumos)
+                    {
+                        ip.Insumo.Items = sn.Query<ItemProducto>()
+                        .Where(x => x.IdProducto == ip.Insumo.IdProducto)
+                        .ToList();
+                    }
+                }
+            }
+
+            return Ok(lista);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLote([FromRoute] int id)
         {

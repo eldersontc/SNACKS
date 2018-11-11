@@ -18,10 +18,16 @@ import { ICaja } from '../../cajas/caja';
 })
 export class IngresosInsumoFormComponent implements OnInit {
 
-  filtrosProducto: IFiltro[] = [
-    { k: 2, v: 'Insumo', b: true }
-  ];
   elegirProducto: boolean = false;
+  modoEdicion: boolean;
+
+  form: FormGroup;
+  formItem: FormGroup;
+
+  items: IItemIngresoInsumo[] = [];
+  almacenes: IAlmacen[] = [];
+  cajas: ICaja[] = []
+  login: ILogin;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
@@ -33,6 +39,8 @@ export class IngresosInsumoFormComponent implements OnInit {
     this.login = this.storage.get('login');
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
+        this.getAlmacenes();
+        this.getCajas();
         return;
       } else {
         this.modoEdicion = true;
@@ -67,16 +75,6 @@ export class IngresosInsumoFormComponent implements OnInit {
     }
   }
 
-  modoEdicion: boolean;
-
-  form: FormGroup;
-  formItem: FormGroup;
-
-  items: IItemIngresoInsumo[] = [];
-  almacenes: IAlmacen[] = [];
-  cajas: ICaja[] = []
-  login: ILogin;
-
   ngOnInit() {
     this.form = this.fb.group({
       idIngresoInsumo: 0,
@@ -97,10 +95,6 @@ export class IngresosInsumoFormComponent implements OnInit {
       costo: '',
       factor: 0
     });
-    if (!this.modoEdicion) {
-      this.getAlmacenes();
-      this.getCajas();
-    }
   }
 
   get fi() { return this.formItem.value; }
@@ -129,6 +123,8 @@ export class IngresosInsumoFormComponent implements OnInit {
       caja: ingresoInsumo.caja
     });
     this.items = ingresoInsumo.items;
+    this.almacenes.push(ingresoInsumo.almacen);
+    this.cajas.push(ingresoInsumo.caja);
   }
 
   save() {

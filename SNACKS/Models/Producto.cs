@@ -9,15 +9,19 @@ namespace SNACKS.Models
 {
     public class Producto
     {
-        public virtual int IdProducto { get; set; }
-        public virtual string Nombre { get; set; }
-        public virtual bool EsInsumo { get; set; }
-        public virtual Categoria Categoria { get; set; }
-        public virtual IList<ItemProducto> Items { get; set; }
+        public int IdProducto { get; set; }
+        public string Nombre { get; set; }
+        public bool EsProducto { get; set; }
+        public bool EsInsumo { get; set; }
+        public bool EsGasto { get; set; }
+        public Categoria Categoria { get; set; }
+        public IList<ItemProducto> Items { get; set; }
+        public IList<InsumoProducto> Insumos { get; set; }
 
         public Producto()
         {
             Items = new List<ItemProducto>();
+            Insumos = new List<InsumoProducto>();
         }
     }
 }

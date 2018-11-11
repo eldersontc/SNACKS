@@ -1,12 +1,10 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { IFiltro, ILogin } from '../../generico/generico';
+import { ILogin } from '../../generico/generico';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { IngresosProductoService } from '../ingresos-producto.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IItemIngresoProducto, IIngresoProducto } from '../ingreso-producto';
-import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
-import { IUsuario } from '../../usuarios/usuario';
 import { LotesService } from '../../lotes/lotes.service';
 import { IItemLote } from '../../lotes/lote';
 import { IAlmacen } from '../../almacenes/almacen';
@@ -19,9 +17,13 @@ import { AlmacenesService } from '../../almacenes/almacenes.service';
 })
 export class IngresosProductoFormComponent implements OnInit {
 
-  filtrosProducto: IFiltro[] = [];
-  elegirProducto: boolean = false;
+  modoEdicion: boolean;
 
+  form: FormGroup;
+  formItem: FormGroup;
+
+  items: IItemIngresoProducto[] = [];
+  almacenes: IAlmacen[] = [];
   login: ILogin;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
@@ -38,21 +40,15 @@ export class IngresosProductoFormComponent implements OnInit {
         return;
       } else {
         this.modoEdicion = true;
-        this.ingresoProductoService.getIngresoProducto(params["id"]).subscribe(ingresoProducto => this.cargarFormulario(ingresoProducto),
+        this.ingresoProductoService
+          .getIngresoProducto(params["id"])
+          .subscribe(ingresoProducto => this.cargarFormulario(ingresoProducto),
           error => console.error(error));
       }
     });
   }
 
-  modoEdicion: boolean;
-  form: FormGroup;
-  formItem: FormGroup;
-
-  items: IItemIngresoProducto[] = [];
-  almacenes: IAlmacen[] = [];
-
   ngOnInit() {
-    this.filtrosProducto.push({ k: 2, v: 'Producto', b: false });
     this.form = this.fb.group({
       idIngresoProducto: 0,
       fechaCreacion: new Date(),
@@ -60,19 +56,7 @@ export class IngresosProductoFormComponent implements OnInit {
       idLote: '',
       almacen: ''
     });
-    this.formItem = this.fb.group({
-      producto: this.fb.group({
-        idProducto: 0,
-        nombre: '',
-        items: []
-      }),
-      unidad: '',
-      cantidad: '',
-      factor: 0
-    });
   }
-
-  get fi() { return this.formItem.value; }
 
   getAlmacenes() {
     this.almacenService.getAll()
@@ -84,10 +68,6 @@ export class IngresosProductoFormComponent implements OnInit {
     if (this.almacenes.length > 0) {
       this.form.patchValue({ almacen: this.almacenes[0] });
     }
-  }
-
-  buscarProducto() {
-    this.elegirProducto = true;
   }
 
   buscarLote() {
@@ -103,19 +83,17 @@ export class IngresosProductoFormComponent implements OnInit {
       this.items.push({
         producto: d.producto,
         cantidad: 0,
-        unidad: d.producto.items[0].unidad
+        unidad: d.producto.items[0].unidad,
+        factor: d.producto.items[0].factor
       });
     });
   }
 
-  asignarProducto(event: IProducto) {
-    this.elegirProducto = false;
-    if (event) {
-      this.formItem.patchValue({
-        producto: event,
-        unidad: event.items[0]
-      });
-    }
+  setFactor(i: IItemIngresoProducto) {
+    i.producto.items.forEach((ip) => {
+      if (i.unidad.idUnidad == ip.unidad.idUnidad)
+        i.factor = ip.factor
+    });
   }
 
   cargarFormulario(ingresoProducto: IIngresoProducto) {
@@ -135,9 +113,8 @@ export class IngresosProductoFormComponent implements OnInit {
 
   save() {
     let ingresoProducto: IIngresoProducto = Object.assign({}, this.form.value);
-    let usuario: IUsuario = Object.assign({}, { idUsuario: this.storage.get('login').id, nombre: '', clave: '', persona: null });
-
-    ingresoProducto.usuario = usuario;
+    
+    ingresoProducto.usuario = { idUsuario: this.login.id };
     ingresoProducto.items = this.items;
 
     if (this.modoEdicion) {
@@ -153,50 +130,6 @@ export class IngresosProductoFormComponent implements OnInit {
 
   onSaveSuccess() {
     this.router.navigate(["/ingresos-producto"]);
-  }
-
-  saveItem() {
-    this.formItem.patchValue({
-      unidad: this.fi.unidad.unidad,
-      factor: this.fi.unidad.factor,
-      producto: { items: [] }
-    });
-
-    let i: IItemIngresoProducto = Object.assign({}, this.formItem.value);
-
-    //if (this.modoEdicion) {
-
-    //  let ingresoProducto: IIngresoProducto = Object.assign({}, this.form.value);
-    //  i.ingresoProducto = ingresoProducto;
-
-    //  this.ingresoProductoService.createItem(i)
-    //    .subscribe(data => this.onSaveItemSuccess(i),
-    //      error => console.error(error));
-
-    //} else {
-      this.onSaveItemSuccess(i);
-    //}
-  }
-
-  onSaveItemSuccess(i) {
-    this.items.push(i);
-    this.formItem.reset();
-  }
-
-  deleteItem(i: IItemIngresoProducto) {
-    //if (this.modoEdicion) {
-    //  this.ingresoProductoService.deleteItem(i.idItemIngresoProducto)
-    //    .subscribe(data => this.onDeleteItemSuccess(i),
-    //      error => console.log(error));
-    //} else {
-      this.onDeleteItemSuccess(i);
-    //}
-  }
-
-  onDeleteItemSuccess(i: IItemIngresoProducto) {
-    this.items.forEach((item, index) => {
-      if (item.idItemIngresoProducto === i.idItemIngresoProducto) this.items.splice(index, 1);
-    });
   }
 
 }

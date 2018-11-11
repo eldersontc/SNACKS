@@ -18,5 +18,6 @@ namespace SNACKS.Models
         public string Glosa { get; set; }
         public DateTime Fecha { get; set; }
         public decimal Importe { get; set; }
+        public Usuario Usuario { get; set; }
     }
 }

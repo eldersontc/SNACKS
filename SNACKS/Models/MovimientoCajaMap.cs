@@ -19,6 +19,7 @@ namespace SNACKS.Models
             Map(x => x.Glosa);
             Map(x => x.Fecha);
             Map(x => x.Importe);
+            References(x => x.Usuario).Column("IdUsuario");
         }
     }
 }

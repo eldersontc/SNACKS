@@ -1,13 +1,13 @@
 <table class="table table-bordered table-hover table-sm">
   <thead class="thead-light">
     <tr>
-      <th scope="col"></th>
-      <th scope="col"*ngFor="let c of columnas" >{{c[1]}}</th>
+      <th scope="col" *ngIf="showSeleccion"></th>
+      <th scope="col" *ngFor="let c of columnas" >{{c[1]}}</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let d of data; let i = index">
-      <td>
+      <td *ngIf="showSeleccion">
         <div class="custom-control custom-radio text-center">
           <input type="radio"
                  [id]="i"
