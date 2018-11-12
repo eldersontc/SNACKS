@@ -40,17 +40,17 @@ export class PedidosComponent implements OnInit {
   importe: number;
 
   columnas: string[][] = [
-    ['L', 'Nro. Pedido'],
+    ['L', 'N° Pedido'],
     ['L', 'Creado Por'],
     ['L', 'Cliente'],
     ['L', 'Fecha Creación'],
-    ['L', 'Estado'],];
+    ['L', 'Total (S/.)']];
   atributos: string[][] = [
     ['I', 'L', 'idPedido'],
     ['S', 'L', 'usuario', 'nombre'],
     ['S', 'L', 'cliente', 'razonSocial'],
     ['D', 'L', 'fechaCreacion'],
-    ['S', 'L', 'estado']]
+    ['I', 'L', 'total']]
 
   private readonly notifier: NotifierService;
 
