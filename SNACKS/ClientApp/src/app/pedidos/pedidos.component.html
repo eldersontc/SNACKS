@@ -1,5 +1,5 @@
 <div *ngIf="elegirCliente">
-  <app-personas [extern]="filtrosCliente" (select)="asignarCliente($event)"></app-personas>
+  <app-personas [extern]="fCliente" (select)="asignarCliente($event)"></app-personas>
 </div>
 <div [hidden]="elegirCliente">
   <div class="form-inline mb-3">
@@ -8,8 +8,15 @@
         <option [ngValue]="1" *ngIf="login.tipo != 2">Cliente</option>
         <option [ngValue]="2">Fecha Creación</option>
       </select>
-      <input class="form-control" placeholder="dd/MM/yyyy"
-             name="dp" [(ngModel)]="busqueda" (dateSelect)="seleccionFecha()" ngbDatepicker #d="ngbDatepicker" [hidden]="criterio == 1" [readonly]="true">
+      <input class="form-control"
+             placeholder="dd/MM/yyyy"
+             name="dp"
+             [(ngModel)]="busqueda"
+             (dateSelect)="seleccionFecha()"
+             ngbDatepicker
+             #d="ngbDatepicker"
+             [hidden]="criterio == 1"
+             [readonly]="true">
       <div class="input-group-append" [hidden]="criterio == 1">
         <button class="btn btn-primary" (click)="d.toggle()" type="button">
           <fa name="calendar"></fa>
@@ -35,19 +42,23 @@
                     (select)="elegir()"
                     (cancel)="cancelar()"
                     [showReadOnly]="true"
-                    [show]="seleccion && seleccion.estado == 'PENDIENTE'"></app-acciones>
+                    [show]="seleccion
+                      && seleccion.estado == 'PENDIENTE'
+                      && login.tipo != 2">
+      </app-acciones>
     </div>
-    <div class="btn-group col-md-3 mb-2 justify-content-center" *ngIf="login.tipo != 2 && seleccion">
+    <div class="btn-group col-md-3 mb-2 justify-content-center"
+         *ngIf="login.tipo != 2 && seleccion">
       <button type="button"
               class="btn btn-primary"
               *ngIf="seleccion.fechaEntrega == null"
-              (click)="openDelivery(entregar)">
+              (click)="openEntrega(entrega)">
         <fa name="truck"></fa> Entregar
       </button>
       <button type="button"
               class="btn btn-primary"
               *ngIf="seleccion.total > seleccion.pago"
-              (click)="openPay(pagar)">
+              (click)="openPago(pago)">
         <fa name="credit-card"></fa> Pagar
       </button>
     </div>
@@ -69,38 +80,73 @@
 
 </div>
 
-<ng-template #entregar let-c="close" let-d="dismiss">
+<ng-template #entrega let-c="close" let-d="dismiss">
   <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title"><fa name="exclamation-triangle"></fa> Confirmación</h5>
-    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-footer justify-content-center">
-    <button type="button" class="btn btn-primary" (click)="c('Entregar')"><fa name="truck"></fa> Entregar</button>
-    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
-  </div>
-</ng-template>
-
-<ng-template #pagar let-c="close" let-d="dismiss">
-  <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title">Ingresar Monto</h5>
+    <h5 class="modal-title" id="modal-basic-title">
+      <fa name="exclamation-triangle"></fa> Confirmación
+    </h5>
     <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body justify-content-center">
     <div class="form-group">
-      <div class="col-md-8">
-        <input class="form-control"
-               id="pagoId"
-               type="number"
-               [(ngModel)]="montoPago"/>
+      <label class="col-md-12 control-label">Almacen</label>
+      <div class="col-md-12">
+        <select class="custom-select" [(ngModel)]="almacen" required>
+          <option *ngFor="let a of almacenes" [ngValue]="a">{{a.nombre}}</option>
+        </select>
       </div>
     </div>
   </div>
   <div class="modal-footer justify-content-center">
-    <button type="button" class="btn btn-primary" (click)="c('Pagar')"><fa name="credit-card"></fa> Pagar</button>
-    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">Cancelar</button>
+    <button type="button" class="btn btn-primary" (click)="c('Entregar')">
+      <fa name="truck"></fa> Entregar
+    </button>
+    <button type="button"
+            class="btn btn-outline-secondary"
+            (click)="c('Cancelar')">
+      <fa name="times-circle"></fa> Cancelar
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #pago let-c="close" let-d="dismiss">
+  <div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-basic-title">
+      <fa name="exclamation-triangle"></fa> Confirmación
+    </h5>
+    <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body justify-content-center">
+    <div class="form-group">
+      <label class="col-md-12 control-label">Caja</label>
+      <div class="col-md-12">
+        <select class="custom-select" [(ngModel)]="caja" required>
+          <option *ngFor="let c of cajas" [ngValue]="c">{{c.nombre}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-12 control-label">Importe</label>
+      <div class="col-md-12">
+        <input class="form-control"
+               id="pagoId"
+               type="number"
+               [(ngModel)]="importe" />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="c('Pagar')">
+      <fa name="credit-card"></fa> Pagar
+    </button>
+    <button type="button"
+            class="btn btn-outline-secondary"
+            (click)="c('Cancelar')">
+      <fa name="times-circle"></fa> Cancelar
+    </button>
   </div>
 </ng-template>

@@ -152,7 +152,11 @@ namespace SNACKS.Controllers
                             sn.Save(item);
                         }
 
-                        sn.SaveOrUpdate(ingresoProducto);
+                        IngresoProducto ingresoProductoBD = sn.Get<IngresoProducto>(id);
+
+                        ingresoProductoBD.IdLote = ingresoProducto.IdLote;
+                        ingresoProductoBD.Usuario = ingresoProductoBD.Usuario;
+                        ingresoProductoBD.Comentario = ingresoProducto.Comentario;
 
                         await tx.CommitAsync();
                     }

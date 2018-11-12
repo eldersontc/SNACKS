@@ -6,11 +6,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { IItemSalidaInsumo, ISalidaInsumo } from '../salida-insumo';
 import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
-import { IUsuario } from '../../usuarios/usuario';
 import { IAlmacen } from '../../almacenes/almacen';
 import { AlmacenesService } from '../../almacenes/almacenes.service';
 import { LotesService } from '../../lotes/lotes.service';
 import { IItemLote } from '../../lotes/lote';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-salidas-insumo-form',
@@ -21,6 +21,7 @@ export class SalidasInsumoFormComponent implements OnInit {
 
   elegirProducto: boolean = false;
   modoEdicion: boolean;
+  modoLectura: boolean;
 
   form: FormGroup;
   formItem: FormGroup;
@@ -28,14 +29,21 @@ export class SalidasInsumoFormComponent implements OnInit {
   items: IItemSalidaInsumo[] = [];
   almacenes: IAlmacen[] = [];
   login: ILogin;
+  productos: IProducto[] = [];
+  producto: IProducto;
+  insumo: IProducto = {};
+
+  private readonly notifier: NotifierService;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
+    notifierService: NotifierService,
     private salidaInsumoService: SalidasInsumoService,
     private almacenService: AlmacenesService,
     private loteService: LotesService,
     private router: Router,
     private activatedRoute: ActivatedRoute) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
@@ -43,7 +51,11 @@ export class SalidasInsumoFormComponent implements OnInit {
         return;
       } else {
         this.modoEdicion = true;
-        this.salidaInsumoService.getSalidaInsumo(params["id"]).subscribe(salidaInsumo => this.cargarFormulario(salidaInsumo),
+        if (params["mode"]) {
+          this.modoLectura = true;
+        }
+        this.salidaInsumoService.getSalidaInsumo(params["id"])
+          .subscribe(salidaInsumo => this.cargarFormulario(salidaInsumo),
           error => console.error(error));
       }
     });
@@ -51,7 +63,8 @@ export class SalidasInsumoFormComponent implements OnInit {
 
   getAlmacenes() {
     this.almacenService.getAll()
-      .subscribe(d => this.onGetAlmacenesSuccess(d), error => console.error(error));
+      .subscribe(d => this.onGetAlmacenesSuccess(d),
+        error => console.error(error));
   }
 
   onGetAlmacenesSuccess(d) {
@@ -69,31 +82,16 @@ export class SalidasInsumoFormComponent implements OnInit {
       idLote: '',
       almacen: ''
     });
-    this.formItem = this.fb.group({
-      producto: this.fb.group({
-        idProducto: 0,
-        nombre: '',
-        items: []
-      }),
-      unidad: '',
-      cantidad: '',
-      factor: 0
-    });
   }
-
-  get fi() { return this.formItem.value; }
 
   buscarProducto() {
     this.elegirProducto = true;
   }
 
-  asignarProducto(event: IProducto) {
+  asignarProducto(e: IProducto) {
     this.elegirProducto = false;
-    if (event) {
-      this.formItem.patchValue({
-        producto: event,
-        unidad: event.items[0]
-      });
+    if (e) {
+      this.insumo = e;
     }
   }
 
@@ -106,8 +104,8 @@ export class SalidasInsumoFormComponent implements OnInit {
   }
 
   cargarProductos(data: IItemLote[]) {
+    this.items = [];
     data.forEach((d) => {
-
       d.producto.insumos.forEach((i) => {
         this.items.push({
           producto: d.producto,
@@ -117,8 +115,12 @@ export class SalidasInsumoFormComponent implements OnInit {
           factor: i.insumo.items[0].factor
         });
       });
-
+      this.productos.push({
+        idProducto: d.producto.idProducto,
+        nombre: d.producto.nombre
+      });
     });
+    this.producto = this.productos[0];
   }
 
   setFactor(i: IItemSalidaInsumo) {
@@ -152,12 +154,16 @@ export class SalidasInsumoFormComponent implements OnInit {
     if (this.modoEdicion) {
       this.salidaInsumoService.updateSalidaInsumo(salidaInsumo)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     } else {
       this.salidaInsumoService.createSalidaInsumo(salidaInsumo)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     }
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onSaveSuccess() {
@@ -165,46 +171,21 @@ export class SalidasInsumoFormComponent implements OnInit {
   }
 
   saveItem() {
-    this.formItem.patchValue({
-      unidad: this.fi.unidad.unidad,
-      factor: this.fi.unidad.factor,
-      producto: { items: [] }
+    this.items.push({
+      producto: this.producto,
+      insumo: this.insumo,
+      unidad: this.insumo.items[0].unidad,
+      factor: this.insumo.items[0].factor,
+      cantidad: 0
     });
-
-    let i: IItemSalidaInsumo = Object.assign({}, this.formItem.value);
-
-    //if (this.modoEdicion) {
-
-    //  let salidaInsumo: ISalidaInsumo = Object.assign({}, this.form.value);
-      //i.salidaInsumo = salidaInsumo;
-
-    //  this.salidaInsumoService.createItem(i)
-    //    .subscribe(data => this.onSaveItemSuccess(i),
-    //      error => console.error(error));
-
-    //} else {
-      this.onSaveItemSuccess(i);
-    //}
-  }
-
-  onSaveItemSuccess(i) {
-    this.items.push(i);
-    this.formItem.reset();
+    this.insumo = {};
   }
 
   deleteItem(i: IItemSalidaInsumo) {
-    //if (this.modoEdicion) {
-    //  this.salidaInsumoService.deleteItem(i.idItemSalidaInsumo)
-    //    .subscribe(data => this.onDeleteItemSuccess(i),
-    //      error => console.log(error));
-    //} else {
-      this.onDeleteItemSuccess(i);
-    //}
-  }
-
-  onDeleteItemSuccess(i: IItemSalidaInsumo) {
     this.items.forEach((item, index) => {
-      if (item.idItemSalidaInsumo === i.idItemSalidaInsumo) this.items.splice(index, 1);
+      if (item.insumo.idProducto === i.insumo.idProducto
+        && item.producto.idProducto == i.producto.idProducto)
+        this.items.splice(index, 1);
     });
   }
 

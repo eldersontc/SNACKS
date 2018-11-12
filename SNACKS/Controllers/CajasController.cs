@@ -112,8 +112,10 @@ namespace SNACKS.Controllers
                 {
                     try
                     {
-                        sn.SaveOrUpdate(caja);
+                        Caja cajaBD = sn.Get<Caja>(caja.IdCaja);
 
+                        cajaBD.Nombre = caja.Nombre;
+                        
                         await tx.CommitAsync();
                     }
                     catch (Exception ex)

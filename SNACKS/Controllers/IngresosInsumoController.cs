@@ -125,18 +125,21 @@ namespace SNACKS.Controllers
 
                         foreach (var item in items)
                         {
-                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                            if (item.Producto.EsInsumo)
+                            {
+                                InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == ingresoInsumo.Almacen.IdAlmacen
                                     && x.IdInsumo == item.Producto.IdProducto)
                                 .FirstOrDefaultAsync();
 
-                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
-                            {
-                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
-                            }
-                            else
-                            {
-                                return StatusCode(500, "No hay stock disponible.");
+                                if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                                {
+                                    inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                                }
+                                else
+                                {
+                                    return StatusCode(500, "No hay stock disponible.");
+                                }
                             }
                         }
 
@@ -144,23 +147,26 @@ namespace SNACKS.Controllers
 
                         foreach (var item in ingresoInsumo.Items)
                         {
-                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                            if (item.Producto.EsInsumo)
+                            {
+                                InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == ingresoInsumo.Almacen.IdAlmacen
                                     && x.IdInsumo == item.Producto.IdProducto)
                                 .FirstOrDefaultAsync();
 
-                            if (inventario == null)
-                            {
-                                sn.Save(new InventarioInsumo
+                                if (inventario == null)
                                 {
-                                    IdAlmacen = ingresoInsumo.Almacen.IdAlmacen,
-                                    IdInsumo = item.Producto.IdProducto,
-                                    Stock = (item.Cantidad * item.Factor)
-                                });
-                            }
-                            else
-                            {
-                                inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                                    sn.Save(new InventarioInsumo
+                                    {
+                                        IdAlmacen = ingresoInsumo.Almacen.IdAlmacen,
+                                        IdInsumo = item.Producto.IdProducto,
+                                        Stock = (item.Cantidad * item.Factor)
+                                    });
+                                }
+                                else
+                                {
+                                    inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                                }
                             }
 
                             item.IdIngresoInsumo = id;
@@ -223,23 +229,26 @@ namespace SNACKS.Controllers
 
                         foreach (var item in ingresoInsumo.Items)
                         {
-                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
-                                .Where(x => x.IdAlmacen == ingresoInsumo.Almacen.IdAlmacen 
+                            if (item.Producto.EsInsumo)
+                            {
+                                InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                                .Where(x => x.IdAlmacen == ingresoInsumo.Almacen.IdAlmacen
                                     && x.IdInsumo == item.Producto.IdProducto)
                                 .FirstOrDefaultAsync();
 
-                            if (inventario == null)
-                            {
-                                sn.Save(new InventarioInsumo
+                                if (inventario == null)
                                 {
-                                    IdAlmacen = ingresoInsumo.Almacen.IdAlmacen,
-                                    IdInsumo = item.Producto.IdProducto,
-                                    Stock = (item.Cantidad * item.Factor)
-                                });
-                            }
-                            else
-                            {
-                                inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                                    sn.Save(new InventarioInsumo
+                                    {
+                                        IdAlmacen = ingresoInsumo.Almacen.IdAlmacen,
+                                        IdInsumo = item.Producto.IdProducto,
+                                        Stock = (item.Cantidad * item.Factor)
+                                    });
+                                }
+                                else
+                                {
+                                    inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                                }
                             }
 
                             item.IdIngresoInsumo = ingresoInsumo.IdIngresoInsumo;
@@ -254,7 +263,7 @@ namespace SNACKS.Controllers
                             IdIngresoInsumo = ingresoInsumo.IdIngresoInsumo,
                             TipoMovimiento = Constantes.Salida,
                             Importe = costo * -1,
-                            Glosa = "COMPRA DE INSUMOS",
+                            Glosa = "COMPRA DE INSUMOS N° " + ingresoInsumo.IdIngresoInsumo,
                             Usuario = ingresoInsumo.Usuario
                         });
 
@@ -293,18 +302,21 @@ namespace SNACKS.Controllers
 
                         foreach (var item in items)
                         {
-                            InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
+                            if (item.Producto.EsInsumo)
+                            {
+                                InventarioInsumo inventario = await sn.Query<InventarioInsumo>()
                                 .Where(x => x.IdAlmacen == ingresoInsumo.Almacen.IdAlmacen
                                     && x.IdInsumo == item.Producto.IdProducto)
                                 .FirstOrDefaultAsync();
 
-                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
-                            {
-                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
-                            }
-                            else
-                            {
-                                throw new Exception("No hay stock disponible.");
+                                if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                                {
+                                    inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                                }
+                                else
+                                {
+                                    throw new Exception("No hay stock disponible.");
+                                }
                             }
                         }
 

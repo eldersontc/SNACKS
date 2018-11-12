@@ -9,11 +9,8 @@ namespace SNACKS.Models
 {
     public class Pedido
     {
-        [Key]
         public int IdPedido { get; set; }
-        [ForeignKey("IdCliente")]
         public Persona Cliente { get; set; }
-        [ForeignKey("IdUsuario")]
         public Usuario Usuario { get; set; }
         public DateTime FechaCreacion { get; set; }
         public string Comentario { get; set; }
@@ -24,5 +21,10 @@ namespace SNACKS.Models
         public decimal Pago { get; set; }
         public string Estado { get; set; }
         public List<ItemPedido> Items { get; set; }
+
+        public Pedido()
+        {
+            Items = new List<ItemPedido>();
+        }
     }
 }

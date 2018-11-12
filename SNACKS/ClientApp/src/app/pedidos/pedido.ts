@@ -19,11 +19,11 @@ export interface IPedido {
 }
 
 export interface IItemPedido {
-  idItemPedido: number;
-  pedido: IPedido;
-  producto: IProducto;
-  unidad: IUnidad;
-  factor: number;
-  cantidad: number;
-  total: number;
+  idItemPedido?: number;
+  pedido?: IPedido;
+  producto?: IProducto;
+  unidad?: IUnidad;
+  factor?: number;
+  cantidad?: number;
+  total?: number;
 }

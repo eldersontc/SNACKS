@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -13,17 +15,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/Pedidos")]
     [ApiController]
-    public class PedidosController : ControllerBase
+    public class PedidosController : UtilController
     {
-        public IRepositorioBase<Pedido> Repositorio { get; }
-        public IRepositorioBase<ItemPedido> RepositorioItem { get; }
-
-        public PedidosController(IRepositorioBase<Pedido> repositorio,
-            IRepositorioBase<ItemPedido> repositorioItem)
-        {
-            Repositorio = repositorio;
-            RepositorioItem = repositorioItem;
-        }
+        public PedidosController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetPedidos")]
         public async Task<IActionResult> GetPedidos([FromBody] Paginacion paginacion)
@@ -33,30 +27,46 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<Pedido, bool>>>();
+            List<Pedido> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<Pedido> query = sn.Query<Pedido>();
+
+                foreach (var filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.Cliente.IdPersona == filtro.N);
-                        break;
-                    case Constantes.Dos:
-                        filtros.Add(x => x.FechaCreacion.Date == filtro.D.Date);
-                        break;
-                    case Constantes.Tres:
-                        filtros.Add(x => x.Cliente.IdPersona == filtro.N);
-                        break;
-                    case Constantes.Cuatro:
-                        filtros.Add(x => x.Cliente.Vendedor.IdPersona == filtro.N);
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.Cliente.IdPersona == filtro.N);
+                            break;
+                        case Constantes.Dos:
+                            query = query.Where(x => x.FechaCreacion.Date == filtro.D.Date);
+                            break;
+                        case Constantes.Tres:
+                            query = query.Where(x => x.Cliente.IdPersona == filtro.N);
+                            break;
+                        case Constantes.Cuatro:
+                            query = query.Where(x => x.Cliente.Vendedor.IdPersona == filtro.N);
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderByDescending(x => x.FechaCreacion);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario, Constantes.Cliente }, (x => x.FechaCreacion));
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -67,12 +77,13 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var pedido = await Repositorio.ObtenerAsync(id, new string[] {
-                Constantes.Usuario,
-                Constantes.Cliente,
-                Constantes.Items + '.' + Constantes.Producto,
-                Constantes.Items + '.' + Constantes.Unidad
-            });
+            Pedido pedido = null;
+
+            using (var sn = factory.OpenSession())
+            {
+                pedido = await sn.GetAsync<Pedido>(id);
+                pedido.Items = await sn.Query<ItemPedido>().Where(x => x.IdPedido == id).ToListAsync();
+            }
 
             if (pedido == null)
             {
@@ -95,37 +106,34 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                List<ItemPedido> items = await RepositorioItem.ObtenerTodosAsync(
-                    new List<Expression<Func<ItemPedido, bool>>>() {
-                    (x => x.Pedido.IdPedido == id)
-                });
-
-                await RepositorioItem.EliminarAsync(items.ToArray(), false);
-
-                List<object> referencias = new List<object>();
-                decimal total = 0;
-
-                foreach (var item in pedido.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    item.Pedido = new Pedido { IdPedido = id };
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                    total += item.Total;
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemPedido WHERE IdPedido = {0}", id));
+
+                        Pedido pedidoBD = sn.Get<Pedido>(id);
+
+                        pedidoBD.Comentario = pedido.Comentario;
+                        pedidoBD.Total = pedido.Items.Sum(x => x.Total);
+
+                        foreach (var item in pedido.Items)
+                        {
+                            item.IdPedido = pedido.IdPedido;
+
+                            sn.Save(item);
+                        }
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-
-                RepositorioItem.AgregarReferencias(referencias.ToArray());
-                await RepositorioItem.RegistrarAsync(pedido.Items.ToArray(), false);
-
-                pedido.Total = total;
-
-                Repositorio.AgregarReferencias(new object[] { pedido, pedido.Usuario, pedido.Cliente });
-                await Repositorio.ActualizarAsync(pedido);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -139,28 +147,33 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                List<object> referencias = new List<object>() { pedido.Usuario, pedido.Cliente };
-                decimal total = 0;
-
-                foreach (var item in pedido.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                    total += item.Total;
+                    try
+                    {
+                        pedido.FechaCreacion = DateTime.Now;
+                        pedido.Estado = Constantes.Pendiente;
+                        pedido.Total = pedido.Items.Sum(x => x.Total);
+
+                        sn.Save(pedido);
+
+                        foreach (var item in pedido.Items)
+                        {
+                            item.IdPedido = pedido.IdPedido;
+
+                            sn.Save(item);
+                        }
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-
-                pedido.FechaCreacion = DateTime.Now;
-                pedido.Estado = Constantes.Pendiente;
-                pedido.Total = total;
-
-                Repositorio.AgregarReferencias(referencias.ToArray());
-                await Repositorio.RegistrarAsync(pedido);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -174,74 +187,145 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var pedido = await Repositorio.ObtenerAsync(id, new string[] { Constantes.Items });
-            if (pedido == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        sn.Delete(string.Format("FROM ItemPedido WHERE IdPedido = {0}", id));
 
-            try
-            {
-                await RepositorioItem.EliminarAsync(pedido.Items.ToArray(), false);
-                await Repositorio.EliminarAsync(new Pedido[] { pedido });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                        sn.Delete(new Pedido { IdPedido = id });
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
         }
 
-        [HttpPost("Entregar/{id}")]
-        public async Task<IActionResult> Entregar([FromRoute] int id)
+        [HttpPost("Entregar")]
+        public async Task<IActionResult> Entregar([FromBody] SalidaProducto salidaProducto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                var pedido = await Repositorio.ObtenerAsync(id);
-                pedido.FechaEntrega = DateTime.Now;
-                pedido.Estado = Constantes.Entregado;
-                await Repositorio.ActualizarAsync(pedido);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                using (var tx = sn.BeginTransaction())
+                {
+                    try
+                    {
+                        Pedido pedido = sn.Get<Pedido>(salidaProducto.IdPedido);
+
+                        pedido.FechaEntrega = DateTime.Now;
+                        pedido.Estado = Constantes.Entregado;
+
+                        SalidaProducto salidaProductoBD = new SalidaProducto();
+
+                        salidaProductoBD.FechaCreacion = DateTime.Now;
+                        salidaProductoBD.Usuario = salidaProducto.Usuario;
+                        salidaProductoBD.Almacen = salidaProducto.Almacen;
+                        salidaProductoBD.Comentario = "GENERADO DESDE PEDIDO";
+                        salidaProductoBD.IdPedido = salidaProducto.IdPedido;
+
+                        sn.Save(salidaProductoBD);
+
+                        List<ItemPedido> items = sn.Query<ItemPedido>()
+                            .Where(x => x.IdPedido == pedido.IdPedido)
+                            .ToList();
+
+                        foreach (var item in items)
+                        {
+                            InventarioProducto inventario = await sn.Query<InventarioProducto>()
+                                .Where(x => x.IdAlmacen == salidaProducto.Almacen.IdAlmacen
+                                    && x.IdProducto == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                            {
+                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                            }
+                            else
+                            {
+                                throw new Exception("No hay stock disponible.");
+                            }
+
+                            sn.Save(new ItemSalidaProducto {
+                                IdSalidaProducto = salidaProductoBD.IdSalidaProducto,
+                                Producto = item.Producto,
+                                Unidad = item.Unidad,
+                                Factor = item.Factor,
+                                Cantidad = item.Cantidad
+                            });
+                        }
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
+                }
             }
 
             return Ok(true);
         }
 
-        [HttpPost("Pagar/{id}")]
-        public async Task<IActionResult> Pagar([FromRoute] int id, [FromBody] decimal pago)
+        [HttpPost("Pagar")]
+        public async Task<IActionResult> Pagar([FromBody] MovimientoCaja movimientoCaja)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                var pedido = await Repositorio.ObtenerAsync(id);
-                pedido.FechaPago = DateTime.Now;
-                pedido.Pago += pago;
-                if (pedido.Pago == pedido.Total)
+                using (var tx = sn.BeginTransaction())
                 {
-                    pedido.Estado = Constantes.Pagado;
+                    try
+                    {
+                        Pedido pedido = sn.Get<Pedido>(movimientoCaja.IdPedido);
+
+                        pedido.FechaPago = DateTime.Now;
+                        pedido.Pago += movimientoCaja.Importe;
+
+                        if (pedido.Pago == pedido.Total)
+                        {
+                            pedido.Estado = Constantes.Pagado;
+                        }
+                        else
+                        {
+                            pedido.Estado = Constantes.PagoParcial;
+                        }
+
+                        Caja caja = sn.Get<Caja>(movimientoCaja.IdCaja);
+
+                        caja.Saldo += movimientoCaja.Importe;
+
+                        movimientoCaja.Fecha = DateTime.Now;
+                        movimientoCaja.Glosa = "PAGO DE PEDIDO N° " + movimientoCaja.IdPedido;
+
+                        sn.Save(movimientoCaja);
+
+                        await tx.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
+                    }
                 }
-                else
-                {
-                    pedido.Estado = Constantes.PagoParcial;
-                }
-                await Repositorio.ActualizarAsync(pedido);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);

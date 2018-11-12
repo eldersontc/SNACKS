@@ -49,7 +49,9 @@ export class ProductosFormComponent implements OnInit {
         idCategoria: 0,
         nombre: ''
       }),
-      esInsumo: false
+      esInsumo: false,
+      esProducto: false,
+      esGasto: false
     });
     this.formItem = this.fb.group({
       unidad: this.fb.group({
@@ -71,7 +73,9 @@ export class ProductosFormComponent implements OnInit {
       idProducto: producto.idProducto,
       nombre: producto.nombre,
       categoria: producto.categoria,
-      esInsumo: producto.esInsumo
+      esInsumo: producto.esInsumo,
+      esProducto: producto.esProducto,
+      esGasto: producto.esGasto
     });
     this.items = producto.items;
     this.insumos = producto.insumos;

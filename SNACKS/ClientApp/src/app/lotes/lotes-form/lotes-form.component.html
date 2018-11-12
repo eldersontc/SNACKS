@@ -1,65 +1,80 @@
 <div *ngIf="elegirProducto">
-  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="[{ k: 3, v: 'Producto', b: true }]"
+                 (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirProducto">
   <form class="form-horizontal" novalidate
         [formGroup]="form">
-    <div class="form-group">
-      <label class="col-md-2 control-label" for="nroId">Nro. Lote</label>
-      <div class="col-md-8">
-        <input class="form-control"
-               id="nroId"
-               type="text"
-               [readonly]="true"
-               formControlName="idLote" />
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="nroId">N° Lote</label>
+          <div class="col-md-12">
+            <input class="form-control"
+                   id="nroId"
+                   type="text"
+                   [readonly]="true"
+                   formControlName="idLote" />
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="form-group">
-      <label class="col-md-4 control-label">Fecha</label>
-      <div class="col-md-8">
-        <input class="form-control" placeholder="dd/MM/yyyy"
-               name="dp" formControlName="fecha" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label">Fecha</label>
+          <div class="col-md-12">
+            <input class="form-control" placeholder="dd/MM/yyyy"
+                   name="dp" formControlName="fecha" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+          </div>
+        </div>
       </div>
     </div>
   </form>
-  <form class="form-horizontal" novalidate
-        [formGroup]="formItem">
-    <fieldset>
-      <div class="form-group" formGroupName="producto">
-        <label class="col-md-2 control-label" for="productoId">Producto</label>
-        <div class="col-md-8">
-          <div class="input-group">
-            <input class="form-control"
-                   id="productoId"
-                   type="text"
-                   required
-                   formControlName="nombre"
-                   [readonly]="true" />
-            <div class="input-group-append">
-              <button class="btn btn-primary" type="button" (click)="buscarProducto()">
-                <fa name="search"></fa>
-              </button>
-            </div>
-            <div class="input-group-append">
-              <button class="btn btn-primary"
-                      type="button"
-                      (click)="saveItem()"
-                      [disabled]="!formItem.valid">
-                <fa name="plus-circle"></fa> Agregar
-              </button>
+  <div class="form-horizontal">
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="productoId">Producto</label>
+          <div class="col-md-12">
+            <div class="input-group">
+              <input class="form-control"
+                     id="productoId"
+                     type="text"
+                     required
+                     [ngModel]="producto.nombre"
+                     [readonly]="true" />
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="button" (click)="buscarProducto()">
+                  <fa name="search"></fa>
+                </button>
+              </div>
+              <div class="input-group-append">
+                <button class="btn btn-primary"
+                        type="button"
+                        (click)="saveItem()"
+                        [disabled]="!producto.nombre">
+                  <fa name="plus-circle"></fa> Agregar
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="form-group">
-        <div class="col-md-8">
-          <ngb-alert type="info" *ngFor="let i of items" [dismissible]="true" (close)="deleteItem(i)">
-            <!--<fa name="exclamation-circle"></fa>--> {{i.producto.nombre}}
-          </ngb-alert>
+    </div>
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group">
+          <div class="col-md-12">
+            <ngb-alert type="info"
+                       *ngFor="let i of items"
+                       [dismissible]="true"
+                       (close)="deleteItem(i)">
+              {{i.producto.nombre}}
+            </ngb-alert>
+          </div>
         </div>
       </div>
-    </fieldset>
-  </form>
+    </div>
+  </div>
   <div class="form-group">
     <button class="btn btn-primary ml-3"
             type="button"
@@ -70,6 +85,7 @@
     <button class="btn btn-outline-secondary ml-2"
             type="button"
             [routerLink]='["/lotes"]'>
-      <fa name="times-circle"></fa> Cancelar
+      <fa name="reply"></fa> Regresar
     </button>
   </div>
+</div>

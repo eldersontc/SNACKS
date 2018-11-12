@@ -4,6 +4,7 @@ import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { SalidasProductoService } from './salidas-producto.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-salidas-producto',
@@ -25,16 +26,22 @@ export class SalidasProductoComponent implements OnInit {
   login: ILogin;
 
   columnas: string[][] = [
-    ['L', 'Nro. Salida'],
+    ['L', 'N° Salida'],
     ['L', 'Creado Por'],
-    ['L', 'Fecha Creación']];
+    ['L', 'Fecha Creación'],
+    ['L', 'N° Pedido'],];
   atributos: string[][] = [
     ['I', 'L', 'idSalidaProducto'],
     ['S', 'L', 'usuario', 'nombre'],
-    ['D', 'L', 'fechaCreacion']]
+    ['D', 'L', 'fechaCreacion'],
+    ['I', 'L', 'idPedido']]
+
+  private readonly notifier: NotifierService;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    notifierService: NotifierService,
     private salidaProductoService: SalidasProductoService) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
   }
 
@@ -73,8 +80,14 @@ export class SalidasProductoComponent implements OnInit {
   }
 
   deleteSalidaProducto() {
-    this.salidaProductoService.deleteSalidaProducto(this.seleccion.idSalidaProducto).subscribe(data => this.onDeleteSuccess(),
-      error => console.log(error));
+    this.salidaProductoService
+      .deleteSalidaProducto(this.seleccion.idSalidaProducto)
+      .subscribe(data => this.onDeleteSuccess(),
+      error => this.showError(error));
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onDeleteSuccess() {

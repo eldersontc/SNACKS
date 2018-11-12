@@ -1,176 +1,159 @@
 <div *ngIf="elegirCliente">
-  <app-personas [extern]="filtrosCliente" (select)="asignarCliente($event)"></app-personas>
+  <app-personas [extern]="fCliente"
+                (select)="asignarCliente($event)"></app-personas>
 </div>
 <div *ngIf="elegirProducto">
-  <app-productos [extern]="filtrosProducto" (select)="asignarProducto($event)"></app-productos>
+  <app-productos [extern]="[{ k: 2, v: 'Producto', b: false }]"
+                 (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirCliente || elegirProducto">
-  <ngb-tabset>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 1</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <form class="form-horizontal" novalidate
-              [formGroup]="form">
-          <fieldset>
-            <div class="form-group">
-              <label class="col-md-4 control-label">Fecha Entrega</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control" placeholder="dd/MM/yyyy"
-                         name="dp" formControlName="fechaPropuesta" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
-                  <div class="input-group-append" *ngIf="!modoLectura">
-                    <button class="btn btn-primary" (click)="d.toggle()" type="button">
-                      <fa name="calendar"></fa>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group" formGroupName="cliente">
-              <label class="col-md-2 control-label" for="clienteId">Cliente</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="clienteId"
-                         type="text"
-                         required
-                         formControlName="razonSocial"
-                         [readonly]="true" />
-                  <div class="input-group-append" *ngIf="!modoLectura && login.tipo != 2">
-                    <button class="btn btn-primary" type="button" (click)="buscarCliente()">
-                      <fa name="search"></fa>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="comentarioId">Comentario</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="comentarioId"
-                       type="text"
-                       formControlName="comentario"
-                       [readonly]="modoLectura" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="totalId">Total</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                       id="totalId"
-                       type="number"
-                       [readonly]="true"
-                       formControlName="total" />
-              </div>
-            </div>
-          </fieldset>
-        </form>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab *ngIf="!modoLectura">
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 2</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <form class="form-horizontal" novalidate
-              [formGroup]="formItem">
-          <fieldset>
-            <div class="form-group" formGroupName="producto">
-              <label class="col-md-2 control-label" for="productoId">Producto</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="productoId"
-                         type="text"
-                         required
-                         formControlName="nombre"
-                         [readonly]="true" />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" (click)="buscarProducto()">
-                      <fa name="search"></fa>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group" [hidden]="!fi.producto.idProducto > 0">
-              <label class="col-md-2 control-label" for="unidadId">Unidad</label>
-              <div class="col-md-8">
-                <select class="custom-select" formControlName="unidad" required>
-                  <option *ngFor="let i of fi.producto.items" [ngValue]="i">{{i.unidad.nombre}}</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="cantidadId">Cantidad</label>
-              <div class="col-md-8">
-                <input class="form-control"
-                        id="cantidadId"
-                        type="number"
-                        formControlName="cantidad"
-                        required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label" for="totalId">Total</label>
-              <div class="col-md-8">
-                <div class="input-group">
-                  <input class="form-control"
-                         id="totalId"
-                         type="number"
-                         formControlName="total"
-                         required
-                         [readOnly]="login.tipo == 2"/>
-                  <div class="input-group-append">
-                    <button class="btn btn-primary"
-                            type="button"
-                            (click)="saveItem()"
-                            [disabled]="!formItem.valid">
-                      <fa name="plus-circle"></fa> Agregar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab>
-      <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Paso 3</b></ng-template>
-      <ng-template ngbTabContent>
-        <br />
-        <table class="table table-bordered table-hover table-sm">
-          <thead class="thead-light">
-            <tr>
-              <th scope="col">Producto</th>
-              <th scope="col">Unidad</th>
-              <th scope="col">Cantidad</th>
-              <th scope="col">Total</th>
-              <th scope="col" *ngIf="!modoLectura"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let i of items">
-              <td>{{i.producto.nombre}}</td>
-              <td>{{i.unidad.abreviacion}}</td>
-              <td>{{i.cantidad}}</td>
-              <td *ngIf="modoLectura || login.tipo == 2">{{i.total}}</td>
-              <td *ngIf="!modoLectura && login.tipo != 2">
-                <input type="number" class="form-control" [(ngModel)]="i.total" />
-              </td>
-              <td class="text-center" *ngIf="!modoLectura">
-                <button type="button" class="btn btn-primary" (click)="deleteItem(i)">
-                  <fa name="trash"></fa>
+  <form class="form-horizontal" novalidate
+        [formGroup]="form">
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="nroId">Nro. Pedido</label>
+          <div class="col-md-12">
+            <input class="form-control"
+                   id="nroId"
+                   type="text"
+                   [readonly]="true"
+                   formControlName="idPedido" />
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="form-group">
+          <label class="col-md-12 control-label">Fecha Entrega</label>
+          <div class="col-md-12">
+            <div class="input-group">
+              <input class="form-control" placeholder="dd/MM/yyyy"
+                     name="dp" formControlName="fechaPropuesta" ngbDatepicker #d="ngbDatepicker" [readonly]="true">
+              <div class="input-group-append" *ngIf="!modoLectura">
+                <button class="btn btn-primary" (click)="d.toggle()" type="button">
+                  <fa name="calendar"></fa>
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </ng-template>
-    </ngb-tab>
-  </ngb-tabset>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group" formGroupName="cliente">
+          <label class="col-md-12 control-label" for="clienteId">Cliente</label>
+          <div class="col-md-12">
+            <div class="input-group">
+              <input class="form-control"
+                     id="clienteId"
+                     type="text"
+                     required
+                     formControlName="razonSocial"
+                     [readonly]="true" />
+              <div class="input-group-append" *ngIf="!modoLectura && login.tipo != 2">
+                <button class="btn btn-primary" type="button" (click)="buscarCliente()">
+                  <fa name="search"></fa>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="comentarioId">Comentario</label>
+          <div class="col-md-12">
+            <input class="form-control"
+                   id="comentarioId"
+                   type="text"
+                   formControlName="comentario"
+                   [readonly]="modoLectura" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div class="form-horizontal">
+    <div class="form-row" *ngIf="!modoLectura">
+      <div class="col-12">
+        <div class="form-group">
+          <label class="col-md-12 control-label" for="productoId">Producto</label>
+          <div class="col-md-12">
+            <div class="input-group">
+              <input class="form-control"
+                     id="productoId"
+                     type="text"
+                     required
+                     [ngModel]="producto.nombre"
+                     [readonly]="true" />
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="button" (click)="buscarProducto()">
+                  <fa name="search"></fa>
+                </button>
+                <button class="btn btn-primary"
+                        type="button"
+                        (click)="saveItem()"
+                        [disabled]="!producto.nombre">
+                  <fa name="plus-circle"></fa> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-12">
+        <div class="col-md-12">
+          <table class="table table-bordered table-hover table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Total</th>
+                <th scope="col" *ngIf="!modoLectura"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of items">
+                <td>{{i.producto.nombre}}</td>
+                <td>
+                  <select class="custom-select" [(ngModel)]="i.unidad" (change)="setFactor(i)">
+                    <option *ngFor="let ip of i.producto.items" [ngValue]="ip.unidad">
+                      {{ip.unidad.abreviacion}}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number"
+                         class="form-control"
+                         [readonly]="modoLectura"
+                         [(ngModel)]="i.cantidad" />
+                </td>
+                <td>
+                  <input type="number"
+                         class="form-control"
+                         [readonly]="modoLectura || login.tipo == 2"
+                         [(ngModel)]="i.total" />
+                </td>
+                <td class="text-center" *ngIf="!modoLectura">
+                  <button type="button"
+                          class="btn btn-primary"
+                          (click)="deleteItem(i)">
+                    <fa name="trash"></fa>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="form-group">
     <button class="btn btn-primary ml-3"
             type="button"
@@ -182,7 +165,7 @@
     <button class="btn btn-outline-secondary ml-2"
             type="button"
             [routerLink]='["/pedidos"]'>
-      <fa name="times-circle"></fa> Cancelar
+      <fa name="reply"></fa> Regresar
     </button>
   </div>
 </div>

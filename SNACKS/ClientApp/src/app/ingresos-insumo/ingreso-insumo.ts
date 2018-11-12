@@ -16,11 +16,11 @@ export interface IIngresoInsumo {
 }
 
 export interface IItemIngresoInsumo {
-  idItemIngresoInsumo: number;
-  ingresoInsumo: IIngresoInsumo;
-  producto: IProducto;
-  unidad: IUnidad;
-  factor: number;
-  cantidad: number;
-  costo: number;
+  idItemIngresoInsumo?: number;
+  ingresoInsumo?: IIngresoInsumo;
+  producto?: IProducto;
+  unidad?: IUnidad;
+  factor?: number;
+  cantidad?: number;
+  costo?: number;
 }

@@ -50,6 +50,9 @@ namespace SNACKS.Controllers
                         case Constantes.Cinco:
                             query = query.Where(x => x.Categoria.IdCategoria == filtro.N);
                             break;
+                        case Constantes.Seis:
+                            query = query.Where(x => x.EsInsumo || x.EsGasto);
+                            break;
                     }
                 }
 

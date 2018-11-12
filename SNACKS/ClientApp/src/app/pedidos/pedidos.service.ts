@@ -32,10 +32,10 @@ export class PedidosService {
   }
 
   delivery(params): Observable<boolean> {
-    return this.http.post<boolean>(this.apiURL + '/Entregar/' + params, params);
+    return this.http.post<boolean>(this.apiURL + '/Entregar', params);
   }
 
   pay(params): Observable<boolean> {
-    return this.http.post<boolean>(this.apiURL + '/Pagar/' + params.idPedido, params.pago);
+    return this.http.post<boolean>(this.apiURL + '/Pagar', params);
   }
 }

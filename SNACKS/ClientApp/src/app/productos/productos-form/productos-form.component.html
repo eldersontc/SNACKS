@@ -40,9 +40,26 @@
       </div>
       <div class="form-group">
         <div class="col-md-12">
-          <div class="custom-control custom-checkbox mt-3">
-            <input type="checkbox" class="custom-control-input" id="esInsumoId" formControlName="esInsumo">
-            <label class="custom-control-label" for="esInsumoId">Es Insumo</label>
+          <div class="custom-control custom-checkbox custom-control-inline mt-3">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   id="esProductoId"
+                   formControlName="esProducto">
+            <label class="custom-control-label" for="esProductoId">Producto</label>
+          </div>
+          <div class="custom-control custom-checkbox custom-control-inline mt-3">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   id="esInsumoId"
+                   formControlName="esInsumo">
+            <label class="custom-control-label" for="esInsumoId">Insumo</label>
+          </div>
+          <div class="custom-control custom-checkbox custom-control-inline mt-3">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   id="esGastoId"
+                   formControlName="esGasto">
+            <label class="custom-control-label" for="esGastoId">Gasto</label>
           </div>
         </div>
       </div>
@@ -116,7 +133,7 @@
         </div>
       </ng-template>
     </ngb-tab>
-    <ngb-tab>
+    <ngb-tab *ngIf="form.value.esProducto">
       <ng-template ngbTabTitle><fa name="angle-double-right"></fa><b> Insumos</b></ng-template>
       <ng-template ngbTabContent>
         <br />

@@ -3,6 +3,9 @@ import { IIngresoInsumo } from './ingreso-insumo';
 import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { IngresosInsumoService } from '../ingresos-insumo/ingresos-insumo.service';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { IAlmacen } from '../almacenes/almacen';
+import { ICaja } from '../cajas/caja';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-ingresos-insumo',
@@ -23,19 +26,29 @@ export class IngresosInsumoComponent implements OnInit {
   seleccion: IIngresoInsumo;
   login: ILogin;
 
+  almacenes: IAlmacen[] = [];
+  cajas: ICaja[] = [];
+
+  almacen: IAlmacen;
+  caja: ICaja;
+
   columnas: string[][] = [
-    ['L','Nro. Ingreso'],
+    ['L','N° Ingreso'],
     ['L','Creado Por'],
     ['L','Fecha Creación'],
-    ['L','Costo']];
+    ['L','Costo (S/.)']];
   atributos: string[][] = [
     ['I','L','idIngresoInsumo'],
     ['S','L','usuario','nombre'],
     ['D','L','fechaCreacion'],
     ['I','L','costo']]
 
+  private readonly notifier: NotifierService;
+
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    notifierService: NotifierService,
     private ingresoInsumoService: IngresosInsumoService) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
   }
 
@@ -75,7 +88,11 @@ export class IngresosInsumoComponent implements OnInit {
 
   deleteIngresoInsumo() {
     this.ingresoInsumoService.deleteIngresoInsumo(this.seleccion.idIngresoInsumo).subscribe(data => this.onDeleteSuccess(),
-      error => console.log(error));
+      error => this.showError(error));
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onDeleteSuccess() {

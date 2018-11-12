@@ -10,6 +10,7 @@ import { AlmacenesService } from '../../almacenes/almacenes.service';
 import { CajasService } from '../../cajas/cajas.service';
 import { IAlmacen } from '../../almacenes/almacen';
 import { ICaja } from '../../cajas/caja';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-ingresos-insumo-form',
@@ -19,23 +20,27 @@ import { ICaja } from '../../cajas/caja';
 export class IngresosInsumoFormComponent implements OnInit {
 
   elegirProducto: boolean = false;
-  modoEdicion: boolean;
+  modoEdicion: boolean = false;
+  modoLectura: boolean = false;
 
   form: FormGroup;
-  formItem: FormGroup;
-
   items: IItemIngresoInsumo[] = [];
   almacenes: IAlmacen[] = [];
-  cajas: ICaja[] = []
+  cajas: ICaja[] = [];
   login: ILogin;
+  insumo: IProducto = {};
+
+  private readonly notifier: NotifierService;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    notifierService: NotifierService,
     private fb: FormBuilder,
     private ingresoInsumoService: IngresosInsumoService,
     private almacenService: AlmacenesService,
     private cajaService: CajasService,
     private router: Router,
     private activatedRoute: ActivatedRoute) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
@@ -44,6 +49,9 @@ export class IngresosInsumoFormComponent implements OnInit {
         return;
       } else {
         this.modoEdicion = true;
+        if (params["mode"]) {
+          this.modoLectura = true;
+        }
         this.ingresoInsumoService.getIngresoInsumo(params["id"])
           .subscribe(ingresoInsumo => this.cargarFormulario(ingresoInsumo),
           error => console.error(error));
@@ -84,32 +92,16 @@ export class IngresosInsumoFormComponent implements OnInit {
       comentario: '',
       costo: 0
     });
-    this.formItem = this.fb.group({
-      producto: this.fb.group({
-        idProducto: 0,
-        nombre: '',
-        items: []
-      }),
-      unidad: '',
-      cantidad: '',
-      costo: '',
-      factor: 0
-    });
   }
-
-  get fi() { return this.formItem.value; }
 
   buscarProducto() {
     this.elegirProducto = true;
   }
 
-  asignarProducto(event: IProducto) {
+  asignarProducto(e: IProducto) {
     this.elegirProducto = false;
-    if (event) {
-      this.formItem.patchValue({
-        producto: event,
-        unidad: event.items[0]
-      });
+    if (e) {
+      this.insumo = e;
     }
   }
 
@@ -125,6 +117,9 @@ export class IngresosInsumoFormComponent implements OnInit {
     this.items = ingresoInsumo.items;
     this.almacenes.push(ingresoInsumo.almacen);
     this.cajas.push(ingresoInsumo.caja);
+    this.items.forEach((i) => {
+      i.producto.items.push({ unidad: i.unidad })
+    });
   }
 
   save() {
@@ -136,12 +131,16 @@ export class IngresosInsumoFormComponent implements OnInit {
     if (this.modoEdicion) {
       this.ingresoInsumoService.updateIngresoInsumo(ingresoInsumo)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     } else {
       this.ingresoInsumoService.createIngresoInsumo(ingresoInsumo)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     }
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onSaveSuccess() {
@@ -149,29 +148,27 @@ export class IngresosInsumoFormComponent implements OnInit {
   }
 
   saveItem() {
-    this.formItem.patchValue({
-      unidad: this.fi.unidad.unidad,
-      factor: this.fi.unidad.factor,
-      producto: { items: [] }
+    this.items.push({
+      producto: this.insumo,
+      unidad: this.insumo.items[0].unidad,
+      factor: this.insumo.items[0].factor,
+      cantidad: 0,
+      costo: 0
     });
-
-    let i: IItemIngresoInsumo = Object.assign({}, this.formItem.value);
-
-    this.onSaveItemSuccess(i);
+    this.insumo = {};
   }
 
-  onSaveItemSuccess(i) {
-    this.items.push(i);
-    this.formItem.reset();
+  setFactor(i: IItemIngresoInsumo) {
+    i.producto.items.forEach((ip) => {
+      if (i.unidad.idUnidad == ip.unidad.idUnidad)
+        i.factor = ip.factor
+    });
   }
 
   deleteItem(i: IItemIngresoInsumo) {
-    this.onDeleteItemSuccess(i);
-  }
-
-  onDeleteItemSuccess(i: IItemIngresoInsumo) {
     this.items.forEach((item, index) => {
-      if (item.idItemIngresoInsumo === i.idItemIngresoInsumo) this.items.splice(index, 1);
+      if (item.producto.idProducto === i.producto.idProducto)
+        this.items.splice(index, 1);
     });
   }
 

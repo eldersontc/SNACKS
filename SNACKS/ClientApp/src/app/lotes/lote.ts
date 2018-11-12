@@ -9,7 +9,7 @@ export interface ILote {
 }
 
 export interface IItemLote {
-  idItemLote: number;
-  idLote: number;
-  producto: IProducto;
+  idItemLote?: number;
+  idLote?: number;
+  producto?: IProducto;
 }

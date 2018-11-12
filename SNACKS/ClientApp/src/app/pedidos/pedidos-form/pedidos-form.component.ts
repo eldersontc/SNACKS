@@ -7,6 +7,7 @@ import { IFiltro, ILogin } from '../../generico/generico';
 import { IPersona } from '../../personas/persona';
 import { IProducto } from '../../productos/producto';
 import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-pedidos-form',
@@ -15,19 +16,35 @@ import { WebStorageService, LOCAL_STORAGE } from 'angular-webstorage-service';
 })
 export class PedidosFormComponent implements OnInit {
 
-  filtrosCliente: IFiltro[] = [];
-  filtrosProducto: IFiltro[] = [];
+  fCliente: IFiltro[] = [];
   elegirCliente: boolean = false;
   elegirProducto: boolean = false;
 
   login: ILogin
 
+  private readonly notifier: NotifierService;
+
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
+    notifierService: NotifierService,
     private pedidoService: PedidosService,
     private router: Router,
     private activatedRoute: ActivatedRoute) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
+    this.activatedRoute.params.subscribe(params => {
+      if (params["id"] == undefined) {
+        return;
+      } else {
+        this.modoEdicion = true;
+        if (params["mode"]) {
+          this.modoLectura = true;
+        }
+        this.pedidoService.getPedido(params["id"])
+          .subscribe(pedido => this.cargarFormulario(pedido),
+          error => console.error(error));
+      }
+    });
   }
 
   modoEdicion: boolean = false;
@@ -37,27 +54,35 @@ export class PedidosFormComponent implements OnInit {
 
   items: IItemPedido[] = [];
 
+  producto: IProducto = { };
+
   ngOnInit() {
     
-    this.filtrosCliente.push({ k: 1, v: 'Cliente', n: 2 });
-    this.filtrosProducto.push({ k: 2, v: 'Producto', b: false });
-
+    this.fCliente.push({
+        k: 1,
+        v: 'Cliente',
+        n: 2
+      });
+    
     if (this.login.tipo == 3) {
-      this.filtrosCliente.push({ k: 6, v: this.login.nombrePersona, n: this.login.idPersona });
+      this.fCliente.push({
+        k: 6,
+        v: this.login.nombrePersona,
+        n: this.login.idPersona
+      });
     }
 
     this.form = this.fb.group({
       idPedido: 0,
-      fechaCreacion: new Date(),
       fechaPropuesta: new Date(),
       cliente: this.fb.group({
         idPersona: 0,
         razonSocial: ''
       }),
       comentario: '',
-      total: 0,
-      estado: ''
+      total: 0
     });
+
     if (this.login.tipo == 2) {
       this.form.patchValue({
         cliente: {
@@ -66,32 +91,8 @@ export class PedidosFormComponent implements OnInit {
         }
       });
     }
-    this.formItem = this.fb.group({
-      producto: this.fb.group({
-        idProducto: 0,
-        nombre: '',
-        items: []
-      }),
-      unidad: '',
-      cantidad: '',
-      factor: 0,
-      total: 0
-    });
-    this.activatedRoute.params.subscribe(params => {
-      if (params["id"] == undefined) {
-        return;
-      } else {
-        this.modoEdicion = true;
-        if (params["mode"]) {
-          this.modoLectura = true;
-        }
-        this.pedidoService.getPedido(params["id"]).subscribe(pedido => this.cargarFormulario(pedido),
-          error => console.error(error));
-      }
-    });
-  }
 
-  get fi() { return this.formItem.value; }
+  }
 
   buscarCliente() {
     this.elegirCliente = true;
@@ -110,27 +111,25 @@ export class PedidosFormComponent implements OnInit {
     }
   }
 
-  asignarProducto(event: IProducto) {
+  asignarProducto(e: IProducto) {
     this.elegirProducto = false;
-    if (event) {
-      this.formItem.patchValue({
-        producto: event,
-        unidad: event.items[0]
-      });
+    if (e) {
+      this.producto = e;
     }
   }
 
   cargarFormulario(pedido: IPedido) {
     this.form.patchValue({
       idPedido: pedido.idPedido,
-      fechaCreacion: new Date(pedido.fechaCreacion),
       fechaPropuesta: new Date(pedido.fechaPropuesta),
       cliente: pedido.cliente,
       comentario: pedido.comentario,
-      total: pedido.total,
-      estado: pedido.estado
+      total: pedido.total
     });
     this.items = pedido.items;
+    this.items.forEach((i) => {
+      i.producto.items.push({ unidad: i.unidad });
+    });
   }
 
   save() {
@@ -142,43 +141,44 @@ export class PedidosFormComponent implements OnInit {
     if (this.modoEdicion) {
       this.pedidoService.updatePedido(pedido)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     } else {
       this.pedidoService.createPedido(pedido)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     }
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onSaveSuccess() {
     this.router.navigate(["/pedidos"]);
   }
 
-  saveItem() {
-    this.formItem.patchValue({
-      unidad: this.fi.unidad.unidad,
-      factor: this.fi.unidad.factor,
-      producto: { items: [] }
+  setFactor(i: IItemPedido) {
+    i.producto.items.forEach((ip) => {
+      if (i.unidad.idUnidad == ip.unidad.idUnidad)
+        i.factor = ip.factor
     });
-
-    let i: IItemPedido = Object.assign({}, this.formItem.value);
-
-    this.onSaveItemSuccess(i);
   }
 
-  onSaveItemSuccess(i) {
-    this.items.push(i);
-    this.formItem.reset();
-    this.formItem.patchValue({ total: 0 });
+  saveItem() {
+    this.items.push({
+      producto: this.producto,
+      unidad: this.producto.items[0].unidad,
+      factor: this.producto.items[0].factor,
+      cantidad: 0,
+      total: 0
+    });
+    this.producto = {};
   }
 
   deleteItem(i: IItemPedido) {
-    this.onDeleteItemSuccess(i);
-  }
-
-  onDeleteItemSuccess(i: IItemPedido) {
     this.items.forEach((item, index) => {
-      if (item.idItemPedido === i.idItemPedido) this.items.splice(index, 1);
+      if (item.producto.idProducto === i.producto.idProducto)
+        this.items.splice(index, 1);
     });
   }
 

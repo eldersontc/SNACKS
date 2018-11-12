@@ -9,6 +9,7 @@ import { LotesService } from '../../lotes/lotes.service';
 import { IItemLote } from '../../lotes/lote';
 import { IAlmacen } from '../../almacenes/almacen';
 import { AlmacenesService } from '../../almacenes/almacenes.service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-ingresos-producto-form',
@@ -18,21 +19,25 @@ import { AlmacenesService } from '../../almacenes/almacenes.service';
 export class IngresosProductoFormComponent implements OnInit {
 
   modoEdicion: boolean;
+  modoLectura: boolean;
 
   form: FormGroup;
-  formItem: FormGroup;
 
   items: IItemIngresoProducto[] = [];
   almacenes: IAlmacen[] = [];
   login: ILogin;
 
+  private readonly notifier: NotifierService;
+
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
+    notifierService: NotifierService,
     private ingresoProductoService: IngresosProductoService,
     private loteService: LotesService,
     private almacenService: AlmacenesService,
     private router: Router,
     private activatedRoute: ActivatedRoute) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
     this.activatedRoute.params.subscribe(params => {
       if (params["id"] == undefined) {
@@ -40,6 +45,9 @@ export class IngresosProductoFormComponent implements OnInit {
         return;
       } else {
         this.modoEdicion = true;
+        if (params["mode"]) {
+          this.modoLectura = true;
+        }
         this.ingresoProductoService
           .getIngresoProducto(params["id"])
           .subscribe(ingresoProducto => this.cargarFormulario(ingresoProducto),
@@ -79,6 +87,7 @@ export class IngresosProductoFormComponent implements OnInit {
   }
 
   cargarProductos(data: IItemLote[]) {
+    this.items = [];
     data.forEach((d) => {
       this.items.push({
         producto: d.producto,
@@ -120,16 +129,26 @@ export class IngresosProductoFormComponent implements OnInit {
     if (this.modoEdicion) {
       this.ingresoProductoService.updateIngresoProducto(ingresoProducto)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     } else {
       this.ingresoProductoService.createIngresoProducto(ingresoProducto)
         .subscribe(data => this.onSaveSuccess(),
-          error => console.error(error));
+        error => this.showError(error));
     }
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onSaveSuccess() {
     this.router.navigate(["/ingresos-producto"]);
   }
 
+  deleteItem(i: IItemIngresoProducto) {
+    this.items.forEach((item, index) => {
+      if (item.producto.idProducto === i.producto.idProducto)
+        this.items.splice(index, 1);
+    });
+  }
 }

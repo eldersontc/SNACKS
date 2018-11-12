@@ -15,8 +15,7 @@ import { ILogin } from '../../generico/generico';
 })
 export class MovimientosCajaFormComponent implements OnInit {
 
-  caja: ICaja;
-  nombreCaja: string;
+  caja: ICaja = {};
   login: ILogin;
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
@@ -48,7 +47,6 @@ export class MovimientosCajaFormComponent implements OnInit {
 
   getCajaSuccess(caja: ICaja) {
     this.caja = caja;
-    this.nombreCaja = caja.nombre;
   }
 
   save() {

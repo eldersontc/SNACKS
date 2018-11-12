@@ -5,6 +5,11 @@ import { PedidosService } from './pedidos.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { IPersona } from '../personas/persona';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
+import { IAlmacen } from '../almacenes/almacen';
+import { ICaja } from '../cajas/caja';
+import { AlmacenesService } from '../almacenes/almacenes.service';
+import { CajasService } from '../cajas/cajas.service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-pedidos',
@@ -16,7 +21,7 @@ export class PedidosComponent implements OnInit {
   @Input() extern: IFiltro[];
   @Output() select = new EventEmitter();
 
-  filtrosCliente: IFiltro[] = [];
+  fCliente: IFiltro[] = [];
   elegirCliente: boolean = false;
 
   pagina: number = 1;
@@ -26,8 +31,13 @@ export class PedidosComponent implements OnInit {
   criterio: number = 1;
   busqueda: Date;
   seleccion: IPedido;
-  montoPago: number;
   login: ILogin;
+
+  almacenes: IAlmacen[] = [];
+  cajas: ICaja[] = [];
+  almacen: IAlmacen;
+  caja: ICaja;
+  importe: number;
 
   columnas: string[][] = [
     ['L', 'Nro. Pedido'],
@@ -42,25 +52,48 @@ export class PedidosComponent implements OnInit {
     ['D', 'L', 'fechaCreacion'],
     ['S', 'L', 'estado']]
 
+  private readonly notifier: NotifierService;
+
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    notifierService: NotifierService,
     private pedidoService: PedidosService,
+    private almacenService: AlmacenesService,
+    private cajaService: CajasService,
     config: NgbModalConfig,
     private modalService: NgbModal) {
     config.backdrop = 'static';
     config.keyboard = false;
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
   }
 
   ngOnInit() {
-    this.filtrosCliente.push({ k: 1, v: 'Cliente', n: 2 });
+    this.fCliente.push({
+      k: 1,
+      v: 'Cliente',
+      n: 2
+    });
     if (this.login.tipo == 2) {
       this.extern = [];
-      this.extern.push({ k: 3, v: this.login.nombrePersona, n: this.login.idPersona })
+      this.extern.push({
+        k: 3,
+        v: this.login.nombrePersona,
+        n: this.login.idPersona
+      })
       this.criterio = 2;
     }
     if (this.login.tipo == 3) {
       this.extern = [];
-      this.extern.push({ k: 4, v: this.login.nombrePersona, n: this.login.idPersona })
+      this.extern.push({
+        k: 4,
+        v: this.login.nombrePersona,
+        n: this.login.idPersona
+      });
+      this.fCliente.push({
+        k: 6,
+        v: this.login.nombrePersona,
+        n: this.login.idPersona
+      });
     }
     this.getPedidos();
   }
@@ -109,20 +142,27 @@ export class PedidosComponent implements OnInit {
     }
   }
 
-  openDelivery(content) {
+  openEntrega(content) {
+    this.getAlmacenes();
     this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Entregar') { this.delivery(); } });
+      .result.then((result) => { if (result == 'Entregar') { this.entregar(); } });
   }
 
-  openPay(content) {
-    this.montoPago = this.seleccion.total - this.seleccion.pago;
+  openPago(content) {
+    this.getCajas();
+    this.importe = this.seleccion.total - this.seleccion.pago;
     this.modalService.open(content, { centered: true, size: 'sm' })
-      .result.then((result) => { if (result == 'Pagar') { this.pay(); } });
+      .result.then((result) => { if (result == 'Pagar') { this.pagar(); } });
   }
 
   delete() {
-    this.pedidoService.deletePedido(this.seleccion.idPedido).subscribe(data => this.onProcessSuccess(),
-      error => console.log(error));
+    this.pedidoService.deletePedido(this.seleccion.idPedido)
+      .subscribe(data => this.onProcessSuccess(),
+      error => this.showError(error));
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onProcessSuccess() {
@@ -130,15 +170,48 @@ export class PedidosComponent implements OnInit {
     this.getPedidos();
   }
 
-  delivery() {
-    this.pedidoService.delivery(this.seleccion.idPedido)
-      .subscribe(data => this.onProcessSuccess(),
-        error => console.log(error));
+  getAlmacenes() {
+    this.almacenService.getAll()
+      .subscribe(d => this.onGetAlmacenesSuccess(d), error => console.error(error));
   }
 
-  pay() {
-    this.pedidoService.pay({ idPedido: this.seleccion.idPedido, pago: this.montoPago })
+  onGetAlmacenesSuccess(d) {
+    this.almacenes = d;
+    if (this.almacenes.length > 0) {
+      this.almacen = this.almacenes[0];
+    }
+  }
+
+  getCajas() {
+    this.cajaService.getAll()
+      .subscribe(d => this.onGetCajasSuccess(d), error => console.error(error));
+  }
+
+  onGetCajasSuccess(d) {
+    this.cajas = d;
+    if (this.cajas.length > 0) {
+      this.caja = this.cajas[0];
+    }
+  }
+
+  entregar() {
+    this.pedidoService.delivery({
+      idPedido: this.seleccion.idPedido,
+      usuario: { idUsuario: this.login.id },
+      almacen: this.almacen
+    })
       .subscribe(data => this.onProcessSuccess(),
-        error => console.log(error));
+      error => this.showError(error));
+  }
+
+  pagar() {
+    this.pedidoService.pay({
+      idPedido: this.seleccion.idPedido,
+      usuario: { idUsuario: this.login.id },
+      idCaja: this.caja.idCaja,
+      importe: this.importe
+    })
+      .subscribe(data => this.onProcessSuccess(),
+      error => this.showError(error));
   }
 }

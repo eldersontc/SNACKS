@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { AngularFontAwesomeModule } from 'angular-font-awesome';
 import { NgbModule, NgbPaginationModule, NgbModalConfig, NgbModal, NgbDatepickerI18n, NgbDateAdapter, NgbDateParserFormatter  } from '@ng-bootstrap/ng-bootstrap';
 import { StorageServiceModule } from 'angular-webstorage-service';
+import { NotifierModule, NotifierOptions } from 'angular-notifier';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -66,6 +67,20 @@ import { MovimientosCajaComponent } from './movimientos-caja/movimientos-caja.co
 import { MovimientosCajaFormComponent } from './movimientos-caja/movimientos-caja-form/movimientos-caja-form.component';
 import { MovimientosCajaService } from './movimientos-caja/movimientos-caja.service';
 
+const customNotifierOptions: NotifierOptions = {
+  position: {
+    horizontal: {
+      position: 'left',
+      distance: 12
+    },
+    vertical: {
+      position: 'top',
+      distance: 12,
+      gap: 10
+    }
+  }
+};
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -117,6 +132,7 @@ import { MovimientosCajaService } from './movimientos-caja/movimientos-caja.serv
     FormsModule,
     ReactiveFormsModule,
     AngularFontAwesomeModule,
+    NotifierModule.withConfig(customNotifierOptions),
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'counter', component: CounterComponent },
@@ -143,15 +159,19 @@ import { MovimientosCajaService } from './movimientos-caja/movimientos-caja.serv
       { path: 'ingresos-insumo', component: IngresosInsumoComponent },
       { path: 'ingresos-insumo-form', component: IngresosInsumoFormComponent },
       { path: 'ingresos-insumo-form/:id', component: IngresosInsumoFormComponent },
+      { path: 'ingresos-insumo-form/:mode/:id', component: IngresosInsumoFormComponent },
       { path: 'salidas-insumo', component: SalidasInsumoComponent },
       { path: 'salidas-insumo-form', component: SalidasInsumoFormComponent },
       { path: 'salidas-insumo-form/:id', component: SalidasInsumoFormComponent },
+      { path: 'salidas-insumo-form/:mode/:id', component: SalidasInsumoFormComponent },
       { path: 'ingresos-producto', component: IngresosProductoComponent },
       { path: 'ingresos-producto-form', component: IngresosProductoFormComponent },
       { path: 'ingresos-producto-form/:id', component: IngresosProductoFormComponent },
+      { path: 'ingresos-producto-form/:mode/:id', component: IngresosProductoFormComponent },
       { path: 'salidas-producto', component: SalidasProductoComponent },
       { path: 'salidas-producto-form', component: SalidasProductoFormComponent },
       { path: 'salidas-producto-form/:id', component: SalidasProductoFormComponent },
+      { path: 'salidas-producto-form/:mode/:id', component: SalidasProductoFormComponent },
       { path: 'reportes', component: ReportesComponent },
       { path: 'reportes-form', component: ReportesFormComponent },
       { path: 'reportes-form/:id', component: ReportesFormComponent },

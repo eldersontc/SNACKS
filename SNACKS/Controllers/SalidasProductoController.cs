@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate;
+using NHibernate.Linq;
 using SNACKS.Data;
 using SNACKS.Models;
 
@@ -13,20 +15,9 @@ namespace SNACKS.Controllers
     [Produces("application/json")]
     [Route("api/SalidasProducto")]
     [ApiController]
-    public class SalidasProductoController : ControllerBase
+    public class SalidasProductoController : UtilController
     {
-        public IRepositorioBase<SalidaProducto> Repositorio { get; }
-        public IRepositorioBase<ItemSalidaProducto> RepositorioItem { get; }
-        public IRepositorioBase<InventarioProducto> RepositorioInventario { get; }
-
-        public SalidasProductoController(IRepositorioBase<SalidaProducto> repositorio,
-            IRepositorioBase<ItemSalidaProducto> repositorioItem,
-            IRepositorioBase<InventarioProducto> repositorioInventario)
-        {
-            Repositorio = repositorio;
-            RepositorioItem = repositorioItem;
-            RepositorioInventario = repositorioInventario;
-        }
+        public SalidasProductoController(ISessionFactory factory) : base(factory) { }
 
         [HttpPost("GetSalidasProducto")]
         public async Task<IActionResult> GetSalidasProducto([FromBody] Paginacion paginacion)
@@ -36,21 +27,37 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var filtros = new List<Expression<Func<SalidaProducto, bool>>>();
+            List<SalidaProducto> lista = null;
+            int totalRegistros = 0;
 
-            foreach (Filtro filtro in paginacion.Filtros)
+            using (var sn = factory.OpenSession())
             {
-                switch (filtro.K)
+                IQueryable<SalidaProducto> query = sn.Query<SalidaProducto>();
+
+                foreach (Filtro filtro in paginacion.Filtros)
                 {
-                    case Constantes.Uno:
-                        filtros.Add(x => x.FechaCreacion.Date == filtro.D.Date);
-                        break;
+                    switch (filtro.K)
+                    {
+                        case Constantes.Uno:
+                            query = query.Where(x => x.FechaCreacion.Date == filtro.D.Date);
+                            break;
+                    }
                 }
+
+                totalRegistros = await query.CountAsync();
+
+                AsignarPaginacion(paginacion, ref query);
+
+                query = query.OrderByDescending(x => x.FechaCreacion);
+
+                lista = await query.ToListAsync();
             }
 
-            var result = await Repositorio.ObtenerTodosAsync(paginacion, filtros, new string[] { Constantes.Usuario }, (x => x.FechaCreacion));
-
-            return Ok(result);
+            return Ok(new
+            {
+                Lista = lista,
+                TotalRegistros = totalRegistros
+            });
         }
 
         [HttpGet("{id}")]
@@ -61,18 +68,20 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var ingresoProducto = await Repositorio.ObtenerAsync(id, new string[] {
-                Constantes.Usuario,
-                Constantes.Items + '.' + Constantes.Producto,
-                Constantes.Items + '.' + Constantes.Unidad
-            });
+            SalidaProducto salidaProducto = null;
 
-            if (ingresoProducto == null)
+            using (var sn = factory.OpenSession())
+            {
+                salidaProducto = await sn.GetAsync<SalidaProducto>(id);
+                salidaProducto.Items = await sn.Query<ItemSalidaProducto>().Where(x => x.IdSalidaProducto == id).ToListAsync();
+            }
+
+            if (salidaProducto == null)
             {
                 return NotFound();
             }
 
-            return Ok(ingresoProducto);
+            return Ok(salidaProducto);
         }
 
         [HttpPut("{id}")]
@@ -88,74 +97,61 @@ namespace SNACKS.Controllers
                 return BadRequest();
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                /* Eliminación de los anteriores items */
-                List<ItemSalidaProducto> items = await RepositorioItem.ObtenerTodosAsync(
-                    new List<Expression<Func<ItemSalidaProducto, bool>>>() {
-                    (x => x.SalidaProducto.IdSalidaProducto == id)
-                },
-                    new string[] {
-                    Constantes.Producto,
-                    Constantes.Unidad
-                });
-
-                foreach (var item in items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioProducto, bool>>>() {
-                        (x => x.IdProducto == item.Producto.IdProducto)
-                    };
-                    List<InventarioProducto> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0)
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        List<ItemSalidaProducto> items = await sn.Query<ItemSalidaProducto>()
+                            .Where(x => x.IdSalidaProducto == id)
+                            .ToListAsync();
+
+                        foreach (var item in items)
+                        {
+                            InventarioProducto inventario = await sn.Query<InventarioProducto>()
+                                .Where(x => x.IdAlmacen == salidaProducto.Almacen.IdAlmacen
+                                    && x.IdProducto == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                        }
+
+                        sn.Delete(string.Format("FROM ItemSalidaProducto WHERE IdSalidaProducto = {0}", id));
+
+                        foreach (var item in salidaProducto.Items)
+                        {
+                            InventarioProducto inventario = await sn.Query<InventarioProducto>()
+                                .Where(x => x.IdAlmacen == salidaProducto.Almacen.IdAlmacen
+                                    && x.IdProducto == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                            {
+                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                            }
+                            else
+                            {
+                                throw new Exception("No hay stock disponible.");
+                            }
+
+                            item.IdSalidaProducto = salidaProducto.IdSalidaProducto;
+
+                            sn.Save(item);
+                        }
+
+                        SalidaProducto salidaProductoBD = sn.Get<SalidaProducto>(id);
+
+                        salidaProductoBD.Comentario = salidaProducto.Comentario;
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-
-                await RepositorioItem.EliminarAsync(items.ToArray(), false);
-
-                /* Registro de los nuevos items */
-                List<object> referencias = new List<object>();
-
-                foreach (var item in salidaProducto.Items)
-                {
-                    item.SalidaProducto = new SalidaProducto { IdSalidaProducto = id };
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                }
-
-                RepositorioItem.AgregarReferencias(referencias.ToArray());
-                await RepositorioItem.RegistrarAsync(salidaProducto.Items.ToArray(), false);
-
-                foreach (var item in salidaProducto.Items)
-                {
-                    var filtros = new List<Expression<Func<InventarioProducto, bool>>>() {
-                        (x => x.IdProducto == item.Producto.IdProducto)
-                    };
-                    List<InventarioProducto> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
-                    {
-                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
-                    }
-                    else
-                    {
-                        return StatusCode(500, "No hay stock disponible.");
-                    }
-                }
-
-                /* Actualización de la cabecera */
-                Repositorio.AgregarReferencias(new object[] { salidaProducto, salidaProducto.Usuario });
-                await Repositorio.ActualizarAsync(salidaProducto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -169,41 +165,45 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            using (var sn = factory.OpenSession())
             {
-                foreach (var item in salidaProducto.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioProducto, bool>>>() {
-                        (x => x.IdProducto == item.Producto.IdProducto)
-                    };
-                    List<InventarioProducto> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0 && inventarios[0].Stock >= (item.Cantidad * item.Factor))
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock - (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        salidaProducto.FechaCreacion = DateTime.Now;
+
+                        sn.Save(salidaProducto);
+
+                        foreach (var item in salidaProducto.Items)
+                        {
+                            InventarioProducto inventario = await sn.Query<InventarioProducto>()
+                                .Where(x => x.IdAlmacen == salidaProducto.Almacen.IdAlmacen
+                                    && x.IdProducto == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            if (inventario != null && inventario.Stock >= (item.Cantidad * item.Factor))
+                            {
+                                inventario.Stock = inventario.Stock - (item.Cantidad * item.Factor);
+                            }
+                            else
+                            {
+                                throw new Exception("No hay stock disponible.");
+                            }
+
+                            item.IdSalidaProducto = salidaProducto.IdSalidaProducto;
+
+                            sn.Save(item);
+                        }
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-
-                List<object> referencias = new List<object>() { salidaProducto.Usuario };
-
-                foreach (var item in salidaProducto.Items)
-                {
-                    referencias.Add(item.Producto);
-                    referencias.Add(item.Unidad);
-                }
-
-                salidaProducto.FechaCreacion = DateTime.Now;
-
-                Repositorio.AgregarReferencias(referencias.ToArray());
-                await Repositorio.RegistrarAsync(salidaProducto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);
@@ -217,38 +217,60 @@ namespace SNACKS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var salidaProducto = await Repositorio.ObtenerAsync(id, new string[] {
-                Constantes.Items + '.' + Constantes.Producto
-            });
-            if (salidaProducto == null)
+            using (var sn = factory.OpenSession())
             {
-                return NotFound();
-            }
-
-            try
-            {
-                foreach (var item in salidaProducto.Items)
+                using (var tx = sn.BeginTransaction())
                 {
-                    var filtros = new List<Expression<Func<InventarioProducto, bool>>>() {
-                        (x => x.IdProducto == item.Producto.IdProducto)
-                    };
-                    List<InventarioProducto> inventarios = await RepositorioInventario.ObtenerTodosAsync(filtros);
-                    if (inventarios.Count > 0)
+                    try
                     {
-                        inventarios[0].Stock = inventarios[0].Stock + (item.Cantidad * item.Factor);
-                        await RepositorioInventario.ActualizarAsync(inventarios[0], Confirmar: false);
+                        SalidaProducto salidaProducto = sn.Get<SalidaProducto>(id);
+
+                        List<ItemSalidaProducto> items = await sn.Query<ItemSalidaProducto>()
+                            .Where(x => x.IdSalidaProducto == id)
+                            .ToListAsync();
+
+                        foreach (var item in items)
+                        {
+                            InventarioProducto inventario = await sn.Query<InventarioProducto>()
+                                .Where(x => x.IdAlmacen == salidaProducto.Almacen.IdAlmacen
+                                    && x.IdProducto == item.Producto.IdProducto)
+                                .FirstOrDefaultAsync();
+
+                            inventario.Stock = inventario.Stock + (item.Cantidad * item.Factor);
+                        }
+
+                        sn.Delete(string.Format("FROM ItemSalidaProducto WHERE IdSalidaProducto = {0}", id));
+
+                        if (salidaProducto.IdPedido != null)
+                        {
+                            Pedido pedido = sn.Get<Pedido>(salidaProducto.IdPedido);
+
+                            pedido.FechaEntrega = null;
+
+                            if (pedido.Pago == 0)
+                            {
+                                pedido.Estado = Constantes.Pendiente;
+                            }
+                            else if (pedido.Pago == pedido.Total)
+                            {
+                                pedido.Estado = Constantes.Pagado;
+                            }
+                            else if (pedido.Pago < pedido.Total)
+                            {
+                                pedido.Estado = Constantes.PagoParcial;
+                            }
+                        }
+
+                        sn.Delete(salidaProducto);
+
+                        await tx.CommitAsync();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        return StatusCode(500, "No hay stock disponible.");
+                        await tx.RollbackAsync();
+                        return StatusCode(500, ex.Message);
                     }
                 }
-                await RepositorioItem.EliminarAsync(salidaProducto.Items.ToArray(), false);
-                await Repositorio.EliminarAsync(salidaProducto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
 
             return Ok(true);

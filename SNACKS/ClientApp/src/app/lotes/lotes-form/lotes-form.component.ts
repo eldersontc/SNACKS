@@ -14,10 +14,13 @@ import { IProducto } from '../../productos/producto';
 })
 export class LotesFormComponent implements OnInit {
 
-  filtrosProducto: IFiltro[] = [];
+  modoEdicion: boolean = false;
   elegirProducto: boolean = false;
 
+  form: FormGroup;
   login: ILogin;
+  items: IItemLote[] = [];
+  producto: IProducto = {};
 
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
     private fb: FormBuilder,
@@ -36,28 +39,12 @@ export class LotesFormComponent implements OnInit {
     });
   }
 
-  modoEdicion: boolean;
-  form: FormGroup;
-  formItem: FormGroup;
-
-  items: IItemLote[] = [];
-
   ngOnInit() {
-    this.filtrosProducto.push({ k: 2, v: 'Producto', b: false });
     this.form = this.fb.group({
       idLote: 0,
       fecha: new Date()
     });
-    this.formItem = this.fb.group({
-      producto: this.fb.group({
-        idProducto: 0,
-        nombre: '',
-        items: []
-      })
-    });
   }
-
-  get fi() { return this.formItem.value; }
 
   buscarProducto() {
     this.elegirProducto = true;
@@ -66,9 +53,7 @@ export class LotesFormComponent implements OnInit {
   asignarProducto(e: IProducto) {
     this.elegirProducto = false;
     if (e) {
-      this.formItem.patchValue({
-        producto: e
-      });
+      this.producto = e;
     }
   }
 
@@ -102,23 +87,14 @@ export class LotesFormComponent implements OnInit {
   }
 
   saveItem() {
-    let i: IItemLote = Object.assign({}, this.formItem.value);
-
-    this.onSaveItemSuccess(i);
-  }
-
-  onSaveItemSuccess(i) {
-    this.items.push(i);
-    this.formItem.reset();
+    this.items.push({ producto: this.producto });
+    this.producto = {};
   }
 
   deleteItem(i: IItemLote) {
-    this.onDeleteItemSuccess(i);
-  }
-
-  onDeleteItemSuccess(i: IItemLote) {
     this.items.forEach((item, index) => {
-      if (item.idItemLote === i.idItemLote) this.items.splice(index, 1);
+      if (item.producto.idProducto === i.producto.idProducto)
+        this.items.splice(index, 1);
     });
   }
 

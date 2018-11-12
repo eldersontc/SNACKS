@@ -140,7 +140,10 @@ namespace SNACKS.Controllers
                             sn.Save(item);
                         }
 
-                        sn.SaveOrUpdate(salidaInsumo);
+                        SalidaInsumo salidaInsumoBD = sn.Get<SalidaInsumo>(id);
+
+                        salidaInsumoBD.IdLote = salidaInsumo.IdLote;
+                        salidaInsumoBD.Comentario = salidaInsumo.Comentario;
 
                         await tx.CommitAsync();
                     }

@@ -18,18 +18,21 @@ export class ProductosComponent implements OnInit {
   productos: IProducto[];
   filtros: IFiltro[] = [];
   criterio: number = 1;
-  criterioCk: boolean = false;
   busqueda: string = '';
   seleccion: IProducto;
 
   columnas: string[][] = [
     ['L', 'Nombre'],
     ['L', 'Categoria'],
-    ['C', 'Es Insumo']];
+    ['C', 'Producto'],
+    ['C', 'Insumo'],
+    ['C', 'Gasto']];
   atributos: string[][] = [
     ['S', 'L', 'nombre'],
     ['S', 'L', 'categoria', 'nombre'],
-    ['B', 'C', 'esInsumo']]
+    ['B', 'C', 'esProducto'],
+    ['B', 'C', 'esInsumo'],
+    ['B', 'C', 'esGasto']]
 
   constructor(private productoService: ProductosService) { }
 
@@ -63,14 +66,9 @@ export class ProductosComponent implements OnInit {
   }
 
   buscar() {
-    if (this.criterio == 1) {
-      if (this.busqueda.length > 0) {
-        this.filtros.push({ k: this.criterio, v: this.busqueda });
-        this.busqueda = '';
-        this.getProductos();
-      }
-    } else {
-      this.filtros.push({ k: this.criterio, v: 'Es Insumo : ' + ((this.criterioCk) ? 'Si' : 'No'), b: this.criterioCk });
+    if (this.busqueda.length > 0) {
+      this.filtros.push({ k: this.criterio, v: this.busqueda });
+      this.busqueda = '';
       this.getProductos();
     }
   }

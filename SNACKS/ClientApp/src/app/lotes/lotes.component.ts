@@ -24,7 +24,7 @@ export class LotesComponent implements OnInit {
   login: ILogin;
 
   columnas: string[][] = [
-    ['L', 'Nro. Lote'],
+    ['L', 'N° Lote'],
     ['L', 'Creado Por'],
     ['L', 'Fecha']];
   atributos: string[][] = [

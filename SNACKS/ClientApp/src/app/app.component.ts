@@ -135,6 +135,7 @@ export class AppComponent {
         {
           nombre: 'Producción', icono: 'industry',
           subOpciones: [
+            { nombre: 'Lotes', icono: 'archive', link: 'lotes' },
             { nombre: 'Ingresos Insumo', icono: 'file-import', link: 'ingresos-insumo' },
             { nombre: 'Salidas Insumo', icono: 'file-export', link: 'salidas-insumo' },
             { nombre: 'Ingresos Producto', icono: 'file-import', link: 'ingresos-producto' },

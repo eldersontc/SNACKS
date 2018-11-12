@@ -27,55 +27,16 @@ namespace SNACKS
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            //services.AddDefaultIdentity<IdentityUser>()
-            //    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddScoped<IRepositorioBase<Usuario>, RepositorioBase<Usuario>>();
-            services.AddScoped<IRepositorioBase<Persona>, RepositorioBase<Persona>>();
-            services.AddScoped<IRepositorioBase<Unidad>, RepositorioBase<Unidad>>();
-            services.AddScoped<IRepositorioBase<Categoria>, RepositorioBase<Categoria>>();
-            services.AddScoped<IRepositorioBase<Producto>, RepositorioBase<Producto>>();
-            services.AddScoped<IRepositorioBase<ItemProducto>, RepositorioBase<ItemProducto>>();
-            services.AddScoped<IRepositorioBase<Pedido>, RepositorioBase<Pedido>>();
-            services.AddScoped<IRepositorioBase<ItemPedido>, RepositorioBase<ItemPedido>>();
-            services.AddScoped<IRepositorioBase<IngresoInsumo>, RepositorioBase<IngresoInsumo>>();
-            services.AddScoped<IRepositorioBase<ItemIngresoInsumo>, RepositorioBase<ItemIngresoInsumo>>();
-            services.AddScoped<IRepositorioBase<IngresoProducto>, RepositorioBase<IngresoProducto>>();
-            services.AddScoped<IRepositorioBase<ItemIngresoProducto>, RepositorioBase<ItemIngresoProducto>>();
-            services.AddScoped<IRepositorioBase<SalidaInsumo>, RepositorioBase<SalidaInsumo>>();
-            services.AddScoped<IRepositorioBase<ItemSalidaInsumo>, RepositorioBase<ItemSalidaInsumo>>();
-            services.AddScoped<IRepositorioBase<SalidaProducto>, RepositorioBase<SalidaProducto>>();
-            services.AddScoped<IRepositorioBase<ItemSalidaProducto>, RepositorioBase<ItemSalidaProducto>>();
-            services.AddScoped<IRepositorioBase<Reporte>, RepositorioBase<Reporte>>();
-            services.AddScoped<IRepositorioBase<ItemReporte>, RepositorioBase<ItemReporte>>();
-            services.AddScoped<IRepositorioBase<InventarioInsumo>, RepositorioBase<InventarioInsumo>>();
-            services.AddScoped<IRepositorioBase<InventarioProducto>, RepositorioBase<InventarioProducto>>();
-            services.AddScoped<IRepositorioBase<ZonaVenta>, RepositorioBase<ZonaVenta>>();
-            services.AddScoped<IRepositorioBase<Caja>, RepositorioBase<Caja>>();
-            services.AddScoped<IRepositorioBase<Almacen>, RepositorioBase<Almacen>>();
-            services.AddScoped<IRepositorioBase<MovimientoCaja>, RepositorioBase<MovimientoCaja>>();
-
-
-
             //NHibernate
             services.AddSingleton<ISessionFactory>((provider) => {
                 return Fluently.Configure()
                 .Database(FluentNHibernate.Cfg.Db.MsSqlConfiguration.MsSql2012
                 .ConnectionString(Configuration.GetConnectionString("DefaultConnection")).ShowSql())
-                .Mappings(m => m.FluentMappings.AddFromAssemblyOf<Unidad>().Conventions.Add(DefaultLazy.Never()))
+                .Mappings(m => m.FluentMappings.AddFromAssemblyOf<Pedido>().Conventions.Add(DefaultLazy.Never()))
                 .BuildSessionFactory();
             });
 
             services.AddScoped<IRepBase, RepBase>();
-
-            //services.AddScoped<ISession>((provider) =>
-            //{
-            //    var factory = provider.GetService<ISessionFactory>();
-            //    return factory.OpenSession();
-            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddMvc().AddJsonOptions(configureJson);

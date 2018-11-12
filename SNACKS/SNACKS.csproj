@@ -27,12 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20181025101621_inventario7.cs" />
-    <Compile Remove="Migrations\20181025103305_inventario7.cs" />
-    <Compile Remove="Migrations\20181025103522_inventario7.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="ClientApp\src\app\almacenes\almacen.ts" />
     <None Remove="ClientApp\src\app\cajas\caja.ts" />
     <None Remove="ClientApp\src\app\categorias\categoria.ts" />

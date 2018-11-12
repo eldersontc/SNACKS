@@ -4,6 +4,7 @@ import { IFiltro, IListaRetorno } from '../generico/generico';
 import { MovimientosCajaService } from './movimientos-caja.service';
 import { ActivatedRoute } from '@angular/router';
 import { CajasService } from '../cajas/cajas.service';
+import { ICaja } from '../cajas/caja';
 
 @Component({
   selector: 'app-movimientos-caja',
@@ -49,8 +50,8 @@ export class MovimientosCajaComponent implements OnInit {
 
   ngOnInit() { }
 
-  getCajaSuccess(caja) {
-    this.extern.push({ k: 1, v: caja.nombre, n: caja.idCaja });
+  getCajaSuccess(caja: ICaja) {
+    this.extern.push({ k: 1, v: caja.nombre + ' S/. ' + caja.saldo, n: caja.idCaja });
     this.getMovimientosCaja();
   }
 

@@ -4,6 +4,7 @@ import { IFiltro, IListaRetorno, ILogin } from '../generico/generico';
 import { SalidasInsumoService } from './salidas-insumo.service';
 import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LOCAL_STORAGE, WebStorageService } from 'angular-webstorage-service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-salidas-insumo',
@@ -25,7 +26,7 @@ export class SalidasInsumoComponent implements OnInit {
   login: ILogin;
 
   columnas: string[][] = [
-    ['L', 'Nro. Salida'],
+    ['L', 'N° Salida'],
     ['L', 'Lote'],
     ['L', 'Creado Por'],
     ['L', 'Fecha Creación']];
@@ -35,8 +36,12 @@ export class SalidasInsumoComponent implements OnInit {
     ['S', 'L', 'usuario', 'nombre'],
     ['D', 'L', 'fechaCreacion']]
 
+  private readonly notifier: NotifierService;
+
   constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService,
+    notifierService: NotifierService,
     private salidaInsumoService: SalidasInsumoService) {
+    this.notifier = notifierService;
     this.login = this.storage.get('login');
   }
 
@@ -75,8 +80,14 @@ export class SalidasInsumoComponent implements OnInit {
   }
 
   deleteSalidaInsumo() {
-    this.salidaInsumoService.deleteSalidaInsumo(this.seleccion.idSalidaInsumo).subscribe(data => this.onDeleteSuccess(),
-      error => console.log(error));
+    this.salidaInsumoService
+      .deleteSalidaInsumo(this.seleccion.idSalidaInsumo)
+      .subscribe(data => this.onDeleteSuccess(),
+      error => this.showError(error));
+  }
+
+  showError(error) {
+    this.notifier.notify('error', error.error);
   }
 
   onDeleteSuccess() {
