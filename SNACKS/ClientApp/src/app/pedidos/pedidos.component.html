@@ -38,9 +38,7 @@
                     class="Pedido"
                     [model]="seleccion"
                     [modeSearch]="false"
-                    (delete)="deletePedido()"
-                    (select)="elegir()"
-                    (cancel)="cancelar()"
+                    (delete)="delete()"
                     [showReadOnly]="true"
                     [show]="seleccion
                       && seleccion.estado == 'PENDIENTE'
