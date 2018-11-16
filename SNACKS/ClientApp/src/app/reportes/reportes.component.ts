@@ -106,7 +106,7 @@ export class ReportesComponent implements OnInit {
   openViewer(content, data) {
     this.reporteView = data
     this.modalService.open(content, { centered: true, size: 'lg' })
-      .result.then((result) => { this.view = false });
+      .result.then((result) => { this.view = false; this.chart = [] });
   }
 
   chart = [];
@@ -125,17 +125,38 @@ export class ReportesComponent implements OnInit {
     }, {});
   }
 
+  estadisticas: IEstadistica[] = [];
+  
   runReporte() {
-    this.view = true;
     this.reporteService.runReporte(this.reporteView)
-      .subscribe(data => this.makeChart(data),
+      .subscribe(data => this.runReporteSuccess(data),
         error => console.error(error));
   }
 
-  makeChart(estadisticas: IEstadistica[]) {
+  agrupacion: {};
 
-    var leyendas = Object.keys(this.groupBy(estadisticas, 'leyenda'));
-    var etiquetas = Object.keys(this.groupBy(estadisticas, 'etiqueta'));
+  runReporteSuccess(data) {
+    this.estadisticas = data;
+    this.agrupacion = this.groupBy(this.estadisticas, 'leyenda');
+    if (this.seleccion.tipoReporte != 'table') {
+      this.makeChart();
+    } else {
+      this.view = true;
+    }
+  }
+
+  getRowSpan(e: IEstadistica) {
+    return this.agrupacion[e.leyenda].length;
+  }
+
+  isFirst(e: IEstadistica) {
+    return this.agrupacion[e.leyenda][0].etiqueta == e.etiqueta;
+  }
+
+  makeChart() {
+
+    var leyendas = Object.keys(this.groupBy(this.estadisticas, 'leyenda'));
+    var etiquetas = Object.keys(this.groupBy(this.estadisticas, 'etiqueta'));
 
     var data = [];
     var colors = [];
@@ -147,7 +168,7 @@ export class ReportesComponent implements OnInit {
       colors = [];
 
       etiquetas.forEach((e) => {
-        var v = estadisticas.filter(obj => {
+        var v = this.estadisticas.filter(obj => {
           return obj.leyenda == l && obj.etiqueta == e
         })
         data.push(v.length == 0 ? 0 : v[0].valor);

@@ -50,13 +50,13 @@
 
 <ng-template #viewer let-c="close" let-d="dismiss">
   <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title" id="modal-basic-title"><!--<fa name="exclamation-triangle"></fa>--> Ver Reporte</h5>
+    <h5 class="modal-title" id="modal-basic-title">{{seleccion.titulo}}</h5>
     <button type="button" class="close" aria-label="Close" (click)="c('Cerrar')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
-    <div *ngIf="!view">
+    <div *ngIf="!view && chart.length == 0">
       <table class="table table-bordered table-hover table-sm">
         <thead class="thead-light">
           <tr>
@@ -74,19 +74,45 @@
         </tbody>
       </table>
     </div>
+    <div *ngIf="view">
+      <table class="table table-bordered table-hover table-sm">
+        <thead class="thead-light">
+          <tr>
+            <th scope="col">
+              <fa name="angle-double-right"></fa>
+            </th>
+            <th scope="col">
+              <fa name="angle-double-right"></fa>
+            </th>
+            <th scope="col">
+              <fa name="hashtag"></fa>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of estadisticas">
+            <td *ngIf="isFirst(e)"
+                [attr.rowspan]="getRowSpan(e)"
+                align="center">{{e.leyenda}}</td>
+            <td>{{e.etiqueta}}</td>
+            <td>{{e.valor}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div *ngIf="chart">
       <canvas id="canvas">{{ chart }}</canvas>
     </div>
   </div>
   <div class="modal-footer justify-content-center">
-    <button type="button" class="btn btn-primary" (click)="runReporte()" [hidden]="view">
+    <button *ngIf="!view && chart.length == 0"
+            type="button"
+            class="btn btn-primary"
+            (click)="runReporte()">
       <fa name="play"></fa> Generar
     </button>
-    <!--<button type="button" class="btn btn-primary" (click)="exportReporte()" [hidden]="!view">
-      <fa name="trash"></fa> Exportar
-    </button>-->
-    <button type="button" class="btn btn-secoundary" (click)="c('Cancelar')">
-      Cancelar
+    <button type="button" class="btn btn-outline-secondary ml-2" (click)="c('Cancelar')">
+      <fa name="reply"></fa> Regresar
     </button>
   </div>
 </ng-template>

@@ -3,7 +3,7 @@
                 (select)="asignarCliente($event)"></app-personas>
 </div>
 <div *ngIf="elegirProducto">
-  <app-productos [extern]="[{ k: 2, v: 'Producto', b: false }]"
+  <app-productos [extern]="[{ k: 3, v: 'Producto', b: true }]"
                  (select)="asignarProducto($event)"></app-productos>
 </div>
 <div [hidden]="elegirCliente || elegirProducto">

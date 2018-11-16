@@ -22,7 +22,7 @@ export class ReportesFormComponent implements OnInit {
 
   items: IItemReporte[] = [];
 
-  tipos = ['bar', 'pie', 'line','doughnut'];
+  tipos = ['bar', 'pie', 'line','doughnut','table'];
 
   ngOnInit() {
     this.form = this.fb.group({

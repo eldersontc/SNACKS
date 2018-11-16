@@ -43,9 +43,9 @@ namespace SNACKS.Controllers
 
                 totalRegistros = await query.CountAsync();
 
-                AsignarPaginacion(paginacion, ref query);
-
                 query = query.OrderByDescending(x => x.Fecha);
+
+                AsignarPaginacion(paginacion, ref query);
 
                 lista = await query.ToListAsync();
             }
