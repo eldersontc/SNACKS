@@ -132,7 +132,7 @@ namespace SNACKS.Controllers
                             }
                             else
                             {
-                                throw new Exception("No hay stock disponible.");
+                                throw new Exception("Sin stock para el insumo: " + item.Insumo.Nombre);
                             }
 
                             item.IdSalidaInsumo = id;
@@ -189,7 +189,7 @@ namespace SNACKS.Controllers
                             }
                             else
                             {
-                                throw new Exception("No hay stock disponible.");
+                                throw new Exception("Sin stock para el insumo: " + item.Insumo.Nombre);
                             }
 
                             item.IdSalidaInsumo = salidaInsumo.IdSalidaInsumo;

@@ -120,7 +120,7 @@ namespace SNACKS.Controllers
                             }
                             else
                             {
-                                return StatusCode(500, "No hay stock disponible.");
+                                return StatusCode(500, "Sin stock para el producto: " + item.Producto.Nombre);
                             }
                         }
 
@@ -261,7 +261,7 @@ namespace SNACKS.Controllers
                             }
                             else
                             {
-                                throw new Exception("No hay stock disponible.");
+                                throw new Exception("Sin stock para el producto: " + item.Producto.Nombre);
                             }
                         }
 

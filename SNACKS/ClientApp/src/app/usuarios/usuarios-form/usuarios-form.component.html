@@ -1,5 +1,5 @@
 <div *ngIf="elegirPersona">
-  <!--<app-personas [include]="true" (model)="asignarPersona($event)"></app-personas>-->
+  <app-personas [extern]="[]" (select)="asignarPersona($event)"></app-personas>
 </div>
 <div [hidden]="elegirPersona">
   <form class="form-horizontal" novalidate
